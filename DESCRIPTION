@@ -1,6 +1,6 @@
-Package: placeholder
+Package: BabyModernDive
 Type: Book
-Title: Does not matter.
+Title: Baby Modern Dive
 Version: 0.0.1
 Imports: bookdown
-Remotes: rstudio/bookdown
+Remotes: chunyunma/BabyModernDive

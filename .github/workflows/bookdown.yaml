@@ -39,6 +39,7 @@ jobs:
 
       - name: Install packages
         run: |
+          sudo mkdir /Users/chunyun/Documents/codingIsFun/rrr/BabyModernDive/.github/renv
           R -e 'install.packages("renv")'
           R -e 'renv::restore()'
 

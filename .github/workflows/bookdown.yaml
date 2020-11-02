@@ -27,7 +27,7 @@ jobs:
       - name: Cache Renv packages
         uses: actions/cache@v2
         with:
-          path: {{ env.RENV_PATHS_ROOT }}
+          path: ${{ env.RENV_PATHS_ROOT }}
           key: r-${{ hashFiles('renv.lock') }}
           restore-keys: r-
 

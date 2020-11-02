@@ -26,7 +26,7 @@ jobs:
       - name: Cache Renv packages
         uses: actions/cache@v2
         with:
-          path: /Users/chunyun/Documents/codingIsFun/rrr/BabyModernDive/.github/renv
+          path: $HOME/.local/share/renv
           key: r-${{ hashFiles('renv.lock') }}
           restore-keys: r-
 
@@ -39,7 +39,7 @@ jobs:
 
       - name: Install packages
         run: |
-          sudo mkdir /Users/chunyun/Documents/codingIsFun/rrr/BabyModernDive/.github/renv
+          sudo mkdir $HOME/.local/share/renv
           R -e 'install.packages("renv")'
           R -e 'renv::restore()'
 

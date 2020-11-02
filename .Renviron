@@ -1,2 +1,3 @@
-RENV_PATHS_LIBRARY = "/Users/chunyun/Documents/renv/babymoderndive/"
-
+# RENV_PATHS_LIBRARY = "/Users/chunyun/Documents/renv/babymoderndive/"
+# Make sure to use absolute path here
+RENV_PATHS_ROOT = "/Users/chunyun/Documents/codingIsFun/rrr/BabyModernDive/.github/renv"

@@ -5,3 +5,4 @@ local({
 })
 
 source("renv/activate.R")
+options(bookdown.clean_book = TRUE)

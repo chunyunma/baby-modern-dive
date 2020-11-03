@@ -1,7 +1,7 @@
 --- 
 title: "A Minimal Book Example"
 author: "Yihui Xie"
-date: "2020-11-02"
+date: "2020-11-03"
 # site: bookdown::bookdown_site
 output: bookdown::gitbook
 documentclass: book

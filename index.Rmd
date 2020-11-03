@@ -9,8 +9,8 @@ bibliography: [bib/book.bib, bib/packages.bib]
 biblio-style: apalike
 link-citations: yes
 github-repo: chunyunma/baby-modern-dive
-description: "Adapted Modern Dive for CGSC5101/HCIN5400"
-url: "https\://.chunyunma.me"
+description: 'Adapted Modern Dive for CGSC5101\/HCIN5400'
+url: 'https\://.chunyunma.me'
 ---
 
 # Prerequisites

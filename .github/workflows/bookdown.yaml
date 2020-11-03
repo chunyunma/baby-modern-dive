@@ -39,7 +39,7 @@ jobs:
 
       - name: Install packages
         run: |
-          R -e 'install.pcakges("renv")'
+          R -e 'install.packages("renv")'
           R -e 'renv::restore()'
 
       - name: Build site

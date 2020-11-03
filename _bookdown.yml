@@ -1,5 +1,10 @@
-book_filename: "Baby-Modern-Dive"
-new_session: yes
+book_filename: "baby-modern-dive"
+# prefix to each chapter heading
+chapter_name: "Chapter "
+rmd_files: ["index.Rmd", "content/01-intro.Rmd", "content/02-literature.Rmd", 
+            "content/03-method.Rmd", "content/04-application.Rmd", 
+            "content/05-summary.Rmd", "content/06-references.Rmd"]
+# new_session: yes
 language:
   ui:
     chapter_name: "Chapter "

@@ -1,15 +1,16 @@
 --- 
-title: "A Minimal Book Example"
-author: "Yihui Xie"
+title: "Baby Modern Dive"
+author: "Chunyun Ma, Chester Ismay, Albert Y. Kim"
 date: "`r Sys.Date()`"
-# site: bookdown::bookdown_site
+site: bookdown::bookdown_site
 output: bookdown::gitbook
 documentclass: book
-bibliography: [book.bib, packages.bib]
+bibliography: [bib/book.bib, bib/packages.bib]
 biblio-style: apalike
 link-citations: yes
-# github-repo: rstudio/bookdown-demo
-description: "This is a minimal example of using the bookdown package to write a book. The output format for this example is bookdown::gitbook."
+github-repo: chunyunma/baby-modern-dive
+description: "Adapted Modern Dive for CGSC5101/HCIN5400"
+url: "https\://.chunyunma.me"
 ---
 
 # Prerequisites
@@ -32,5 +33,5 @@ To compile this example to PDF, you need XeLaTeX. You are recommended to install
 # automatically create a bib database for R packages
 knitr::write_bib(c(
   .packages(), 'bookdown', 'knitr', 'rmarkdown'
-), 'packages.bib')
+), 'bib/packages.bib')
 ```

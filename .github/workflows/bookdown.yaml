@@ -37,9 +37,12 @@ jobs:
           key: bookdown-${{ hashFiles('**/*Rmd') }}
           restore-keys: bookdown-
 
+      - name: install renv v0.12.1
+        run: | 
+          Rscript -e "install.packages('https://cran.r-project.org/src/contrib/renv_0.12.1.tar.gz', repos = NULL, type = 'source')"
+
       - name: Install packages
         run: |
-          R -e 'install.packages("renv")'
           R -e 'renv::restore()'
 
       - name: Build site

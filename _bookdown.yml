@@ -1,12 +1,24 @@
 book_filename: "baby-modern-dive"
 # prefix to each chapter heading
-chapter_name: "Chapter "
-rmd_files: ["index.Rmd", "content/01-intro.Rmd", "content/02-literature.Rmd", 
-            "content/03-method.Rmd", "content/04-application.Rmd", 
-            "content/05-summary.Rmd", "content/06-references.Rmd"]
-# new_session: yes
+rmd_files: [
+  "index.Rmd", 
+  "01-intro.Rmd", 
+  "02-data-visualization.Rmd", 
+  # "content/03-method.Rmd", 
+  # "content/04-application.Rmd", 
+  # "content/05-summary.Rmd", 
+  # "content/06-references.Rmd"
+  ]
+before_chapter_script: ["rscript/setup.R"]
+new_session: yes
 language:
+  label:
+    # keeping the default, may change later
+    fig: 'Figure '
+    tab: 'Table '
+    eq: 'Equation '
   ui:
-    chapter_name: "Chapter "
+    chapter_name: 'Chapter ' 
+    appendix_name: 'Appendix '
 delete_merged_file: true
-clean: ["my-book.bbl", "R-packages.bib"]
+# clean: ["bib/book.bib", "bib/packages.bib"]

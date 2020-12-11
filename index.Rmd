@@ -5,7 +5,7 @@ date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 output: bookdown::gitbook
 documentclass: book
-bibliography: [bib/book.bib, bib/packages.bib]
+bibliography: [bib/teaching_2021W.bib, bib/book.bib, bib/packages.bib]
 biblio-style: apalike
 link-citations: yes
 github-repo: chunyunma/baby-modern-dive
@@ -13,25 +13,137 @@ description: 'Adapted Modern Dive for CGSC5101\/HCIN5400'
 url: 'https\://.chunyunma.me'
 ---
 
-# Prerequisites
 
-This is a _sample_ book written in **Markdown**. You can use anything that Pandoc's Markdown supports, e.g., a math equation $a^2 + b^2 = c^2$.
+```{r load-package, message=F, warning=F}
+#
+# Install packages
+#
 
-The **bookdown** package can be installed from CRAN or Github:
+cran_packages = c(
+                  # Packages required by students: 
+                  # "knitr", "ggplot2", 
+                  # Packages used internally: 
+                  # "bookdown", 
+                  # "import", 
+                  # "rmarkdown", "here", "remotes", "kableExtra"
+)
 
-```{r eval=FALSE}
-install.packages("bookdown")
-# or the development version
-# devtools::install_github("rstudio/bookdown")
+# Need to cite these packages separately
+gh_repos = c(
+             # Required by students:
+             
+             # Used internally: 
+             # "rapporter/pander", "dcomtois/summarytools"
+             )
+
+# TODO: maybe separate these into for_reader and for_authors
+
+if (length(cran_packages) != 0) xf$pkg_load2(cran_packages)
+if (length(gh_repos) != 0) xf$install_github(gh_repos)
+
+#
+# namespace
+#
+gp <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+kn <- import::from(knitr, .all=TRUE, .into={new.env()})
 ```
 
-Remember each Rmd file contains one and only one chapter, and a chapter is defined by the first-level heading `#`.
+```{r knitr, message=F, warning=F}
+#
+# knitr options
+#
+kn$opts_chunk$set(
+  tidy = FALSE,
+  out.width = "\\textwidth",
+  fig.align = "center",
+  comment = NA
+)
 
-To compile this example to PDF, you need XeLaTeX. You are recommended to install TinyTeX (which includes XeLaTeX): <https://yihui.name/tinytex/>.
+#
+# Set output options
+#
+if (kn$is_html_output()) {
+  options(width = 80)
+}
 
-```{r include=FALSE}
+#
 # automatically create a bib database for R packages
-knitr::write_bib(c(
-  .packages(), 'bookdown', 'knitr', 'rmarkdown'
-), 'bib/packages.bib')
+#
+kn$write_bib(
+                 c('xfun', 
+                   cran_packages
+                   ), 
+                 here::here('bib', 'packages.bib')
+)
 ```
+
+```{r ggplot}
+#
+# Set ggplot2 theme
+#
+gp$theme_set(gp$theme_grey())
+```
+
+
+# Welcome {.unnumbered #welcome}
+
+This is the website for the course notes of CGSC5101/HCIN5400. 
+
+## What's with the name? {-}
+
+The material is largely based on a book called "Modern Dive". 
+<!-- may expand the list of inspirations -->
+I first stumbled upon the book 
+when I was preparing for teaching this course in 2019. 
+I personally benefited greatly from reading the book, 
+and teaching a course using its material.
+
+## Who are the players? {-}
+
+### You professor {-}
+
+My background
+
+My history with teaching this course and teaching stats in general
+
+#### Why choosing R {-}
+
+#### What do I hope to deliver, content-wise {-}
+
+<!-- stats vs. data science 
+see "What we hope you will learn from this hope in Preface"
+A modified version:
+Experience the life cycle of a data analysis pipeline 
+from raw data to meaninful narration, ready for readers 
+of various background. This entails: 
+- data wrangling (maybe a different term is better)
+- Apply appropriate model to the data
+- "decode" output filled with technical jargons, interpret results, make inferences
+- Learn how to use R to turn the process reproducible
+There are more minor objectives, but these should give a high-level overview
+
+Elaborate on reproducible research
+-->
+
+### Your teaching assistant {-}
+
+### Your peers {-}
+
+## Playground rules {-}
+
+### Communication policy {-}
+
+What worked last term
+
+### Minimize distraction {-}
+
+### Structure of each lecture {-}
+
+theory + hands-on
+
+
+### Syllabus & assignments {-}
+
+
+### Datacamp {-}
+

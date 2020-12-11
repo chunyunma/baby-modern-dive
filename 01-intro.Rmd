@@ -1,0 +1,61 @@
+# Introduction {#intro}
+
+
+## Getting Started with Data in R
+
+### R vs. RStudio
+
+engine vs. dashboard
+
+Have to make a decision here: 
+how to faciliate students set up RStudio. 
+Perhaps can use group work.
+
+### How do I code in R?
+
+An interactive demo to walk students through some basics. 
+Not necessarily in one go. 
+Can inject them into different lectures, 
+like mini sessions.
+
+Basics:
+
+Console pane
+Script
+Output/plot
+Environment (\*)
+
+Literate programming
+
+
+Objects
+Data types
+Vectors
+
+Factors
+Conditionals
+Functions
+
+#### R packages, installing, loading, attaching
+
+Would be worthwhile to go through some of the content 
+in this tutorial #R-ref
+<https://www.datacamp.com/community/tutorials/r-packages-guide>
+It explains how to get help for individual functions and packages 
+within command line, i.e., no need to leave IDE.
+Caveat: confusion around library vs. package, load vs. attach
+Caveat: somewhat outdated, RDocumentation is not actively maintained (?)
+
+
+Errors, warnings, and messages
+How to ask for help (reproducible example)
+
+Isolated environments (renv)
+
+### Explore your first datasets
+
+Different ways to explore data, 
+including View(), glimpse, str, head, kable, $
+
+Type of variables (segue to theory)
+

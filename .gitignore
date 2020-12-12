@@ -1,3 +1,7 @@
+myrbook-link
+.DS_Store
+content/.DS_Store
+.lintr
 .Rproj.user
 .Rhistory
 .RData
@@ -8,5 +12,6 @@ _bookdown_files
 rsconnect
 renv/*
 !renv/activate.R
-
+_tmp
+baby-modern-dive.rds
 

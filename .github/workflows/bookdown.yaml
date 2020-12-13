@@ -18,10 +18,9 @@ jobs:
       - name: Setup R
         uses: r-lib/actions/setup-r@v1
 
-      - name: Install pandoc and pandoc citeproc
+      - name: Install pandoc
         run: |
           brew install pandoc
-          brew install pandoc-citeproc
 
       - name: Cache Renv packages
         uses: actions/cache@v2
@@ -37,13 +36,13 @@ jobs:
           key: bookdown-${{ hashFiles('**/*Rmd') }}
           restore-keys: bookdown-
 
-      - name: install renv v0.12.1
+      - name: install renv v0.12.3
         run: | 
-          Rscript -e "install.packages('https://cran.r-project.org/src/contrib/renv_0.12.1.tar.gz', repos = NULL, type = 'source')"
+          Rscript -e "install.packages('https://cloud.r-project.org/src/contrib/renv_0.12.3.tar.gz', repos = NULL, type = 'source')"
 
       - name: Install packages
         run: |
-          R -e 'renv::restore()'
+          Rscript -e 'renv::restore()'
 
       - name: Build site
         run: Rscript -e 'bookdown::render_book("index.Rmd", quiet = TRUE)'

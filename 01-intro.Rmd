@@ -52,10 +52,100 @@ How to ask for help (reproducible example)
 
 Isolated environments (renv)
 
-### Explore your first datasets
+## Explore your first dataset
 
+This is a dataset that contains on-time data for all flights 
+that departed NYC in 2013. 
 Different ways to explore data, 
-including View(), glimpse, str, head, kable, $
+including View(), glimpse, str, head, kable, `$`, 
 
 Type of variables (segue to theory)
+
+
+```{r install-package, eval=F}
+# Install xfun so that I can use xfun::pkg_load2
+if (find.package('xfun') == '') install.packages('xfun')
+xf <- loadNamespace('xfun')
+
+cran_primary <- c(
+                  "dplyr", 
+                  "knitr", 
+                  "nycflights13"
+)
+cran_secondary <- c(
+                    "patchwork", 
+                    "readr", 
+                    # "scales", 
+                    "stringr"
+)
+
+if (length(cran_primary) != 0) xf$pkg_load2(cran_primary)
+if (length(cran_secondary != 0) xf$pkg_load2(cran_secondary)
+```
+
+```{r import, message=FALSE, warning=FALSE}
+import::from(nycflights13, df_flights = flights)
+# import::from(nycflights13, df_flights = flights, .into={new.env()})
+
+gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
+
+import::from(magrittr, '%>%', '%T>%')
+```
+
+### First impression of a data frame
+
+Let's begin by exploring the `df_flights` data frame 
+and get an idea of its structure. 
+Run the following code in your console, 
+either by typing it or by cutting-and-pasting it. 
+It displays the contents of the `df_flights` data frame in your console. 
+Note that depending on the size of your monitor, the output may vary slightly. 
+
+
+
+```{r vis-df-flights}
+df_flights
+```
+
+```{r echo=FALSE, purl=FALSE}
+# This redundant code is used for dynamic non-static in-line text output purposes
+# flights_rows <- nrow(df_flights)
+flights_rows <- df_flights %>%
+  nrow() %>%
+  formatC(big.mark = ",")
+#   scales::comma()
+flights_cols <- df_flights %>% ncol()
+```
+
+Let's unpack this output:
+
+* ``A tibble: `r flights_rows` x `r flights_cols` ``: 
+  A `tibble` is a specific kind of data frame in R.
+  This particular data frame has
+    + `` `r flights_rows` `` rows corresponding to different *observations*. 
+      Here, each observation is a flight.
+    + `` `r flights_cols` `` columns corresponding to `r flights_cols` 
+      *variables* describing each observation.
+* `year`, `month`, `day`, `dep_time`, `sched_dep_time`, `dep_delay`, 
+  and `arr_time` are the different columns, 
+  in other words, the different variables of this dataset.
+* We then have a preview of the first 10 rows of observations corresponding 
+  to the first 10 flights. R is only showing the first 10 rows, 
+  because if it showed all `` `r flights_rows` `` rows, 
+  it would overwhelm your screen.
+* ``... with `r (df_flights %>% nrow() - 10) %>% formatC(big.mark = ",")` more rows, 
+  and `r flights_cols - 8` more variables:`` 
+  indicating to us that 
+  `r (df_flights %>% nrow() - 10) %>% formatC(big.mark = ",")` 
+  more rows of data and 11 more variables could not fit in this screen.
+
+This output gives us a nice preview. 
+Let's look at some different ways to explore data frames.
+
+```{r eval=F}
+help("flights", package="nycflights13")
+```
+
+
 

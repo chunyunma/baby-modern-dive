@@ -5,8 +5,8 @@ date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 output: bookdown::gitbook
 documentclass: book
-bibliography: [bib/teaching_2021W.bib, bib/book.bib, bib/packages.bib]
-biblio-style: apalike
+bibliography: [bib/teaching_2021W.bib, bib/packages.bib]
+biblio-style: "apalike"
 link-citations: yes
 github-repo: chunyunma/baby-modern-dive
 description: 'Adapted Modern Dive for CGSC5101\/HCIN5400'
@@ -18,14 +18,30 @@ url: 'https\://.chunyunma.me'
 #
 # Install packages
 #
+# Install xfun so that I can use xfun::pkg_load2
+if (find.package('xfun') == '') install.packages('xfun')
+xf <- loadNamespace('xfun')
+
 
 cran_packages = c(
                   # Packages required by students: 
-                  # "knitr", "ggplot2", 
+                  "gapminder", 
+                  "ggplot2", 
+                  "knitr", 
+                  "nycflights13", 
                   # Packages used internally: 
-                  # "bookdown", 
-                  # "import", 
-                  # "rmarkdown", "here", "remotes", "kableExtra"
+                  "bookdown", 
+                  "dplyr", 
+                  "here", 
+                  "import", 
+                  "kableExtra", 
+                  "magrittr", 
+                  "patchwork", 
+                  "readr", 
+                  "remotes", 
+                  "rmarkdown", 
+                  # "scales", 
+                  "stringr"
 )
 
 # Need to cite these packages separately
@@ -33,7 +49,8 @@ gh_repos = c(
              # Required by students:
              
              # Used internally: 
-             # "rapporter/pander", "dcomtois/summarytools"
+             "cboettig/knitcitations", 
+             "ROpenSci/bibtex"
              )
 
 # TODO: maybe separate these into for_reader and for_authors
@@ -41,51 +58,25 @@ gh_repos = c(
 if (length(cran_packages) != 0) xf$pkg_load2(cran_packages)
 if (length(gh_repos) != 0) xf$install_github(gh_repos)
 
-#
-# namespace
-#
-gp <- import::from(ggplot2, .all=TRUE, .into={new.env()})
-kn <- import::from(knitr, .all=TRUE, .into={new.env()})
 ```
 
-```{r knitr, message=F, warning=F}
-#
-# knitr options
-#
-kn$opts_chunk$set(
-  tidy = FALSE,
-  out.width = "\\textwidth",
-  fig.align = "center",
-  comment = NA
-)
-
-#
-# Set output options
-#
-if (kn$is_html_output()) {
-  options(width = 80)
-}
+```{r bib, echo=F, message=F, warning=F}
+kn <- import::from(knitr, .all=TRUE, .into={new.env()})
 
 #
 # automatically create a bib database for R packages
 #
 kn$write_bib(
                  c('xfun', 
-                   cran_packages
+                   cran_packages, gh_repos
                    ), 
                  here::here('bib', 'packages.bib')
 )
 ```
 
-```{r ggplot}
-#
-# Set ggplot2 theme
-#
-gp$theme_set(gp$theme_grey())
-```
 
 
-# Welcome {.unnumbered #welcome}
+# Welcome {-#welcome}
 
 This is the website for the course notes of CGSC5101/HCIN5400. 
 

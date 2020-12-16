@@ -5,26 +5,39 @@
 ```
 
 
-```{r load-package, message=FALSE, warning=FALSE}
+```{r load-package, eval=F}
 #
 # Install packages
 #
 # Install xfun so that I can use xfun::pkg_load2
+if (find.package('xfun') == '') install.packages('xfun')
+xf <- loadNamespace('xfun')
 
-cran_primary <- c("ggplot2", 
-								 "dplyr", 
-								 "nycflights13")
-cran_secondary <- c("gapminder", 
-									 "readr", 
-									 "patchwork", 
-									 "scales", 
-									 "stringr"
-									 )
+cran_primary <- c(
+                  "dplyr", 
+                  "gapminder", 
+                  "ggplot2", 
+                  "nycflights13"
+)
+cran_secondary <- c(
+                    "patchwork", 
+                    "readr", 
+                    "scales", 
+                    "stringr"
+)
 
 if (length(cran_primary) != 0) xf$pkg_load2(cran_primary)
-xf$pkg_load2(cran_primary, cran_secondary)
+if (length(cran_secondary != 0) xf$pkg_load2(cran_secondary)
+
 gg <- loadNamespace('ggplot2')
 dp <- loadNamespace('dplyr')
+
+import::from(magrittr, '%>%', '%T>%')
+```
+
+```{r, echo=F, message=FALSE, warning=FALSE}
+gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
 
 import::from(magrittr, '%>%', '%T>%')
 ```

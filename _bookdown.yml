@@ -1,13 +1,14 @@
 book_filename: "baby-modern-dive"
 rmd_files: [
   "index.Rmd", 
-  "01-intro.Rmd", 
+  "00-housekeeping.Rmd", 
+  "01-getting-started.Rmd", 
   # "02-data-visualization.Rmd", 
   # "content/03-method.Rmd", 
   # "content/04-application.Rmd", 
   # "content/05-summary.Rmd", 
   # "content/06-references.Rmd", 
-  "references.Rmd"
+  "99-references.Rmd"
   ]
 before_chapter_script: ["rscript/setup.R"]
 new_session: yes

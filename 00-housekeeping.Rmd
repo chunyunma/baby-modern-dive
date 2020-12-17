@@ -1,0 +1,60 @@
+# Housekeeping {-}
+
+## What's with the name? {-}
+
+The material is largely based on a book called "Modern Dive". 
+<!-- may expand the list of inspirations -->
+I first stumbled upon the book 
+when I was preparing for teaching this course in 2019. 
+I personally benefited greatly from reading the book, 
+and teaching a course using its material.
+
+## Who are the players? {-}
+
+### You professor {-}
+
+My background
+
+My history with teaching this course and teaching stats in general
+
+#### Why choosing R {-}
+
+#### What do I hope to deliver, content-wise {-}
+
+<!-- stats vs. data science 
+see "What we hope you will learn from this hope in Preface"
+A modified version:
+Experience the life cycle of a data analysis pipeline 
+from raw data to meaninful narration, ready for readers 
+of various background. This entails: 
+- data wrangling (maybe a different term is better)
+- Apply appropriate model to the data
+- "decode" output filled with technical jargons, interpret results, make inferences
+- Learn how to use R to turn the process reproducible
+There are more minor objectives, but these should give a high-level overview
+
+Elaborate on reproducible research
+-->
+
+### Your teaching assistant {-}
+
+### Your peers {-}
+
+## Playground rules {-}
+
+### Communication policy {-}
+
+What worked last term
+
+### Minimize distraction {-}
+
+### Structure of each lecture {-}
+
+theory + hands-on
+
+
+### Syllabus & assignments {-}
+
+
+### Datacamp {-}
+

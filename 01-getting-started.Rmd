@@ -1,0 +1,510 @@
+# Getting Started with Data in R {#getting-started}
+
+```{r setup_getting_started, include=FALSE, purl=FALSE}
+# Used to define Learning Check numbers:
+chap <- 1
+lc <- 0
+
+# Set random number generator see value for replicable pseudorandomness.
+set.seed(76)
+```
+
+
+## R vs. RStudio {#r-studio}
+
+engine vs. dashboard
+
+Have to make a decision here: 
+how to faciliate students set up RStudio. 
+Perhaps can use group work.
+
+## How do I code in R? {#code}
+
+An interactive demo to walk students through some basics. 
+Not necessarily in one go. 
+Can inject them into different lectures, 
+like mini sessions.
+
+Basics:
+
+Console pane
+Script
+Output/plot
+Environment (\*)
+
+Literate programming
+
+
+Objects
+Data types
+Vectors
+
+Factors
+Conditionals
+Functions
+
+## R packages, installing, loading, attaching {#packages}
+
+Would be worthwhile to go through some of the content 
+in this tutorial #R-ref
+<https://www.datacamp.com/community/tutorials/r-packages-guide>
+It explains how to get help for individual functions and packages 
+within command line, i.e., no need to leave IDE.
+Caveat: confusion around library vs. package, load vs. attach
+Caveat: somewhat outdated, RDocumentation is not actively maintained (?)
+
+
+Errors, warnings, and messages
+How to ask for help (reproducible example)
+
+Isolated environments (renv)
+
+## Explore your first datasets {#nycflights13}
+
+Let's put everything we've learned so far into practice 
+and start exploring some real data! 
+
+<!-- Data comes to us in a variety of formats,  -->
+<!-- from pictures to text to numbers.   -->
+<!-- Throughout this book,  -->
+<!-- we'll focus on datasets that are saved in "spreadsheet"-type format.  -->
+<!-- This is probably the most common way data are collected  -->
+<!-- and saved in many fields.   -->
+<!-- Remember from Subsection \@ref(programming-concepts) that  -->
+<!-- these "spreadsheet"-type datasets are called  -->
+<!-- _data frames_ in R. \index{data frame}  -->
+<!-- We'll focus on working with data saved as data frames throughout this book. -->
+
+<!-- Let's first load all the packages needed for this chapter,  -->
+<!-- assuming you've already installed them.  -->
+<!-- Read Section \@ref(packages) for information  -->
+<!-- on how to install and load R packages if you haven't already. -->
+
+<!-- Maybe a snapshot of the data in spreadsheet form  -->
+
+This is a dataset that contains on-time data for all domestic flights 
+departing from one of New York City's three main airports in 2013: 
+Newark Liberty International (EWR), 
+John F. Kennedy International (JFK), 
+and LaGuardia Airport (LGA).
+
+<!-- Different ways to explore data,  -->
+<!-- including View(), glimpse, str, head, kable, `$`,  -->
+<!--  -->
+<!-- Type of variables (segue to theory) -->
+
+
+The following code gives us access to the data, 
+as well as the to some tools so we can interact with the data. 
+
+```{r install-package, eval=F}
+# Install xfun so that I can use xfun::pkg_load2
+if (find.package('xfun') == '') install.packages('xfun')
+xf <- loadNamespace('xfun')
+
+cran_primary <- c(
+                  "dplyr", 
+                  "knitr", 
+                  "nycflights13"
+)
+cran_secondary <- c(
+                    "patchwork", 
+                    "readr", 
+                    # "scales", 
+                    "stringr"
+)
+
+if (length(cran_primary) != 0) xf$pkg_load2(cran_primary)
+if (length(cran_secondary != 0) xf$pkg_load2(cran_secondary)
+```
+
+```{r import, message=FALSE, warning=FALSE}
+import::from(nycflights13, df_flights = flights)
+
+# gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+# dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
+
+import::from(magrittr, '%>%', '%T>%')
+```
+
+Looks intimidating? 
+Fear not!
+As the course unfolds, we will unpack codes like these 
+and you will become a master!
+For now, let me reassure you that 
+the tools are set and 
+the data are ready for inspectation. 
+Let's proceed! 
+
+### First impression of a data frame
+
+Let's begin by exploring the `df_flights` data frame 
+and get an idea of its structure. 
+Run the following code in your console, 
+either by typing it or by cutting-and-pasting it. 
+It displays the contents of the `df_flights` data frame in your console. 
+Note that depending on the size of your monitor, the output may vary slightly. 
+
+
+```{r vis-df-flights}
+df_flights
+```
+
+```{r echo=FALSE, purl=FALSE}
+# This redundant code is used for dynamic non-static in-line text output purposes
+# flights_rows <- nrow(df_flights)
+flights_rows <- df_flights %>%
+  nrow() %>%
+  formatC(big.mark = ",")
+#   scales::comma()
+flights_cols <- df_flights %>% ncol()
+```
+
+Let's unpack this output:
+
+* ``A tibble: `r flights_rows` x `r flights_cols` ``: 
+  A `tibble` is a specific kind of data frame in R.
+  This particular data frame has
+    + `` `r flights_rows` `` rows corresponding to different *observations*. 
+      Here, each observation is a flight.
+    + `` `r flights_cols` `` columns corresponding to `r flights_cols` 
+      *variables* describing each observation.
+* `year`, `month`, `day`, `dep_time`, `sched_dep_time`, `dep_delay`, 
+  and `arr_time` are the different columns, 
+  in other words, the different variables of this dataset.
+* We then have a preview of the first 10 rows of observations corresponding 
+  to the first 10 flights. R is only showing the first 10 rows, 
+  because if it showed all `` `r flights_rows` `` rows, 
+  it would overwhelm your screen.
+* ``... with `r (df_flights %>% nrow() - 10L) %>% formatC(
+  big.mark = ",")` more rows, 
+  and `r flights_cols - 8` more variables:`` 
+  indicating to us that 
+  `r (df_flights %>% nrow() - 10) %>% formatC(big.mark = ",")` 
+  more rows of data and 11 more variables could not fit in this screen.
+
+This output gives us a nice preview. 
+Let's look at some different ways to explore data frames.
+
+
+### exploring data frames {#exploredataframes}
+
+There are many ways to get a feel for the data 
+contained in a data frame such as `df_flights`. 
+We present three functions,
+all take as their "argument" (their input) the data frame in question. 
+We also include a fourth method 
+for exploring one particular column of a data frame:
+
+1. using the `View()` function, which brings up rstudio's built-in data viewer.
+1. using the `glimpse()` function, which is included in the `dplyr` package.
+1. using the `kable()` function, which is included in the `knitr` package.
+1. using the `$` "extraction operator," 
+   which is used to view a single variable/column in a data frame.
+
+**1. `View()`**:
+
+Run `View(df_flights)` \index{r packages!utils!view()} 
+in your console in rstudio, 
+either by typing it or cutting-and-pasting it into the console pane. 
+Explore this data frame in the resulting pop up viewer. 
+You should get into the habit of viewing any data frames you encounter. 
+Note the uppercase `V` in `View()`. r is case-sensitive, 
+so you'll get an error message if you run `view(df_flights)` 
+instead of `View(df_flights)`.
+
+
+\vspace{0.1in}
+
+```{block lc2-2, type="learncheck", purl=FALSE}
+\vspace{-0.15in}
+**_learning check_**
+\vspace{-0.1in}
+```
+
+**`r paste0("(lc", chap, ".", (lc <- lc + 1), ")")`** 
+what does any *one* row in this `flights` dataset refer to?
+
+- a. data on an airline 
+- b. data on a flight
+- c. data on an airport
+- d. data on multiple flights
+
+```{block, type="learncheck", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+\vspace{0.1in}
+
+By running `View(df_flights)`, 
+we can explore the different *variables* listed in the columns. 
+Observe that there are many different types of variables.  
+Some of the variables like `distance`, `day`, and `arr_delay` 
+are what we will call *quantitative* variables. \index{quantitative} 
+These variables are numerical in nature.  
+Other variables here are \index{categorical} *categorical*.
+
+
+
+Note that if you look in the leftmost column of the `view(df_flights)` output, 
+you will see a column of numbers. 
+These are the row numbers of the dataset. 
+If you glance across a row with the same number, say row 5, 
+you can get an idea of what each row is representing. 
+This will allow you to identify what object is being described in a given row 
+by taking note of the values of the columns in that specific row. 
+
+This is often called the *observational unit*.\index{observational unit} 
+The observational unit in this example is an individual flight departing 
+from new york city in 2013. 
+You can identify the observational unit 
+by determining what "thing" is being measured 
+or described by each of the variables. 
+We'll talk more about observational units in subsection 
+\@ref(identification-vs-measurement-variables) 
+on *identification* and *measurement* variables.
+
+
+**2. `dplyr::glimpse()`**:
+
+The second way we'll cover to explore a data frame 
+is using the `glimpse()` function \index{dplyr!glimpse()} 
+included in the \index{dplyr|seealso{r packages!dplyr}} `dplyr` package. 
+
+<!-- you can only use the `glimpse()` function  -->
+<!-- after you've loaded the `dplyr` package by running `library(dplyr)`.  -->
+This function provides us with an alternative perspective 
+for exploring a data frame than the `View()` function:
+
+```{r}
+dplyr::glimpse(df_flights)
+```
+
+Observe that `dplyr::glimpse()` will give you the first few entries 
+of each variable in a row after the variable name.  
+In addition, the *data type* (see subsection \@ref(programming-concepts)) 
+of the variable is given immediately after each variable's name inside `< >`.  
+Here, `int` and `dbl` refer to "integer" and "double", 
+which are computer coding terminology for quantitative/numerical variables. 
+"doubles" take up twice the size to store on a computer compared to integers. 
+
+In contrast, `chr` refers to "character", 
+which is computer terminology for text data. 
+In most forms, text data, such as the `carrier` or `origin` of a flight, 
+are categorical variables. 
+The `time_hour` variable is another data type: `dttm`. 
+These types of variables represent date and time combinations. 
+However, we won't work with dates and times in this book; 
+we leave this topic for other data science books like 
+[*introduction to data science* by tiffany-anne timbers, melissa lee, and trevor campbell](https://ubc-dsci.github.io/introduction-to-datascience/) 
+or [*r for data science*](https://r4ds.had.co.nz/dates-and-times.html). 
+
+
+\vspace{0.05in}
+
+```{block lc2-3, type="learncheck", purl=FALSE}
+\vspace{-0.15in}
+**_learning check_**
+\vspace{-0.1in}
+```
+
+**`r paste0("(lc", chap, ".", (lc <- lc + 1), ")")`** what are some other examples in this dataset of *categorical* variables?  what makes them different than *quantitative* variables?
+
+```{block, type="learncheck", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+\vfill\smallskip
+
+
+**3. `knitr::kable()`**:
+
+Another way to explore the entirety of a data frame is using the `kable()` 
+\index{knitr!kable()} function from the \index{knitr|seealso{R packages!knitr}}
+`knitr` package. 
+Let's explore the different carrier codes for all the airlines 
+in our dataset two ways. 
+Run both of these lines of code in the console:
+
+```{r eval=FALSE}
+df_flights
+kable(df_flights)
+```
+
+At first glance, 
+it may not appear that there is much difference in the outputs. 
+However, when using tools for producing reproducible reports such as 
+[R Markdown](http://rmarkdown.rstudio.com/lesson-1.html), 
+the latter code produces output that is much more legible and reader-friendly. 
+You'll see us use this reader-friendly style in many places in the book 
+when we want to print a data frame as a nice table.
+
+**4. `$` operator**
+
+Lastly, the `$` operator \index{operators!dollar sign} 
+allows us to extract and then explore a single variable within a data frame. 
+For example, run the following in your console
+
+```{r eval=FALSE}
+df_flights$carrier
+```
+
+We used the `$` operator to extract only the `carrier` variable 
+and return it as a vector of length 16\index{vectors}. 
+We'll only be occasionally exploring data frames using the `$` operator, 
+instead favoring the `View()` and `glimpse()` functions.
+
+
+### Identification and measurement variables {#identification-vs-measurement-variables}
+
+There is a subtle difference between the kinds of variables 
+that you will encounter in data frames. 
+There are *identification variables* and *measurement variables*. 
+For example, let's explore another data frame, `airports`,  
+using the function we have just used, `dplyr::glimpse`.
+
+```{r}
+import::from(nycflights13, df_airports = flights)
+dplyr::glimpse(df_airports)
+```
+
+The data frame `df_airports` contains names, codes, and locations of 1000+ 
+US airports. 
+The variables `faa` and `name` are what we will call *identification variables*, 
+variables that uniquely identify each observational unit. 
+In this case, the identification variables uniquely identify airports. 
+Such variables are mainly used in practice to uniquely identify 
+each row in a data frame. 
+`faa` gives the unique code provided by the FAA for that airport, 
+while the `name` variable gives the longer official name of the airport. 
+The remaining variables (`lat`, `lon`, `alt`, `tz`, `dst`, `tzone`) 
+are often called *measurement* or *characteristic* variables: 
+variables that describe properties of each observational unit. 
+For example, 
+`lat` and `long` describe the latitude and longitude of each airport. 
+
+Furthermore, sometimes a single variable might not be enough 
+to uniquely identify each observational unit: 
+combinations of variables might be needed. 
+While it is not an absolute rule, 
+for organizational purposes it is considered good practice 
+to have your identification variables 
+in the leftmost columns of your data frame.
+
+```{block lc3-3c, type="learncheck", purl=FALSE}
+\vspace{-0.15in}
+**_Learning check_**
+\vspace{-0.1in}
+```
+
+**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
+What properties of each airport do the variables 
+`lat`, `lon`, `alt`, `tz`, `dst`, and `tzone` 
+describe in the `airports` data frame? Take your best guess.
+
+**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
+Provide the names of variables in a data frame with 
+at least three variables where one of them is an identification variable 
+and the other two are not. 
+Further, create your own tidy data frame that matches these conditions.
+
+```{block, type="learncheck", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+
+### Help files
+
+`R` comes with a comprehensive "how-to" manual. 
+Let's try to use it: 
+
+```{r eval=F}
+help("flights", package="nycflights13")
+```
+
+
+This is another nice feature of R: its vast collection of help files, 
+which provide documentation for various functions and datasets. 
+
+A shorthand for the `help` function is 
+by adding a `?` \index{operators!?} before the name of inquiry. 
+You will then be presented with a page showing the corresponding documentation 
+if it exists.  
+
+
+```{r eval=F}
+# This is equivalent to help("flights", package="nycflights13")
+?nycflights13::flights
+```
+
+
+```{block lc4, type="learncheck", purl=FALSE}
+\vspace{-0.15in}
+**_Learning check_**
+\vspace{-0.1in}
+```
+
+**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
+What happens when you type `?flights` into the console? 
+How about `?cars`?
+
+```{block, type="learncheck", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+## Conclusion
+
+We've given you what we feel is a minimally viable set of tools 
+to explore data in R. 
+Does this chapter contain everything you need to know? 
+Absolutely not. 
+To try to include everything in this chapter would make the chapter 
+so large it wouldn't be useful! 
+As we said earlier, 
+the best way to add to your toolbox is to get into RStudio 
+and run and write code as much as possible.
+
+
+### Additional resources
+
+If you are new to the world of coding, R, and RStudio 
+and feel you could benefit from a more detailed introduction, 
+we suggest you check out the short book, 
+[*Getting Used to R, RStudio, and R Markdown*](https://rbasics.netlify.app/) 
+[@usedtor2016]. It includes screencast recordings 
+that you can follow along and pause as you learn. 
+This book also contains an introduction to R Markdown, 
+a tool used for reproducible research in R.
+
+(ref:ismay-book) Preview of *Getting Used to R, RStudio, and R Markdown*.
+
+```{r echo=FALSE, fig.cap="(ref:ismay-book)", purl=FALSE}
+knitr::include_graphics(here::here("docs", "images", "copyright", 
+                            "getting-used-to-R.png"))
+```   
+
+
+### What's to come?
+
+We're now going to start the "Data Science with `tidyverse`" portion 
+of this book in Chapter \@ref(viz) as shown 
+in Figure \@ref(fig:moderndive-flowchart) 
+with what we feel is the most important tool in a data scientist's toolbox: 
+data visualization. 
+We'll continue to explore the data included in the `nycflights13` package 
+using the `ggplot2` package for data visualization. 
+You'll see that data visualization is a powerful tool 
+to add to your toolbox for data exploration 
+that provides additional insight 
+to what the `View()` and `glimpse()` functions can provide. 
+
+(ref:flowchart2) *ModernDive* flowchart - on to Part I!
+
+```{r moderndive-flowchart, echo=FALSE, fig.cap="(ref:flowchart2)", out.width="100%", out.height="100%", purl=FALSE}
+knitr::include_graphics(here::here("docs", "images", "flowcharts", "flowchart", 
+                                   "flowchart.004.png"))
+```

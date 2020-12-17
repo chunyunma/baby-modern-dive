@@ -1,11 +1,12 @@
 --- 
 title: "Baby Modern Dive"
-author: "Chunyun Ma, Chester Ismay, Albert Y. Kim"
+subtitle: "A ModernDive into R and the Tidyverse"
+author: "Chester Ismay, Albert Y. Kim, Chunyun Ma"
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 output: bookdown::gitbook
 documentclass: book
-bibliography: [bib/teaching_2021W.bib, bib/packages.bib]
+bibliography: [bib/books.bib, bib/packages.bib]
 biblio-style: "apalike"
 link-citations: yes
 github-repo: chunyunma/baby-modern-dive
@@ -80,61 +81,7 @@ kn$write_bib(
 
 This is the website for the course notes of CGSC5101/HCIN5400. 
 
-## What's with the name? {-}
+</br>
 
-The material is largely based on a book called "Modern Dive". 
-<!-- may expand the list of inspirations -->
-I first stumbled upon the book 
-when I was preparing for teaching this course in 2019. 
-I personally benefited greatly from reading the book, 
-and teaching a course using its material.
-
-## Who are the players? {-}
-
-### You professor {-}
-
-My background
-
-My history with teaching this course and teaching stats in general
-
-#### Why choosing R {-}
-
-#### What do I hope to deliver, content-wise {-}
-
-<!-- stats vs. data science 
-see "What we hope you will learn from this hope in Preface"
-A modified version:
-Experience the life cycle of a data analysis pipeline 
-from raw data to meaninful narration, ready for readers 
-of various background. This entails: 
-- data wrangling (maybe a different term is better)
-- Apply appropriate model to the data
-- "decode" output filled with technical jargons, interpret results, make inferences
-- Learn how to use R to turn the process reproducible
-There are more minor objectives, but these should give a high-level overview
-
-Elaborate on reproducible research
--->
-
-### Your teaching assistant {-}
-
-### Your peers {-}
-
-## Playground rules {-}
-
-### Communication policy {-}
-
-What worked last term
-
-### Minimize distraction {-}
-
-### Structure of each lecture {-}
-
-theory + hands-on
-
-
-### Syllabus & assignments {-}
-
-
-### Datacamp {-}
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />This work by [Chester Ismay](https://chester.rbind.io/), [Albert Y. Kim](https://rudeboybert.rbind.io/), and Chunyun Ma is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
 

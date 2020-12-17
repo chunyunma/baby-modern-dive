@@ -1,7 +1,10 @@
 bookdown::gitbook:
-  css: style.css
+  css: "style.css"
+  # split_by: "section+number"
   config:
     toc:
+      collapse: section
+      scroll_highlight: true
       before: |
         <li><a href="./">Baby Modern Dive</a></li>
       after: |
@@ -10,11 +13,11 @@ bookdown::gitbook:
     sharing: 
       github: yes
       facebook: no
-    download: ["pdf", "epub"]
-bookdown::pdf_book:
-  includes:
-    in_header: preamble.tex
-  latex_engine: xelatex
-  citation_package: natbib
-  keep_tex: yes
-bookdown::epub_book: default
+#     download: ["pdf", "epub"]
+# bookdown::pdf_book:
+#   includes:
+#     in_header: preamble.tex
+#   latex_engine: xelatex
+#   citation_package: natbib
+#   keep_tex: yes
+# bookdown::epub_book: default

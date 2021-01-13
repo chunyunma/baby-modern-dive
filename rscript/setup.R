@@ -51,8 +51,12 @@ if (!dir.exists(here::here("docs", "images"))) {
 #
 knitr::opts_chunk$set(
 	echo = TRUE, 
+	eval = TRUE, 
+	warning = FALSE, 
+	message = TRUE, 
 	results = "hold", 
   tidy = FALSE,
+	purl = TRUE, 
   out.width = "100%",
   fig.align = "center",
 	fig.width = 8, 

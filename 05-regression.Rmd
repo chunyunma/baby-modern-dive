@@ -1,0 +1,1758 @@
+(ref:moderndivepart) Data Modeling with `moderndive`
+
+```{r echo=FALSE, results="asis", purl=FALSE}
+cat("# (PART) Data Modeling with moderndive {-} ")
+```
+
+# Simple linear Regression with a continuous predictor {#simple-regression}
+<!-- # Basic Regression {#regression} -->
+
+```{r include=FALSE, purl=FALSE}
+# Used to define Learning Check numbers:
+chap <- 5
+lc <- 0
+
+# Set output digit precision
+options(scipen = 99, digits = 3)
+
+# Set random number generator see value for replicable pseudorandomness.
+set.seed(76)
+```
+
+Now that we are equipped with data visualization skills 
+from Chapter \@ref(viz), data wrangling skills from Chapter \@ref(wrangling), 
+and an understanding of how to import data 
+and the concept of a "tidy" data format from Chapter \@ref(tidy), 
+let's now proceed with data modeling. 
+The fundamental premise of data modeling 
+is to make explicit the relationship between:
+
+* an *outcome variable* $y$, also called a *dependent variable* 
+  or response variable, \index{variables!response / outcome / dependent} and
+* an *explanatory/predictor variable* $x$, 
+  also called an *independent variable* 
+  or \index{variables!explanatory / predictor / independent} covariate.
+
+Another way to state this is using mathematical terminology: 
+we will model the outcome variable $y$ "as a function" 
+of the explanatory/predictor variable $x$. 
+When we say "function" here, 
+we aren't referring to functions in R like the `ggplot()` function, 
+but rather as a mathematical function. 
+But, why do we have two different labels, explanatory and predictor, 
+for the variable $x$? 
+That's because even though the two terms are often used interchangeably, 
+roughly speaking data modeling serves one of two purposes:
+
+1. **Modeling for explanation**: 
+   When you want to explicitly describe and quantify the relationship 
+   between the outcome variable $y$ and a set of explanatory variables $x$, 
+   determine the significance of any relationships, 
+   have measures summarizing these relationships, 
+   and possibly identify any *causal* relationships between the variables. 
+1. **Modeling for prediction**: 
+   When you want to predict an outcome variable $y$ 
+   based on the information contained in a set of predictor variables $x$. 
+   Unlike modeling for explanation, however, 
+   you don't care so much about understanding 
+   how all the variables relate and interact with one another, 
+   but rather only whether you can make good predictions 
+   about $y$ using the information in $x$.
+
+For example, 
+say you are interested in an outcome variable $y$ 
+of whether patients develop lung cancer 
+and information $x$ on their risk factors, 
+such as smoking habits, age, and socioeconomic status. 
+If we are modeling for explanation, 
+we would be interested in both describing and quantifying 
+the effects of the different risk factors. 
+One reason could be that you want to design an intervention 
+to reduce lung cancer incidence in a population, 
+such as targeting smokers of a specific age group 
+with advertising for smoking cessation programs. 
+If we are modeling for prediction, however, 
+we wouldn't care so much about understanding 
+how all the individual risk factors contribute to lung cancer, 
+but rather only whether we can make good predictions 
+of which people will contract lung cancer.
+
+In this course, we'll focus on modeling for explanation 
+and hence refer to $x$ as *explanatory variables*. 
+If you are interested in learning about modeling for prediction, 
+we suggest you check out books and courses on the field of 
+*machine learning* such as 
+[*An Introduction to Statistical Learning with Applications in R (ISLR)*]
+(http://www-bcf.usc.edu/~gareth/ISL/) 
+[@islr2017]. 
+
+In this chapter, we'll focus on one particular technique: 
+*linear regression*. \index{regression!linear} 
+Linear regression is one of the most commonly-used 
+and easy-to-understand approaches to modeling.
+Linear regression involves a *numerical* outcome variable $y$ 
+and explanatory variables $x$ that are either *numerical* or *categorical*. 
+Furthermore, the relationship between $y$ and $x$ 
+is assumed to be linear, or in other words, a line. 
+<!-- For categorical varialbes, [TODO] -->
+<!-- However, we'll see that what constitutes a "line"  -->
+<!-- will vary depending on the nature of your explanatory variables $x$. -->
+
+In Chapter \@ref(regression) on basic regression, 
+we'll only consider models with one numerical explanatory variable $x$ 
+This scenario is known as *simple linear regression*. 
+<!-- In Section \@ref(model2), the explanatory variable will be categorical. -->
+
+In Chapter \@ref(multiple-regression) on multiple regression, 
+we'll extend the ideas behind basic regression 
+and consider models with two explanatory variables $x_1$ and $x_2$.  
+In Section \@ref(model4), we'll have two numerical explanatory variables. 
+In Section \@ref(model3), we'll have one numerical 
+and one categorical explanatory variable. 
+In particular, we'll consider two such models: 
+*interaction* and *parallel slopes* models.
+
+In Chapter \@ref(inference-for-regression) 
+on inference for regression, 
+we'll revisit our regression models and analyze the results 
+using the tools for *statistical inference* you'll develop 
+in Chapters \@ref(sampling), \@ref(confidence-intervals), 
+and \@ref(hypothesis-testing) on sampling, bootstrapping 
+and confidence intervals, and hypothesis testing and $p$-values, respectively.
+
+Let's now begin with basic regression, 
+\index{regression!basic} which refers to linear regression models 
+with a single explanatory variable $x$. 
+We'll also discuss important statistical concepts 
+such as the *correlation coefficient*, 
+that "correlation isn't necessarily causation," 
+and what it means for a line to be "best-fitting."
+
+
+### Needed packages {-#reg-packages}
+
+<!-- Let's now load all the packages needed for this chapter ... -->
+
+Let's get ready all the packages we will need for this chapter. 
+
+
+```{r load-package, eval=F}
+# Install xfun so that I can use xfun::pkg_load2
+if (find.package('xfun') == '') install.packages('xfun')
+xf <- loadNamespace('xfun')
+
+cran_primary <- c(
+                  "dplyr", 
+                  "gapminder", 
+                  "ggplot2", 
+                  "moderndive", 
+                  "skimr"
+)
+cran_secondary <- c(
+                    "broom", 
+                    "janitor", 
+                    "kableExtra", 
+                    "mvtnorm", 
+                    "patchwork", 
+                    "readr", 
+                    "scales", 
+                    "stringr", 
+                    "tibble"
+)
+
+if (length(cran_primary) != 0) xf$pkg_load2(cran_primary)
+if (length(cran_secondary != 0) xf$pkg_load2(cran_secondary)
+
+gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
+
+import::from(magrittr, '%>%')
+import::from(patchwork, .all=TRUE)
+```
+
+```{r import-pkg, echo=F, message=FALSE, warning=FALSE}
+gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
+
+import::from(magrittr, '%>%')
+import::from(patchwork, .all=TRUE)
+```
+
+
+
+<!-- ## One numerical explanatory variable {#model1} -->
+
+Recall one of the examples we saw in chapter \@ref(viz), 
+in which Hans Rosling discussed global economy, health, and development. 
+Let's use a slice of the same dataset, 
+and try to replicate his analyses partially. 
+Specifically, we will try to explain differences 
+in average life expectancy of a country
+as a function of one numerical variable: average income of that country. 
+Could it be that countries with higher average income
+also have higher average life expectancy? 
+Could it be that countries with higher average income
+tend to have lower average life expectancy?
+Or could it be that there is no monotonic relationship between 
+average income and average life expectancy? 
+We'll answer these questions 
+by modeling the relationship between income and life expectancy 
+using *simple linear regression* \index{regression!simple linear} where we have:
+
+
+1. A numerical outcome variable $y$ (the average life expectancy) and
+1. A single numerical explanatory variable $x$ (a country's average income).
+
+```{r df_gapminder2007, echo=FALSE, purl=FALSE}
+df_gapminder2007 <- gapminder::gapminder %>%
+  dp$filter(year == 2007) %>%
+  dp$select(-year) %>%
+  dp$rename(
+            life_exp = lifeExp,
+            gdp_per_cap = gdpPercap
+            ) %>% 
+  dp$mutate(income = log10(gdp_per_cap)*10000)
+```
+
+```{r n_countries, echo=FALSE, purl=FALSE}
+# This code is used for dynamic non-static in-line text output purposes
+n_countries <- nrow(df_gapminder2007)
+```
+
+
+
+## Exploratory data analysis {#model1EDA}
+<!-- ### Exploratory data analysis {#model1EDA} -->
+
+The data on the `r n_countries` countries
+can be found in the `gapminder` data frame. 
+To keep things simple, let's `filter()` only the 2007 data 
+and save this data in a new data frame called `df_gapminder2007`. 
+
+```{r eval=FALSE, purl=FALSE}
+df_gapminder2007 <- gapminder::gapminder %>%
+  dp$filter(year == 2007) %>%
+  dp$select(-year) %>%
+  dp$rename(
+            life_exp = lifeExp,
+            gdp_per_cap = gdpPercap
+            ) %>% 
+  # [TODO] need to explain the next line
+  dp$mutate(income = log10(gdp_per_cap)*10000)
+```
+
+A crucial step before doing any kind of analysis or modeling 
+is performing an *exploratory data analysis*, 
+\index{data analysis!exploratory} or EDA for short. 
+EDA gives you a sense of the distributions of the individual variables 
+in your data, whether any potential relationships exist between variables, 
+whether there are outliers and/or missing values, 
+and (most importantly) how to build your model. 
+Here are three common steps in an EDA:
+
+1. Most crucially, looking at the raw data values.
+1. Computing summary statistics, 
+   such as means, medians, and interquartile ranges.
+1. Creating data visualizations.
+
+Let's perform the first common step in an exploratory data analysis: 
+looking at the raw data values. 
+Because this step seems so trivial, 
+unfortunately many data analysts ignore it. 
+However, getting an early sense of what your raw data looks like 
+can often prevent many larger issues down the road. 
+
+You can do this by using RStudio's spreadsheet viewer 
+or by using the `glimpse()` function 
+as introduced in Subsection \@ref(exploredataframes) on exploring data frames:
+
+```{r}
+tibble::glimpse(df_gapminder2007)
+```
+
+
+Observe that ``Observations: `r n_countries` `` indicates that 
+there are `r n_countries` rows/observations in `df_gapminder2007`, 
+where each row corresponds to one observed country. 
+
+
+A full documentation of the dataset `gapminder`, including its background, 
+can be found at [gapminder.org](https://www.gapminder.org/data/documentation/). 
+
+A full description of all the variables included in `gapminder` 
+can be found in its associated help file (run `?gapminder` in the console). 
+
+Here is a brief description of `r df_gapminder2007 %>% ncol()` variables 
+we selected in `df_gapminder2007`:
+
+1. **country**: Name of country.
+
+1. **continent**: Which of the five continents the country is part of. 
+   Note that "Americas" includes countries in both North and South America 
+   and that Antarctica is excluded.
+
+1. **life_exp**: Life expectancy in years.
+
+1. **pop**: Population, number of people living in the country.
+
+1. **gdp_per_cap**: Gross domestic product (GDP, in US dollars).
+
+1. **income**: log-transformed gdp_per_cap, a proxy for average income
+
+
+<!-- Expand [TODO] -->
+```{block types-of-data, type="btw", purl=FALSE}
+\vspace{-0.15in}
+**_Types of data_**
+
+\vspace{-0.1in}
+```
+
+nominal, ordinal, interval, ratio
+
+
+```{block type="btw", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+An alternative way to look at the raw data values 
+is by choosing a random sample of the rows in `df_gapminder2007` 
+by piping it into the `sample_n()` \index{dplyr!sample\_n()} function 
+from the `dplyr` package. 
+Here we set the `size` argument to be `5`, 
+indicating that we want a random sample of 5 rows. 
+We display the results in Table \@ref(tab:five-random-countries). 
+Note that due to the random nature of the sampling, 
+you will likely end up with a different subset of 5 rows.
+
+```{r eval=FALSE}
+df_gapminder2007 %>%
+  dp$sample_n(5) %>%
+```
+
+```{r five-random-countries, echo=FALSE, purl=FALSE}
+df_gapminder2007 %>%
+  dp$sample_n(5) %>%
+  knitr::kable(
+    digits = 3,
+    caption = "A random sample of 5 out of the 142 countries in year 2007",
+    booktabs = TRUE,
+    linesep = ""
+  )
+```
+
+### Summary statistics - univariate
+
+Now that we've looked at the raw values in our `df_gapminder2007` data frame 
+and got a preliminary sense of the data, 
+let's move on to the next common step in an exploratory data analysis: 
+computing summary statistics. 
+Let's start by computing the mean and median 
+of our numerical outcome variable `life_exp` 
+and our numerical explanatory variable `income`. 
+We'll do this by using the `summarize()` function from `dplyr` 
+along with the `mean()` and `median()` summary functions 
+we saw in Section \@ref(summarize).
+
+```{r}
+df_gapminder2007 %>%
+  dp$summarize(mean_life_exp = mean(life_exp), mean_income = mean(income),
+            median_life_exp = median(life_exp), median_income = median(income))
+```
+
+However, what if we want other summary statistics as well, 
+such as the standard deviation (a measure of spread), 
+the minimum and maximum values, and various percentiles? 
+
+Typing out all these summary statistic functions in `summarize()` 
+would be long and tedious. 
+Instead, let's use the convenient `skim()` function 
+from the `skimr` \index{R packages!skimr!skim()} package. 
+This function takes in a data frame, 
+"skims" it, and returns commonly used summary statistics. 
+Let's take our `df_gapminder2007` data frame, 
+`select()` only the outcome and explanatory variables 
+`life_exp` and `income`, and pipe them into the `skim()` function:
+
+```{r gapminder-summary}
+df_gapminder2007 %>% 
+  dp$select(life_exp, income) %>% 
+  skimr::skim_without_charts()
+```
+
+
+```{block summary-statistics, type="btw", purl=FALSE}
+\vspace{-0.15in}
+**_Mean and Median_**
+\vspace{-0.1in}
+```
+What is mean?
+What is median?
+
+```{block, type="btw", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+For the numerical variables  `life_exp` and `income` it returns:
+
+- `n_missing`: the number of missing values
+- `complete_rate`: the percentage of non-missing or complete values
+- `mean`: the average
+- `sd`: the standard deviation
+- `p0`: the 0th percentile: 
+  the value at which 0% of observations are smaller than it 
+  (a.k.a. the *minimum* value)
+- `p25`: the 25th percentile: 
+  the value at which 25% of observations are smaller than it 
+  (a.k.a. the *1st quartile*)
+- `p50`: the 50th percentile: 
+  the value at which 50% of observations are smaller than it 
+  (the *2nd* quartile and more commonly called the *median*)
+- `p75`: the 75th percentile: 
+  the value at which 75% of observations are smaller than it 
+  (the *3rd quartile*)
+- `p100`: the 100th percentile: 
+  the value at which 100% of observations are smaller than it 
+  (the *maximum* value)
+
+Looking at this output, we can see how the values of both variables distribute. 
+For example, the mean life expectancy was 67 years, 
+whereas the mean income was $37,418. 
+
+To understand the percentiles, let's put them in the context. 
+
+```{r gapminder-boxplots, fig.cap = "", warning = FALSE}
+gg$ggplot(df_gapminder2007, 
+          mapping = gg$aes(x = "", y = life_exp)) + 
+  # `x = ""` is necessary when there is only one vector to plot
+  gg$geom_boxplot(outlier.colour = "hotpink") + 
+  # add the mean to the boxplot
+  gg$stat_summary(fun=mean, geom="point", shape=5, size=4) + 
+	gg$geom_jitter(width = 0.1, height = 0, alpha = 0.2) + 
+  # remove x axis title
+  gg$theme(axis.title.x = gg$element_blank())
+
+gg$ggplot(df_gapminder2007, 
+          mapping = gg$aes(x = "", y = income)) + 
+  # `x = ""` is necessary when there is only one vector to plot
+  gg$geom_boxplot(outlier.colour = "hotpink") + 
+  # add the mean to the boxplot
+  gg$stat_summary(fun=mean, geom="point", shape=5, size=4) + 
+	gg$geom_jitter(width = 0.1, height = 0, alpha = 0.2) + 
+  # remove x axis title
+  gg$theme(axis.title.x = gg$element_blank())
+```
+
+
+The middle 50% of life expectancy was between 57 to 76 years 
+(the first p25, and third quartiles, p75), 
+whereas the middle 50% of income falls within $32,106 to $42,555.
+
+<!-- #### Summary statistics - bivariate -->
+### Summary statistics - bivariate
+
+Since both the `life_exp` and `income` variables are numerical, 
+we can also apply a *scatterplot* to visualize this data. 
+Let's do this using `geom_point()` 
+and display the result in Figure \@ref(fig:numxplot1). 
+
+
+```{r numxplot1, echo=FALSE, fig.cap="Life Expectancy and Average Income", fig.height=4.5, purl=FALSE}
+(p1_gapminder2007 <- gg$ggplot(df_gapminder2007, 
+                           mapping = gg$aes(y = life_exp, x = income)) + 
+    gg$geom_point() + 
+    gg$labs(x = "Income", y = "Life Expectancy", 
+       title = "Relationship of wealth and health") + 
+    gg$scale_x_continuous(breaks=seq(20000,50000,4000)))
+```
+
+As the average income level increases, 
+life expectancy also tends to go up. 
+However, this relationship is not strictly linear. 
+Instead of tightly hugging the imaginary line that goes from bottom left 
+to upper right, 
+as should be in a strictly linear relationship, 
+some of the dots deviated, such as the ones highlighted in red in figure xx. 
+
+Such deviation have implications for the strength of correlation coefficient 
+between income and life expectancy. 
+
+
+```{block ?, type="btw", purl=FALSE}
+\vspace{-0.15in}
+**_logrithmic_**
+
+\vspace{-0.1in}
+```
+Compare Figure \@ref(fig:numxplot1) to the following:
+
+```{r eval = FALSE}
+# Code not run. Try on your own.
+gg$ggplot(df_gapminder2007, 
+          mapping = gg$aes(y = life_exp, x = gdp_per_cap)) + 
+  gg$geom_point() + 
+  gg$labs(title = "Relationship of wealth and health")
+
+# plot with gdpPercap with log-scaled x axis 
+gg$ggplot(df_gapminder2007, 
+            mapping = gg$aes(y = life_exp, x = gdp_per_cap)) + 
+  gg$ geom_point() + 
+  gg$scale_x_log10() + 
+  gg$labs(title = "Relationship of wealth and health")
+```
+
+
+```{block, type="btw", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+
+When two variables are numerical, 
+we can compute the \index{correlation (coefficient)} *correlation coefficient* 
+between them. 
+Generally speaking, *coefficients* are quantitative expressions 
+of a specific phenomenon.  
+A *correlation coefficient* is a quantitative expression 
+of the *strength of the linear relationship between two numerical variables*. 
+Its value ranges between -1 and 1 where:
+
+* -1 indicates a perfect *negative relationship*: 
+  As one variable increases, 
+  the value of the other variable tends to go down, following a straight line.
+* 0 indicates no relationship: 
+  The values of both variables go up/down independently of each other.
+* +1 indicates a perfect *positive relationship*: 
+  As the value of one variable goes up, 
+  the value of the other variable tends to go up as well in a linear fashion.
+
+
+A [rule of thumb](https://ocul-crl.primo.exlibrisgroup.com/permalink/01OCUL_CRL/1s70ib5/alma991014673689705153):
+
++ [.1, .3]: weak
+
++ [.3, .5]: moderate
+
++ [.5, 1.): strong
+
+
+Figure \@ref(fig:correlation1) gives examples 
+of 9 different correlation coefficient values 
+for hypothetical numerical variables $x$ and $y$. 
+For example, observe in the top right plot 
+that for a correlation coefficient of -0.75 
+there is a negative linear relationship between $x$ and $y$, 
+but it is not as strong as the negative linear relationship 
+between $x$ and $y$ when the correlation coefficient is -0.9 or -1.
+
+```{r correlation1, echo=FALSE, fig.cap="Nine different correlation coefficients.", purl=FALSE}
+correlation <- c(-0.9999, -0.9, -0.75, -0.3, 0, 0.3, 0.75, 0.9, 0.9999)
+n_sim <- 100
+values <- NULL
+for (i in seq_along(correlation)) {
+  rho <- correlation[i]
+  sigma <- matrix(c(5, rho * sqrt(50), rho * sqrt(50), 10), 2, 2)
+  sim <- mvtnorm::rmvnorm(
+    n = n_sim,
+    mean = c(20, 40),
+    sigma = sigma
+  ) %>%
+    as.data.frame() %>%
+    tibble::as_tibble() %>%
+    dp$mutate(correlation = round(rho, 2))
+
+  values <- dp$bind_rows(values, sim)
+}
+
+corr_plot <- gg$ggplot(data = values, mapping = gg$aes(V1, V2)) +
+  gg$geom_point() +
+  gg$facet_wrap(~correlation, ncol = 3) +
+  gg$labs(x = "x", y = "y") +
+  gg$theme(
+    axis.text.x = gg$element_blank(),
+    axis.text.y = gg$element_blank(),
+    axis.ticks = gg$element_blank()
+  )
+
+corr_plot
+```
+
+Previously, we used `skim()` function to compute what are known as *univariate* 
+\index{univariate} summary statistics: 
+functions that take a single variable 
+and return some numerical summary of that variable. 
+However, there also exist *bivariate* \index{bivariate} summary statistics: 
+functions that take in two variables 
+and return some summary of those two variables; 
+such as a correlation coefficient.
+
+The correlation coefficient can be computed using the `get_correlation()` 
+\index{moderndive!get\_correlation()} function in the `moderndive` package. 
+In this case, the inputs to the function are the two numerical variables 
+for which we want to calculate the correlation coefficient. 
+
+We put the name of the outcome variable on the left-hand side 
+of the `~` "tilde" sign, 
+while putting the name of the explanatory variable on the right-hand side. 
+This is known as R's \index{R!formula notation} *formula notation*. 
+We will use this same "formula" syntax with regression later in this chapter.
+
+```{r}
+df_gapminder2007 %>% 
+  moderndive::get_correlation(formula = income ~ life_exp)
+```
+
+An alternative way to compute correlation 
+is to use the `cor()` summary function within a `summarize()`:
+
+```{r, eval=FALSE}
+df_gapminder2007 %>% 
+  dp$summarize(correlation = cor(income, life_exp))
+```
+
+```{r echo=FALSE, purl=FALSE}
+cor_gapminder <- df_gapminder2007 %>%
+  dp$summarize(correlation = cor(income, life_exp)) %>%
+  round(3) %>%
+  dp$pull()
+```
+
+In our case, the correlation coefficient of `r cor_gapminder` 
+indicates that the relationship between life expectancy 
+and income is "strongly positive." 
+There is a certain amount of subjectivity 
+in interpreting correlation coefficients, 
+especially those that aren't close to the extreme values of -1, 0, and 1. 
+To develop your intuition about correlation coefficients, 
+play the "Guess the Correlation" 1980's style video game 
+mentioned in Subsection \@ref(additional-resources-basic-regression).
+
+
+### Recap
+
+- A typical EDA (exploratory data analysis) includes: 
+  eyeball raw data, summary statistics, visualize
+- EDA is not the same as data snooping
+
+
+<!-- ## Simple linear Regression with a continuous predictor {#model1table} -->
+## Model fitting {#model1table}
+
+Let's build on the scatterplot in Figure \@ref(fig:numxplot1) 
+by adding a "best-fitting" line: 
+of all possible lines we can draw on this scatterplot, 
+it is the line that "best" fits through the cloud of points. 
+We do this by adding a new `geom_smooth(method = "lm", se = FALSE)` layer 
+to the `ggplot()` code that created the scatterplot 
+in Figure \@ref(fig:numxplot1). 
+The `method = "lm"` argument sets the line to be a "`l`inear `m`odel." 
+The `se = FALSE` \index{ggplot2!geom\_smooth()} argument 
+suppresses _standard error_ uncertainty bars. 
+(We'll define the concept of _standard error_ later 
+in Subsection \@ref(sampling-definitions).)
+
+```{r numxplot3, fig.cap="Regression line.", message=FALSE}
+gg$ggplot(df_gapminder2007, 
+          mapping = gg$aes(x = income, y = life_exp)) +
+  gg$geom_point() +
+  gg$labs(x = "Income", y = "Life Expectancy",
+       title = "Average Income and Life Expectancy") +  
+  gg$geom_smooth(method = "lm", se = FALSE)
+```
+
+The line in the resulting Figure \@ref(fig:numxplot3) 
+is called a "regression line." 
+The regression line \index{regression!line} is a visual summary 
+of the relationship between two numerical variables, 
+in our case the outcome variable `life_exp` 
+and the explanatory variable `income`. 
+The positive slope of the blue line is consistent 
+with our earlier observed correlation coefficient of `cor_gapminder` 
+suggesting that there is a positive relationship 
+between these two variables: as the average income of a country increases, 
+so does the life expectancy in this country. 
+We'll see later, however, that while the correlation coefficient 
+and the slope of a regression line always have the same sign 
+(positive or negative), they typically do not have the same value.
+
+
+### Find the best fitting line
+
+Notice where the blue line was relative to the data points? 
+Why was it here? 
+Can I move it higher? Or tilt it ever so slightly to the left or right? 
+How do we decide the precise location of the line?
+
+Try this exercise:
+<http://www.shodor.org/interactivate/activities/Regression/>
+
+In the exercise, what criteria were you using 
+when you try to decide the best line? 
+Intuitively, you try to place the line as close as possible 
+to all the data points. 
+But similar to most cases in reality, 
+whenever you place the line closer to some datapoints, 
+you risk moving the line too far away from other data points. 
+You tried to balance. 
+
+Finding a line that is as close as possible to all data pionts, 
+is equivalent to finding a line that minimizes the distances 
+from all the data points to the line combined. 
+To express this idea in a quasi-formula:
+
+> **Slope/intercept of the best line | min ($\sum$ distance from $y_i$ to the best line)**
+
+Let's try to unpack this idea a bit. 
+But first, I need to introduce a few terms.
+
+#### fitted vs. observed {-}
+
+```{r echo = FALSE}
+index <- which(df_gapminder2007$country == "Japan")
+health_model <- lm(life_exp ~ income, data = df_gapminder2007)
+target_point <- health_model %>%
+  moderndive::get_regression_points() %>%
+  dp$slice(index)
+x <- target_point$income
+y <- target_point$life_exp
+y_hat <- target_point$life_exp_hat
+resid <- target_point$residual
+```
+
+```{r residual, echo=FALSE, warning=FALSE, message=F, fig.cap="Example of observed value, fitted value, and residual."}
+(best_fit_plot <- gg$ggplot(df_gapminder2007, 
+                            mapping = gg$aes(x = income, y = life_exp)) +
+  gg$geom_point(color = "grey") +
+  gg$labs(x = "Income", y = "Life Expectancy",
+       title = "Relationship of health and wealth") + 
+  gg$geom_smooth(method = "lm", se = FALSE) +
+  gg$annotate("point", x = x, y = y_hat, col = "red", shape = 15, size = 3) +
+  gg$annotate("segment", x = x, xend = x, y = y, yend = y_hat, color = "blue",
+           arrow = gg$arrow(type = "closed", length = gg$unit(0.02, "npc"))) +
+  gg$annotate("point", x = x, y = y, col = "red", size = 2))
+```
+
+
+**The observed**:
+
+```{r echo = FALSE}
+df_gapminder2007 %>% 
+  dp$select(-gdp_per_cap, -pop) %>% 
+  dp$slice(index) %>%
+  knitr::kable(
+    digits = 4,
+    caption = "Actual income and life expectancy for Japan in 2007",
+    booktabs = TRUE,
+    linesep = ""
+  )
+```
+
+**The fitted**:
+
+```{r echo = FALSE}
+regression_points <- moderndive::get_regression_points(health_model)
+regression_points %>%
+  dp$slice(index) %>%
+  knitr::kable(
+    digits = 3,
+    caption = "Model estimated life expectancy for Japan",
+    booktabs = TRUE,
+    linesep = ""
+  )
+```
+
+**Residuals**: 
+
+```{r leastsquare, fig.cap = "", message=F, echo = FALSE}
+df_gapminder2007 %>% 
+  dp$mutate(predicted = predict(health_model)) %>% 
+  # gapminder2007$residuals <- residuals(health_model)
+  gg$ggplot(mapping = gg$aes(x = income, y = life_exp)) + 
+  gg$geom_smooth(method = "lm", se = FALSE, color = "lightgrey") +  
+  # Plot regression slope
+  gg$geom_segment(mapping = gg$aes(xend = income, yend = predicted), alpha = .2) +  
+  # alpha to fade lines
+  gg$geom_point() +
+  gg$geom_point(mapping = gg$aes(y = predicted), shape = 1) + 
+  gg$scale_x_continuous(breaks=seq(20000,50000,4000)) + 
+  gg$labs(x = "Income", y = "Life Expectancy",
+       title = "Relationship of health and wealth") +
+  gg$theme_bw()
+```
+
+Now let's revisit the idea of how the best line was found.  
+Recall this quasi-formula
+
+> **Slope/intercept of the best line | min ($\sum$ distance from $y_i$ to the best line)**
+
+Equipped with the new terms we just learned, it can be written more concisely:
+
+> **Slope/intercept of the best line | min ($\sum$ (observed - fitted))**
+
+or
+
+> **Slope/intercept of the best line | min ($\sum$ residuals)**
+
+
+In practice, it is slightly different, 
+purely for mathematical reasons 
+(squares are differentiable, absolute values are not; 
+sum of squares can be minimized analytically, i.e., without a computer's aid)
+
+> **Slope/intercept of the best line | min ($\sum$ residuals$^{2}$)**
+
+Now you can see why "the best fitting regression line" 
+is also called "the least-squares regression line".
+A regression line is "best-fitting" 
+in that it minimizes the sum of squared residuals, hence "lease-squares". 
+<!-- We present these mathematical criteria in Subsection \@ref(leastsquares),  -->
+
+```{block, type="learncheck", purl=FALSE}
+\vspace{-0.15in}
+**_Learning check_**
+\vspace{-0.1in}
+```
+
+**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
+??
+
+(a) Looking at the raw data values.
+(a) Computing summary statistics.
+(a) Creating data visualizations.
+
+What can you say about the relationship between 
+age and teaching scores based on this exploration?
+
+```{block, type="learncheck", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+
+You may recall from secondary/high school algebra 
+that the equation of a line is $y = a + b\cdot x$. 
+(Note that the $\cdot$ symbol is equivalent 
+to the $\times$ "multiply by" mathematical symbol. 
+We'll use the $\cdot$ symbol in the rest of this book as it is more succinct.) 
+It is defined by two coefficients $a$ and $b$. 
+The intercept coefficient $a$ is the value of $y$ when $x = 0$. 
+The slope coefficient $b$ for $x$ is the increase in $y$ 
+for every increase of one in $x$. 
+This is also called the "rise over run."
+
+However, when defining a regression line like the regression line 
+in Figure \@ref(fig:numxplot3), 
+we use slightly different notation: 
+the equation of the regression line is 
+$\widehat{y} = b_0 + b_1 \cdot x$ \index{regression!equation of a line}. 
+The intercept coefficient is $b_0$, 
+so $b_0$ is the value of $\widehat{y}$ when $x = 0$. 
+The slope coefficient for $x$ is $b_1$, 
+i.e., the increase in $\widehat{y}$ for every increase of one in $x$. 
+Why do we put a "hat" on top of the $y$? 
+It's a form of notation commonly used in regression 
+to indicate that we have a \index{regression!fitted value} "fitted value," 
+or the value of $y$ on the regression line for a given $x$ value. 
+We'll discuss this more in the upcoming Subsection \@ref(model1points).
+
+We know that the regression line in Figure \@ref(fig:numxplot3) 
+has a positive slope $b_1$ corresponding 
+to our explanatory $x$ variable `income`. 
+Why? Because as countries tend to have higher average `income`, 
+so also do they tend to have higher `life_exp`, or life expectancy.
+However, what is the numerical value of the slope $b_1$? 
+What about the intercept $b_0$?  
+Let's not compute these two values by hand, 
+but rather let's use a computer!
+
+We can obtain the values of the intercept $b_0$ 
+and the slope for `income` $b_1$ 
+by outputting a *linear regression table*. This is done in two steps:
+
+1. We first "fit" the linear regression model using the `lm()` function 
+   and save it in `health_model`.
+1. We get the regression table by applying the `get_regression_table()` 
+   \index{moderndive!get\_regression\_table()} function 
+   from the `moderndive` package to `health_model`.
+
+```{r, eval=FALSE}
+# Fit regression model:
+health_model <- lm(life_exp ~ income, data = df_gapminder2007)
+# Get regression table:
+moderndive::get_regression_table(health_model)
+```
+
+```{r, echo=FALSE, purl=FALSE}
+health_model <- lm(life_exp ~ income, data = df_gapminder2007)
+reg_line <- health_model %>%
+  moderndive::get_regression_table() %>%
+  dp$pull(estimate)
+```
+
+```{r regtable, echo=FALSE, purl=FALSE}
+moderndive::get_regression_table(health_model) %>%
+  knitr::kable(
+    digits = 3,
+    caption = "Linear regression table",
+    booktabs = TRUE,
+    linesep = ""
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = ifelse(knitr::is_latex_output(), 10, 16),
+    latex_options = c("hold_position")
+  )
+```
+
+Let's first focus on interpreting the regression table output 
+in Table \@ref(tab:regtable), 
+and then we'll later revisit the code that produced it. 
+In the `estimate` column of Table \@ref(tab:regtable) 
+are the intercept $b_0$ = `r reg_line[1]` 
+and the slope $b_1$ = `r reg_line[2]` for `income`. 
+Thus the equation of the regression line in Figure \@ref(fig:numxplot3) follows:
+
+$$
+\begin{aligned}
+\widehat{y} &= b_0 + b_1 \cdot x\\
+\widehat{\text{life_exp}} &= b_0 + b_{\text{income}} \cdot\text{income}\\
+&= `r reg_line[1] %>% round(2)` + `r reg_line[2]`\cdot\text{income}
+\end{aligned}
+$$
+
+Note how simplistic this regression line is 
+compared to `r nrow(df_gapminder2007)` of observations in the original dataset.
+
+In social science, it is very important to report both the rigorous stats 
+and what they mean in plain language. 
+In this example, it is not enough by just reporting the regression table 
+and the equation of the regression line. 
+As a good researcher, you are also expected to explain what these numbers mean.
+
+The intercept $b_0$ = `r reg_line[1]` is the average life expectancy 
+$\widehat{y}$ = $\widehat{\text{life_exp}}$ for those countries 
+that have an `income` of 0. 
+Or in graphical terms, 
+it's where the line intersects the $y$ axis when $x$ = 0. 
+Note, however, that while the intercept of the regression line 
+has a mathematical interpretation, 
+it has no *practical* interpretation here, 
+since it is unlikely that a country will have an average income of 0. 
+Furthermore, looking at the scatterplot with the regression line 
+in Figure \@ref(fig:numxplot3), 
+no country has an income level anywhere near 0.
+
+The more interesting parameter is the slope 
+$b_1$ = $b\_{\text{income}}$ for `income` of `r reg_line[2]`, 
+as this summarizes the relationship between the income levels 
+and life expectancies. 
+Note that the sign is positive, 
+suggesting a positive relationship between these two variables, 
+meaning countries with higher average income
+also tend to have longer life expectancy. 
+Formally, the slope is interpreted as:
+
+> 
+  For every increase of 1 unit in `income`, 
+  there is an *associated* increase of, *on average*, 
+  `r reg_line[2]` units of `life expectancy`.
+  Or, loosely speaking, for every increase of $1,000 in `income`, 
+  there is an *associated* `r reg_line[2]*1000` years increase in `life expectancy`. 
+
+
+Recall from earlier that the correlation coefficient is `r cor_gapminder`. 
+They both have the same positive sign, 
+but have a different value. 
+Compare the interpretation above to correlation's interpretation 
+as "strength of linear association".
+
+We only state that there is an *associated* increase and 
+not necessarily a *causal* increase. 
+For example, perhaps it's not that higher income levels 
+directly cause longer life expectancies per se. 
+Instead, the reverse could hold true: 
+longevity may lead to late retirement, 
+which would contribute to higher income level. 
+In other words, just because two variables are strongly associated, 
+it doesn't necessarily mean that one causes the other. 
+This is summed up in the often quoted phrase, 
+"correlation is not necessarily causation." 
+We discuss this idea further in Subsection on 
+\@ref(correlation-is-not-causation). 
+
+Furthermore, we say that this associated increase is *on average* 
+`r reg_line[2]` units of `life expectancy`, 
+because you might have two countries whose `income` levels 
+differ by 1000 dollars, 
+but their difference in life expectancies won't necessarily be exactly 
+`r reg_line[2]*1000` years (try for yourself). 
+What the slope of `r reg_line[2]` is saying is that 
+across all contries, the *average* difference in life expectancy 
+between two contries whose incomes differ by 1000 dollars 
+is `r reg_line[2]*1000` years.
+
+
+
+
+Now that we've learned how to compute the equation for the regression line 
+in Figure \@ref(fig:numxplot3) using the values in the `estimate` column 
+of Table \@ref(tab:regtable), 
+and how to interpret the resulting intercept and slope, 
+let's revisit the code that generated this table:
+
+```{r eval=FALSE}
+# Fit regression model:
+health_model <- lm(life_exp ~ income, data = df_gapminder2007)
+# Get regression table:
+moderndive::get_regression_table(health_model)
+```
+
+First, we "fit" the linear regression model to the `data` 
+using the `lm()` \index{lm()} function and save this as `health_model`. 
+When we say "fit", we mean  "find the best fitting line to this data." 
+`lm()` stands for "linear model" and is used as follows: 
+`lm(y ~ x, data = data_frame_name)` where:
+
+* `y` is the outcome variable, followed by a tilde `~`. 
+  In our case, `y` is set to `life_exp`.
+* `x` is the explanatory variable. In our case, `x` is set to `income`.
+* The combination of `y ~ x` is called a *model formula*. 
+  (Note the order of `y` and `x`.) 
+  In our case, the model formula is `life_exp ~ income`. 
+  We saw such model formulas earlier when we computed 
+  the correlation coefficient using the `get_correlation()` function 
+  in Subsection \@ref(model1EDA).
+* `data_frame_name` is the name of the data frame 
+  that contains the variables `y` and `x`. 
+  In our case, `data_frame_name` is the `df_gapminder2007` data frame.
+
+Second, we take the saved model in `score_model` 
+and apply the `get_regression_table()` function from the `moderndive` package 
+to it to obtain the regression table in Table \@ref(tab:regtable). 
+This function is an example of what's known in computer programming 
+as a *wrapper function*. \index{functions!wrapper} 
+They take other pre-existing functions 
+and "wrap" them into a single function that hides its inner workings.  
+This concept is illustrated in Figure \@ref(fig:moderndive-figure-wrapper).
+
+```{r moderndive-figure-wrapper, echo=FALSE, fig.cap="The concept of a wrapper function.", out.height="60%", out.width="60%", purl=FALSE}
+knitr::include_graphics(here::here(
+                                   "docs", 
+                                   "images", 
+                                   "shutterstock", 
+                                   "wrapper_function.png")
+)
+```
+
+So all you need to worry about is 
+what the inputs look like and what the outputs look like; 
+you leave all the other details "under the hood of the car." 
+In our regression modeling example, the `get_regression_table()` function 
+takes a saved `lm()` linear regression model as input 
+and returns a object of the regression table as output (which is saved 
+as type `data frame`). 
+If you're interested in learning more 
+about the `get_regression_table()` function's inner workings, 
+check out Subsection \@ref(underthehood).
+
+Lastly, you might be wondering what the remaining five columns 
+in Table \@ref(tab:regtable) are: `std_error`, `statistic`, `p_value`, 
+`lower_ci` and `upper_ci`. 
+They are the _standard error_, _test statistic_, _p-value_, 
+_lower 95% confidence interval bound_, 
+and _upper 95% confidence interval bound_. 
+They tell us about both the *statistical significance* 
+and *practical significance* of our results. 
+This is loosely the "meaningfulness" of our results 
+from a statistical perspective. 
+Let's put aside these ideas for now 
+and revisit them in Chapter 
+\@ref(inference-for-regression) on (statistical) inference for regression. 
+We'll do this after we've had a chance 
+to cover standard errors in Chapter \@ref(sampling), 
+confidence intervals in Chapter \@ref(confidence-intervals), 
+and hypothesis testing and $p$-values in Chapter \@ref(hypothesis-testing).
+
+```{block, type="learncheck", purl=FALSE}
+\vspace{-0.15in}
+**_Learning check_**
+\vspace{-0.1in}
+```
+
+**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
+??
+
+```{block, type="learncheck", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+
+### Observed/fitted values and residuals {#model1points}
+
+Now that we are equipped with the knowledge 
+of how to get the value of the intercept 
+and the slope of a regression line from the `estimate` column 
+of a regression table generated by the `get_regression_table()` function, 
+let's revisit the concepts we introduced earlier: 
+observed vs. fitted values. 
+For example, let's focus on 
+the 67th row of the `r n_countries` rows in the `df_gapminder2007` data frame 
+in Table \@ref(tab:japan): 
+
+
+```{r japan, echo = FALSE}
+df_gapminder2007 %>% 
+  dp$select(-gdp_per_cap, -pop) %>% 
+  dp$slice(index) %>%
+  knitr::kable(
+    digits = 4,
+    caption = "Actual income and life expectancy for Japan in 2007",
+    booktabs = TRUE,
+    linesep = ""
+  )
+```
+
+
+What is the value $\widehat{\text{life_exp}}$ on the regression line corresponding to 
+Japan's `income` of `r x %>% round(0)`? 
+In Figure \@ref(fig:numxplot4) we zoom in 
+on the circle, the sqaure, and the arrow for the country Japan: 
+
+
+* Circle: The *observed value* $y$ = `r y` 
+  is Japan's actual life expectancy. 
+* Square: The *fitted value* $\widehat{y}$ is the value on the regression line 
+  for $x$ = `income` = `r x %>% round(0)`. 
+  This value is computed using the intercept and slope 
+  in the previous regression table: 
+
+$$\widehat{y} = b_0 + b_1 \cdot x = `r reg_line[1]` + `r reg_line[2]` \cdot `r x` = `r y_hat`$$
+
+* Arrow: The length of this arrow is the *residual* \index{regression!residual} 
+  and is computed by subtracting the fitted value $\widehat{y}$ 
+  from the observed value $y$. 
+  The residual can be thought of as a model's error 
+  or "lack of fit" for a particular observation.  
+  In the case of Japan, it is $y - \widehat{y}$ = `r y` - `r y_hat` = `r resid`.
+
+```{r numxplot4, echo=FALSE, fig.cap="Example of observed value, fitted value, and residual.", fig.height=2.8, message=FALSE, purl=FALSE}
+best_fit_plot <- gg$ggplot(df_gapminder2007, 
+                            mapping = gg$aes(x = income, y = life_exp)) +
+  gg$geom_point(color = "grey") +
+  gg$labs(x = "Income", y = "Life Expectancy",
+       title = "Relationship of health and wealth") + 
+  gg$geom_smooth(method = "lm", se = FALSE) +
+  gg$annotate("point", x = x, y = y_hat, col = "red", shape = 15, size = 3) +
+  gg$annotate("segment", x = x, xend = x, y = y, yend = y_hat, color = "blue",
+           arrow = gg$arrow(type = "closed", length = gg$unit(0.02, "npc"))) +
+  gg$annotate("point", x = x, y = y, col = "red", size = 2)
+best_fit_plot
+```
+
+Now say we want to compute both the fitted value 
+$\widehat{y} = b_0 + b_1 \cdot x$ 
+and the residual $y - \widehat{y}$ for *all* `r n_countries` countries 
+in the study. 
+Recall that each country corresponds to one of the `r n_countries` rows 
+in the `df_gapminder2007` data frame and also one of the `r n_countries` points 
+in the regression plot in Figure \@ref(fig:numxplot4).
+
+We could repeat the previous calculations we performed 
+by hand `r n_countries` times, 
+but that would be tedious and time consuming. 
+Instead, let's do this using a computer 
+with the `get_regression_points()` function. 
+Just like the `get_regression_table()` function, 
+the `get_regression_points()` function is a "wrapper" function. 
+However, this function returns a different output. 
+Let's apply the `get_regression_points()` function to `health_model`, 
+which is where we saved our `lm()` model in the previous section. 
+In Table \@ref(tab:regression-points-1) 
+we present the results of only four countries 
+for brevity's sake.
+
+```{r eval=FALSE}
+regression_points <- moderndive::get_regression_points(score_model)
+regression_points
+```
+
+```{r regression-points-1, echo=FALSE, purl=FALSE}
+set.seed(76)
+regression_points <- moderndive::get_regression_points(health_model)
+regression_points %>%
+  dp$slice(c(index, index + 1, index + 2, index + 3)) %>%
+  knitr::kable(
+    digits = 3,
+    caption = "Regression points (for only four countries)",
+    booktabs = TRUE,
+    linesep = ""
+  )
+
+# This code is used for dynamic non-static in-line text output purposes
+n_regression_points <- regression_points %>% nrow()
+life_exp_69 <- regression_points$life_exp[69]
+income_69 <- regression_points$income[69] %>% format(round(2), nsmall = 2)
+life_exp_hat_69 <- regression_points$life_exp_hat[69] %>% 
+  format(round(2), nsmall = 2)
+residual_69 <- regression_points$residual[69]
+
+```
+
+Let's inspect the individual columns 
+and match them with the elements of Figure \@ref(fig:numxplot4):
+
+* The `life_exp` column represents the observed outcome variable $y$. 
+  This is the y-position of the `r n_regression_points` black points.
+* The `income` column represents the values of the explanatory variable $x$. 
+  This is the x-position of the `r n_regression_points` black points.
+* The `life_exp_hat` column represents the fitted values $\widehat{y}$. 
+  This is the corresponding value on the regression line 
+  for the `r n_regression_points` $x$ values.
+* The `residual` column represents the residuals $y - \widehat{y}$. 
+  This is the `r n_regression_points` vertical distances 
+  between the `r n_regression_points` black points and the regression line.
+
+Just as we did for the country Japan in the `df_gapminder2007` dataset 
+(in the first row of the table), 
+let's repeat the calculations for ??
+(in the fourth row of Table \@ref(tab:regression-points-1)):
+
+* `life_exp` = `r life_exp_69` is the observed life expectancy $y$ 
+  for this country.
+* `income` = `r income_69` is the value of the explanatory variable 
+  `income` $x$ for this country.
+* `life_exp_hat` = `r life_exp_hat_69` = 
+  `r reg_line[1]` + `r reg_line[2]` $\cdot$ `r income_69` 
+  is the fitted value $\widehat{y}$ on the regression line 
+  for this country.
+* `residual` = `r residual_69` =  `r life_exp_69` - `r life_exp_hat_69` 
+  is the value of the residual for this country. 
+  In other words, the model's fitted value was off by `r residual_69` 
+  years for this country. 
+
+At this point, you can skip ahead to Subsection \@ref(leastsquares) 
+to learn about the processes behind 
+what makes "best-fitting" regression lines. 
+As a primer, a "best-fitting" line refers to the line 
+that minimizes the *sum of squared residuals* 
+out of all possible lines we can draw through the points. 
+
+```{block, type="learncheck", purl=FALSE}
+\vspace{-0.15in}
+**_Learning check_**
+\vspace{-0.1in}
+```
+
+**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
+Generate a data frame of the residuals of the model 
+where you used `age` as the explanatory $x$ variable.
+
+```{block, type="learncheck", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+
+
+
+
+
+
+
+
+
+## Related topics {#reg-related-topics}
+
+### Correlation is not necessarily causation {#correlation-is-not-causation}
+
+Throughout this chapter we've been cautious 
+when interpreting regression slope coefficients. 
+We always discussed the "associated" effect of an explanatory variable $x$ 
+on an outcome variable $y$. 
+For example, our statement from Subsection \@ref(model1table) that 
+"For every increase of 1 unit in `income`, 
+there is an *associated* increase of, *on average*, 
+`r reg_line[2]` units of `life expectancy`.
+We include the term "associated" to be extra careful 
+not to suggest we are making a *causal* statement. 
+So while `income` is positively correlated with `life_exp`, 
+we can't necessarily make any statements about income's direct causal effect 
+on life expectancy without more information on how this study was conducted. 
+Here is another example: 
+a not-so-great medical doctor goes through medical records 
+and finds that patients who slept with their shoes on 
+tended to wake up more with headaches. 
+So this doctor declares, "Sleeping with shoes on causes headaches!"
+
+
+
+```{r moderndive-figure-causal-graph-2, echo=FALSE, fig.cap="Does sleeping with shoes on cause headaches?", out.width="60%", out.height="60%", purl=FALSE}
+knitr::include_graphics(here::here(
+                                   "docs", 
+                                   "images", 
+                                   "shutterstock", 
+                                   "shoes_headache.png")
+)
+```
+
+However, there is a good chance that 
+if someone is sleeping with their shoes on, 
+it's potentially because they are intoxicated from alcohol. 
+Furthermore, higher levels of drinking leads to more hangovers, 
+and hence more headaches. 
+The amount of alcohol consumption here is 
+what's known as a *confounding/lurking* variable\index{confounding variable}. 
+It "lurks" behind the scenes, 
+confounding the causal relationship (if any) of "sleeping with shoes on" 
+with "waking up with a headache." 
+We can summarize this in Figure \@ref(fig:moderndive-figure-causal-graph) 
+with a *causal graph* where:
+
+* Y is a *response* variable; here it is "waking up with a headache." 
+  \index{variables!response / outcome / dependent}
+* X is a *treatment* variable whose causal effect we are interested in; 
+  here it is "sleeping with shoes on."\index{variables!treatment}
+
+```{r moderndive-figure-causal-graph, echo=FALSE, out.width="50%", fig.cap="Causal graph.", purl=FALSE}
+knitr::include_graphics(here::here(
+                                   "docs", 
+                                   "images", 
+                                   "flowcharts", 
+                                   "flowchart.009-cropped.png")
+)
+```
+
+To study the relationship between Y and X, 
+we could use a regression model where the outcome variable is set to Y 
+and the explanatory variable is set to be X, 
+as you've been doing throughout this chapter. 
+However, Figure \@ref(fig:moderndive-figure-causal-graph) 
+also includes a third variable with arrows pointing at both X and Y:
+
+* Z is a *confounding* variable \index{variables!confounding} 
+  that affects both X and Y, 
+  thereby "confounding" their relationship. 
+  Here the confounding variable is alcohol.
+
+Alcohol will cause people to be both more likely to sleep 
+with their shoes on as well as be more likely to wake up with a headache. 
+Thus any regression model of the relationship between X and Y 
+should also use Z as an explanatory variable. 
+In other words, our doctor needs to take into account 
+who had been drinking the night before. 
+In the next chapter, we'll start covering multiple regression models 
+that allow us to incorporate more than one variable in our regression models.
+
+Establishing causation is a tricky problem 
+and frequently takes either carefully designed experiments 
+or methods to control for the effects of confounding variables. 
+Both these approaches attempt, as best they can, 
+either to take all possible confounding variables into account 
+or negate their impact. 
+This allows researchers to focus only on the relationship of interest: 
+the relationship between the outcome variable Y and the treatment variable X.
+
+As you read news stories, 
+be careful not to fall into the trap of thinking that 
+correlation necessarily implies causation.  
+Check out the [Spurious Correlations](http://www.tylervigen.com/spurious-correlations) 
+website for some rather comical examples of variables that are correlated, 
+but are definitely not causally related.
+
+
+### Best-fitting line {#leastsquares}
+
+Regression lines are also known as "best-fitting" lines. 
+But what do we mean by "best"? 
+Let's unpack the criteria that is used in regression to determine "best." 
+Recall Figure \@ref(fig:numxplot4), 
+where for a country with an income level of $x = `r x`$ 
+we mark the *observed value* $y$ with a circle, 
+the *fitted value* $\widehat{y}$ with a square, 
+and the *residual* $y - \widehat{y}$ with an arrow. 
+We re-display Figure \@ref(fig:numxplot4) in the top-left plot 
+of Figure \@ref(fig:best-fitting-line) 
+in addition to three more arbitrarily chosen countries:
+
+```{r best-fitting-line, fig.height=5.5, echo=FALSE, fig.cap="Example of observed value, fitted value, and residual.", purl=FALSE, message=FALSE}
+# First residual
+best_fit_plot <- gg$ggplot(df_gapminder2007, 
+                            mapping = gg$aes(x = income, y = life_exp)) +
+  gg$geom_point(size = 0.8, color = "grey") +
+  gg$labs(x = "Income", y = "Life Expectancy") + 
+  gg$geom_smooth(method = "lm", se = FALSE) +
+  gg$annotate("point", x = x, y = y_hat, col = "red", shape = 15, size = 3) +
+  gg$annotate("segment", x = x, xend = x, y = y, yend = y_hat, color = "blue",
+           arrow = gg$arrow(type = "closed", length = gg$unit(0.02, "npc"))) +
+  gg$annotate("point", x = x, y = y, col = "red", size = 2)
+
+p1 <- best_fit_plot + gg$labs(title = "First country's residual")
+
+# Second residual
+index <- which(df_gapminder2007$country == "China")
+target_point <- moderndive::get_regression_points(health_model) %>%
+  dp$slice(index)
+x <- target_point$income
+y <- target_point$life_exp
+y_hat <- target_point$life_exp_hat
+resid <- target_point$residual
+
+best_fit_plot <- best_fit_plot +
+  gg$annotate("point", x = x, y = y, col = "red", size = 2) +
+  gg$annotate("point", x = x, y = y_hat, col = "red", shape = 15, size = 3) +
+  gg$annotate("segment",
+    x = x, xend = x, y = y, yend = y_hat, color = "blue",
+    arrow = gg$arrow(type = "closed", length = gg$unit(0.02, "npc"))
+  )
+p2 <- best_fit_plot + gg$labs(title = "Adding second country's residual")
+
+# Third residual
+index <- which(df_gapminder2007$country == "Ecuador")
+target_point <- moderndive::get_regression_points(health_model) %>%
+  dp$slice(index)
+x <- target_point$income
+y <- target_point$life_exp
+y_hat <- target_point$life_exp_hat
+resid <- target_point$residual
+
+best_fit_plot <- best_fit_plot +
+  gg$annotate("point", x = x, y = y, col = "red", size = 2) +
+  gg$annotate("point", x = x, y = y_hat, col = "red", shape = 15, size = 3) +
+  gg$annotate("segment",
+    x = x, xend = x, y = y, yend = y_hat,
+    color = "blue",
+    arrow = gg$arrow(type = "closed", length = gg$unit(0.02, "npc"))
+  )
+p3 <- best_fit_plot + gg$labs(title = "Adding third country's residual")
+
+index <- which(df_gapminder2007$country == "Kenya")
+target_point <- moderndive::get_regression_points(health_model) %>%
+  dp$slice(index)
+x <- target_point$income
+y <- target_point$life_exp
+y_hat <- target_point$life_exp_hat
+resid <- target_point$residual
+
+best_fit_plot <- best_fit_plot +
+  gg$annotate("point", x = x, y = y, col = "red", size = 2) +
+  gg$annotate("point", x = x, y = y_hat, col = "red", shape = 15, size = 3) +
+  gg$annotate("segment",
+    x = x, xend = x, y = y, yend = y_hat, color = "blue",
+    arrow = gg$arrow(type = "closed", length = gg$unit(0.02, "npc"))
+  )
+p4 <- best_fit_plot + gg$labs(title = "Adding fourth country's residual")
+
+p1 + p2 + p3 + p4 + patchwork::plot_layout(nrow = 2)
+```
+
+The three other plots refer to:
+
+```{r echo=F}
+# Second residual
+index_2 <- which(df_gapminder2007$country == "China")
+target_point_2 <- moderndive::get_regression_points(health_model) %>%
+  dp$slice(index_2)
+x_2 <- target_point_2$income %>% round(0)
+y_2 <- target_point_2$life_exp %>% round(2)
+y_hat_2 <- target_point_2$life_exp_hat %>% round(2)
+resid_2 <- target_point_2$residual %>% round(2)
+
+# Third residual
+index_3 <- which(df_gapminder2007$country == "Ecuador")
+target_point_3 <- moderndive::get_regression_points(health_model) %>%
+  dp$slice(index_3)
+x_3 <- target_point_3$income %>% round(0)
+y_3 <- target_point_3$life_exp %>% round(2)
+y_hat_3 <- target_point_3$life_exp_hat %>% round(2)
+resid_3 <- target_point_3$residual %>% round(2)
+
+# Fourth residual
+index_4 <- which(df_gapminder2007$country == "Kenya")
+target_point_4 <- moderndive::get_regression_points(health_model) %>%
+  dp$slice(index_4)
+x_4 <- target_point_4$income %>% round(0)
+y_4 <- target_point_4$life_exp %>% round(2)
+y_hat_4 <- target_point_4$life_exp_hat %>% round(2)
+resid_4 <- target_point_4$residual %>% round(2)
+```
+
+
+1. A country with an average income of $x$ = `r x_2` 
+   and life expectancy of $y$ = `r y_2`. 
+   The residual in this case is $`r y_2` - `r y_hat_2` = `r resid_2`$, 
+   which we mark with a new blue arrow in the top-right plot.
+
+1. A country with an average income of $x$ = `r x_3` 
+   and life expectancy of $y$ = `r y_3`. 
+   The residual in this case is $`r y_3` - `r y_hat_3` = `r resid_3`$, 
+   which we mark with a new blue arrow in the bottom-left plot.
+1. A country with an average income of $x$ = `r x_4` 
+   and life expectancy of $y$ = `r y_4`. 
+   The residual in this case is $`r y_4` - `r y_hat_4` = `r resid_4`$, 
+   which we mark with a new blue arrow in the bottom-right plot.
+
+
+
+Now say we repeated this process of computing residuals for all `r n_countries` 
+countries, then we squared all the residuals, and then we summed them. 
+We call this quantity the 
+*sum of squared residuals*\index{sum of squared residuals}; 
+it is a measure of the _lack of fit_ of a model. 
+Larger values of the sum of squared residuals indicate a bigger lack of fit. 
+This corresponds to a worse fitting model.
+
+In an ideal world where the regression line fits all the points perfectly, 
+the sum of squared residuals would be 0. 
+This is because if the regression line fits all the points perfectly, 
+then the fitted value $\widehat{y}$ equals the observed value $y$ in all cases, 
+and hence the residual $y-\widehat{y}$ = 0 in all cases, 
+and the sum of even a large number of 0's is still 0. 
+
+Furthermore, of all possible lines we can draw through the cloud of 
+`r n_countries` points, the regression line minimizes this value. 
+In other words, the regression and its corresponding fitted values $\widehat{y}$ 
+minimizes the sum of the squared residuals:
+
+$$
+\sum_{i=1}^{n}(y_i - \widehat{y}_i)^2
+$$
+
+Let's use our data wrangling tools from Chapter \@ref(wrangling) 
+to compute the sum of squared residuals exactly:
+
+```{r eval=F}
+# Fit regression model:
+health_model <- lm(life_exp ~ income, data = df_gapminder2007)
+score_model <- lm(score ~ bty_avg, 
+                  data = evals_ch5)
+
+# Get regression points:
+regression_points <- moderndive::get_regression_points(score_model)
+regression_points
+# Compute sum of squared residuals
+regression_points %>%
+  dp$mutate(squared_residuals = residual^2) %>%
+  dp$summarize(sum_of_squared_residuals = sum(squared_residuals))
+```
+
+```{r echo=F}
+regression_points
+# Compute sum of squared residuals
+regression_points %>%
+  dp$mutate(squared_residuals = residual^2) %>%
+  dp$summarize(sum_of_squared_residuals = sum(squared_residuals))
+```
+
+Any other straight line drawn in the figure 
+would yield a sum of squared residuals greater than 132. 
+This is a mathematically guaranteed fact 
+that you can prove using calculus and linear algebra. 
+That's why alternative names for the linear regression line 
+are the *best-fitting line* and the *least-squares line*. 
+Why do we square the residuals (i.e., the arrow lengths)? 
+So that both positive and negative deviations of the same amount 
+are treated equally.
+
+
+```{block, type="learncheck", purl=FALSE}
+\vspace{-0.15in}
+**_Learning check_**
+\vspace{-0.1in}
+```
+
+**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** Note in Figure \@ref(fig:three-lines) there are 3 points marked with dots and:
+
+* The "best" fitting solid regression line in blue
+* An arbitrarily chosen dotted red line 
+* Another arbitrarily chosen dashed green line
+
+```{r three-lines, fig.cap="Regression line and two others.", out.width="85%", echo=FALSE, purl=FALSE, message=FALSE}
+example <- tibble::tibble(
+  x = c(0, 0.5, 1),
+  y = c(2, 1, 3)
+)
+
+gg$ggplot(example, 
+          mapping = gg$aes(x = x, y = y)) +
+  gg$geom_smooth(method = "lm", se = FALSE, fullrange = TRUE) +
+  gg$geom_hline(yintercept = 2.5, col = "red", linetype = "dotted", size = 1) +
+  gg$geom_abline(
+    intercept = 2, slope = -1, col = "forestgreen",
+    linetype = "dashed", size = 1
+  ) +
+  gg$geom_point(size = 4)
+```
+
+Compute the sum of squared residuals by hand for each line 
+and show that of these three lines, 
+the regression line in blue has the smallest value.
+
+```{block, type="learncheck", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+
+### `get_regression_x()` functions {#underthehood}
+
+Recall in this chapter we introduced two functions from the `moderndive` package:
+
+1. `get_regression_table()` that returns a regression table in Subsection \@ref(model1table) and
+1. `get_regression_points()` that returns point-by-point information from a regression model in Subsection \@ref(model1points).
+
+What is going on behind the scenes with the `get_regression_table()` and `get_regression_points()` functions? We mentioned in Subsection \@ref(model1table) that these were examples of *wrapper functions*. Such functions take other pre-existing functions and "wrap" them into single functions that hide the user from their inner workings. This way all the user needs to worry about is what the inputs look like and what the outputs look like. In this subsection, we'll "get under the hood" of these functions and see how the "engine" of these wrapper functions works.
+
+Recall our two-step process to generate a regression table from Subsection \@ref(model1table):
+
+```{r eval=FALSE}
+# Fit regression model:
+health_model <- lm(life_exp ~ income, data = df_gapminder2007)
+# Get regression table:
+moderndive::get_regression_table(health_model)
+```
+
+```{r recall-table, echo=FALSE, purl=FALSE}
+moderndive::get_regression_table(health_model) %>%
+  knitr::kable(
+    digits = 3,
+    caption = "Regression table",
+    booktabs = TRUE,
+    linesep = ""
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = ifelse(knitr::is_latex_output(), 10, 16),
+    latex_options = c("hold_position")
+  )
+```
+
+The `get_regression_table()` wrapper function 
+takes two pre-existing functions in other R packages:
+
+* `tidy()` \index{R packages!broom!tidy()} 
+  from the [`broom` package](https://broom.tidyverse.org/) [@R-broom] and 
+* `clean_names()` \index{R packages!janitor!clean\_names()} 
+  from the [`janitor` package](https://github.com/sfirke/janitor) [@R-janitor]
+
+and "wraps" them into a single function 
+that takes in a saved `lm()` linear model, here `health_model`, 
+and returns a regression table saved as a "tidy" data frame. 
+Here is how we used the `tidy()` and `clean_names()` functions 
+to produce Table \@ref(tab:regtable-broom):
+
+```{r eval=FALSE}
+score_model %>%
+  broom::tidy(conf.int = TRUE) %>%
+  dp$mutate_if(is.numeric, round, digits = 3) %>%
+  janitor::clean_names() %>%
+  dp$rename(lower_ci = conf_low, upper_ci = conf_high)
+```
+
+```{r regtable-broom, echo=FALSE, message=FALSE, purl=FALSE}
+health_model %>%
+  broom::tidy(conf.int = TRUE) %>%
+  dp$mutate_if(is.numeric, round, digits = 3) %>%
+  janitor::clean_names() %>%
+  dp$rename(
+    lower_ci = conf_low,
+    upper_ci = conf_high
+  ) %>%
+  knitr::kable(
+    digits = 3,
+    caption = "Regression table using tidy() from broom package",
+    booktabs = TRUE,
+    linesep = ""
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = ifelse(knitr::is_latex_output(), 10, 16),
+    latex_options = c("hold_position")
+  )
+```
+
+Yikes! That's a lot of code! 
+So, in order to simplify your lives, 
+we made the editorial decision to "wrap" all the code 
+into `get_regression_table()`, 
+freeing you from the need to understand the inner workings of the function. 
+Note that the `mutate_if()` function is from the `dplyr` package 
+and applies the `round()` function to three significant digits precision 
+only to those variables that are numerical.
+
+Similarly, the `get_regression_points()` function 
+is another wrapper function, 
+but this time returning information about the individual points 
+involved in a regression model like the fitted values, observed values, 
+and the residuals. 
+`get_regression_points()` \index{moderndive!get\_regression\_points()} 
+uses the `augment()` \index{R packages!broom!augment()} function 
+in the [`broom` package](https://broom.tidyverse.org/) 
+instead of the `tidy()` function as with `get_regression_table()` 
+to produce the data shown in Table \@ref(tab:regpoints-augment):
+
+```{r eval=FALSE}
+health_model %>%
+  broom::augment() %>%
+  dp$mutate_if(is.numeric, round, digits = 3) %>%
+  janitor::clean_names() %>%
+  dp$select(-c("std_resid", "hat", "sigma", "cooksd", "std_resid"))
+```
+
+```{r regpoints-augment, echo=FALSE, purl=FALSE}
+health_model %>%
+  broom::augment() %>%
+  dp$mutate_if(is.numeric, round, digits = 3) %>%
+  janitor::clean_names() %>%
+  dp$select(-c("std_resid", "hat", "sigma", "cooksd", "std_resid")) %>%
+  dp$slice(1:10) %>%
+  knitr::kable(
+    digits = 3,
+    caption = "Regression points using augment() from broom package",
+    booktabs = TRUE,
+    linesep = ""
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = ifelse(knitr::is_latex_output(), 10, 16),
+    latex_options = c("hold_position")
+  )
+```
+
+In this case, it outputs only the variables of interest 
+to students learning regression: 
+the outcome variable $y$ (`life_exp`), 
+all explanatory/predictor variables (`income`), 
+all resulting `fitted` values $\hat{y}$ used 
+by applying the equation of the regression line to `income`, 
+and the `resid`ual $y - \hat{y}$.
+
+If you're even more curious about how these and other wrapper functions work, 
+take a look at the source code for these functions 
+on [GitHub](https://github.com/moderndive/moderndive/blob/master/R/regression_functions.R).
+
+
+
+
+
+## Conclusion {#reg-conclusion}
+
+### Additional resources {#additional-resources-basic-regression}
+
+
+As we suggested in Subsection \@ref(model1EDA), 
+interpreting coefficients that are not close to the extreme values of -1, 0, and 1 can be somewhat subjective. To help develop your sense of correlation coefficients, we suggest you play the 80s-style video game called, "Guess the Correlation", at <http://guessthecorrelation.com/>.
+
+(ref:guess-corr) Preview of "Guess the Correlation" game.
+
+```{r guess-the-correlation, echo=FALSE, fig.cap="(ref:guess-corr)", purl=FALSE, out.width="70%", purl=FALSE}
+knitr::include_graphics(here::here(
+                                   "docs", 
+                                   "images", 
+                                   "copyright", 
+                                   "guess_the_correlation.png")
+)
+```
+
+
+### What's to come?
+
+In this chapter, you've studied the term _basic regression_, where you fit models that only have one explanatory variable. In Chapter \@ref(multiple-regression), we'll study *multiple regression*, where our regression models can now have more than one explanatory variable! In particular, we'll consider two scenarios: regression models with one numerical and one categorical explanatory variable and regression models with two numerical explanatory variables. This will allow you to construct more sophisticated and more powerful models, all in the hopes of better explaining your outcome variable $y$.

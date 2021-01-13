@@ -1,60 +1,362 @@
 # Housekeeping {-}
 
-## What's with the name? {-}
+## What's with the "baby" in the name? {-}
 
-The material is largely based on a book called "Modern Dive". 
-<!-- may expand the list of inspirations -->
+These lectures notes are largely based on a book called 
+"[Modern Dive](https://moderndive.com/)", 
+hence the title "Baby Modern Dive". 
 I first stumbled upon the book 
 when I was preparing for teaching this course in 2019. 
 I personally benefited greatly from reading the book, 
-and teaching a course using its material.
+and later teaching a course using its material.
+For many chapters, the lecture notes mirror the original book. 
+Why creating this copy instead of just giving you the link to the original book? 
+You ask. 
+
+Two reasons. 
+First one is for the readers' benefit. 
+When I used Modern Dive for the first time 
+while teaching this course in 2020 winter, 
+the original book, although available online, 
+was still in its draft mode. 
+I was not completely satisfied with some aspects of it, 
+so I made my own edits while developing the course material. 
+Instead of dropping links everywhere in the lecture notes, 
+I decided to integrate the original book (for the most part) 
+with my edits (a small portion). 
+
+Second reason is more personal. 
+Recreating the book, with some tinkering, 
+has been a great learning experience for me. 
+I won't lie; it is a lot of fun. 
+
+## What can you expect from this course {-}
+
+Experience the life cycle of a data analysis pipeline 
+from raw data to meaninful narration, 
+ready for readers of various background. This includes:
+
+- explore, groom, and prepare data for further analysis, 
+  also known as data wrangling 
+- visualize data to inform model selection
+- apply appropriate model to the data
+- transform statistical output to prose, interpret results, make inferences
+- develop a workflow using `R` that ensures reproducible and shareable results
+
+Woven throughout all of these action-packed "how" topics, 
+are "why" topics. 
+You will be exposed to statistical theories that could guide you 
+in selecting models and making inferences. 
+Spoiler alert! We will see formulas in this course. 
+I do have some first-hand knowledge of the pain that the sight of formulars 
+could inflict on some people, 
+thanks to my degree in math cognition and years of teaching/coaching experience. 
+If you are one of them, you are not alone. 
+Fear not. 
+This course is geared towards students who have very diverse backgrounds 
+and advanced math skill is not an requirement. 
+Whenever a formula is introduced, I will unpack it so you can see 
+how it works for yourself. 
+
+## Why choosing R {-}
+
+In the pre-class survey, 
+some of you mentioned that you had never heard of R. 
+This section is included here for those of you who are new to R. 
+
+If you are expecting an objective recount of what R is and how wonderful it is, 
+please refer to wikipedia and numerous books about R. 
+What you will find here is my personal journey with R, 
+an ulterly biased and opinionated version. 
+
+I heard about R for the first time at a Christmas party, perhaps 7-8 years ago. 
+At the time, it was described as a geeky statistical software, 
+powerful, but difficult to learn. 
+My first instinct at hearing this was "I what to learn how to use R as well."
+It was not until 2015, when I was starting to work on my PhD dissertation, 
+that I actually decided to make a serious attempt. 
+My motivation was very simple: 
+I needed to run some analyses that I only knew then how to do in SAS. 
+However, SAS being SAS, it did not support Mac. 
+After wasting some time on finding a hacked solution to make SAS run 
+on my Mac, 
+I decided that it was time for me to adopt R, 
+It would allow me to run the indended analysis properly, it is cross-platform, 
+it is free, 
+and what better opportunity to learn a new toy 
+than while working on a PhD dissertation?
+
+Fast forward to 2017, I completed my dissertation, including all the analyses 
+done with R. 
+I would be lying if I said R was easy to learn. 
+Did the effort pay off? 
+That is a big fat yes. 
+
+Adopting R in my research opened up a new world for me. 
+It taught me a new way of conducting research, 
+one that is reproducible and shareable. 
+
+In the first ten years of my interaction with statistics, 
+I was primarily using SPSS. 
+And my routine can be summarized as: 
+
+>
+  import a dataset into SPSS, 
+  go through a series of clicking and dragging, 
+  copy and paste selected output into an editor, for example, MS word, 
+  fill in with texts and finish the report. 
+
+I had long felt uneasy about the workflow. 
+However, it was not until I started transitioning to R 
+that I could pinpoint the disadvantages in the previous process. 
+
++ The workflow is hardly reproducible 
+  because it involves a series of point-and-click, 
+  also known as GUI operations, or **G**raphical **U**ser **I**nterface operations. 
+  It is already a struggle for the researcher themselves 
+  to remember the exact sequence of those clicking 
+  so as to generate the same output each time, 
+  let alone sharing such information with another person. 
++ Any change in the data source during analyses would require 
+  the authors to start from the top, 
+  to go through all the pointing and clicking again, 
+  sometimes worth hours of hardwork. 
+  <!-- Anyone who works with real world data would at least experience this scenario -->
+  <!-- once: the analysis is well underway, suddenly, the researcher noticed  -->
+  <!-- a simple typo in the data. Every result they have obtained up to the point  -->
+  <!-- would need to be re-run.  -->
++ It quickly become tedious, and more importantly, error-prone, 
+  when there are many figures and tables to copy and paste across documents. 
++ ...
+
+This list could go on, but I think I have made my point clear. 
+As you may have expected, once I started adopting R, 
+I realized that I no longer had to deal with these problems. 
+Let me be clear. 
+It is not any intrisic feature of R, or its unique syntax that made R magical, 
+or superior to SPSS and alike. 
+The key lies in *source code*. 
+When you work with R, 
+you would spend most of your time writing and editing a source code, 
+also known as a script, 
+a file that is nothing more than a plain text, 
+which contains detailed instructions about what operations to apply 
+to the data, be it transposing, filtering, or aggregating.
+This source code can be saved on a computer and re-executed at any time, 
+which would produce the same result as it did last time, 
+provided that the source code has not be modified. 
+It could also be shared with one another, 
+producing the same results, transcending space and time change. 
+Had to correct a typo in the data set? 
+No problem. Go ahead and correct the typo, and re-run the source code 
+and all your results will be updated accordingly. 
+
+Many advantageds of using R 
+would apply to other script-based statistical programming languages. 
+As we will find out later in this course, 
+there are also some unique advantages of R, 
+largely attributed to its vast user base, 
+many of whom have been actively contributing to its improvement.  
+
+
+
+<!-- Neither of my supervisor uses R.  -->
+<!-- I never took a course taught in R.  -->
+<!-- Fortunately, there were already plenty of resources  -->
+<!-- available through the internet.  -->
+<!-- For every ten problems I encountered while using R,  -->
+<!-- I would find solutions to eight of them by searching on the internet.  -->
+<!-- For the nineth problem,  -->
+<!-- I would discover after some searching that I was not using  -->
+<!-- the right combination of keywords.  -->
+<!-- With the appropriate keywords, I would solve the problem in no time.  -->
+<!-- For the tenth problem,  -->
+<!-- fruitless searching would make me reconsider the problem  -->
+<!-- and decide that the problem was not that important after all.  -->
 
 ## Who are the players? {-}
 
+By signing up for this course, you have agreed to be part of 
+a one-semester-long game. 
+Naturally, each of you is a player in this game. 
+Unlike many other games, you are mostly competing with yourself in this one. 
+And your score will reflect how much progress you make 
+by the end of the semester compared to when you started. 
+
 ### You professor {-}
 
-My background
+Given that I made most of the rules for this game, 
+I feel obliged to give you some background information about myself. 
 
-My history with teaching this course and teaching stats in general
+I wear many hats. 
+I am an educator. 
+I am a research psychologist. 
+I am a human factors / user experience researcher. 
+I am a statistics consultant. 
+I worked with students advocating for their rights. 
+I worked with seniors in the community. 
+I am a geek. 
 
-#### Why choosing R {-}
+My background is so mixed that 
+I often have trouble telling people succinctly who I am. 
+For a long time, I always felt a tingle of guilt for having so many identities, 
+instead of a nice single, unified, simple identity. 
+But now I think differently. 
+What if I am all of them? 
+Each of those identities will take the spotlight when the situation calls for it. 
+In the context of this course, I am your instructor and cheerleader. 
+I cannot force you to learn or to like this course. 
+However, if you are willing to try, 
+I will give you my full support. 
 
-#### What do I hope to deliver, content-wise {-}
-
-<!-- stats vs. data science 
-see "What we hope you will learn from this hope in Preface"
-A modified version:
-Experience the life cycle of a data analysis pipeline 
-from raw data to meaninful narration, ready for readers 
-of various background. This entails: 
-- data wrangling (maybe a different term is better)
-- Apply appropriate model to the data
-- "decode" output filled with technical jargons, interpret results, make inferences
-- Learn how to use R to turn the process reproducible
-There are more minor objectives, but these should give a high-level overview
-
-Elaborate on reproducible research
--->
 
 ### Your teaching assistant {-}
 
+Unfortunately, we will not have a teaching assistant for this course 
+this year, due to limited department resources. 
+I will ask each of you please be patient if I am slightly behind the schedule. 
+
 ### Your peers {-}
+
+Share a bit information about yourself with the rest of us.  
 
 ## Playground rules {-}
 
 ### Communication policy {-}
 
-What worked last term
+I will continue to apply what worked last year, with some tweaking 
+to adapt to the fully-online situation. 
+
++ Slack. For those of you who have not used slack before, 
+  it is an instant messaging tool, with some unique features tailored 
+  for workplace and classroom communications. 
+  Last semester, I created a slack workspace for the class, 
+  and it seemed to have worked. 
+  You will get a chance to familiarize yourself with the tool 
+  as part of your first assignment. 
++ CUlearn. I don't expect we will use CUlearn for communication purposes, 
+  although it does have some neat functions such as anonymous message. 
+  If you have some constructive suggestion about the course 
+  but feel shy to talk to me, you can use this function. 
+  Without the help from a TA, 
+  I will only periodically monitor your posts on CUlearn. 
++ Email. I respect that some of you still prefer emails to other tools. 
+  Depending on the nature of your question, I may respond as soon as I see it, 
+  or wait a bit until I can process it in a quiet space 
+  so that I can response in a thoughtful way. 
+  If you don't hear from you in 48 hours, 
+  please send me a reminder. 
+  I would much appreciate it. 
++ One-on-one virtual meeting. Last year, this proved to be the most effective way 
+  of communication. 
+  I will provide more details on slack about how to book those meeetings with me. 
+
 
 ### Minimize distraction {-}
 
+Let's face it. 
+Online class is not one of the most absorbing activities you have done. 
+I took an online French class last fall and 
+often caught myself multi-tasking during the class. 
+I know the pain. 
+The good news is that, in an online setting, 
+your classmates cannot peer behind you 
+and be distracted by the facebook page on your screen. 
+However, I do encourage you to use some discipline 
+and minimize distractions while you are attending the class. 
+I understand that there will be times during the course 
+when the content simply does not interest you, 
+either because you already know the subject or my dull presentation. 
+If you ever find yourself bored, 
+please feel free to turn off the sound and/or video 
+and spend you precious time on something more rewarding. 
+
+
 ### Structure of each lecture {-}
 
-theory + hands-on
+Ideally, this course should be taught like workshops. 
+Attendants learn by doing in each workshop, much like apprenticeship. 
+Of course, you need to supplement with lectures on abstract theories 
+from time to time, 
+but the hands-on practice can be replaced with no amount of reading. 
+
+Hands-on workshps are best run in person, 
+where the coach can pop over whenever a student encounters some difficuty. 
+Although expected to be harder, 
+I am still planning to run each lecture as workshops, 
+with some anticipated overheads to overcome technical glitches. 
+
+Starting week 2, 
+you will be expected to read the assigned material **before** 
+coming to the lecture. 
+The reading material will consist of notes on this website 
+as well as occasional linked material. 
+Based on the feedback from students last year, 
+these lecture notes are fairly self-explanary. 
+During the weekly lecture, 
+we will spend time on addressing any questions you may have 
+regarding the reading material, 
+as well as on hands-on demonstration and practices. 
+
+To benefit from the lecture, 
+it is essential that you finish the reading in advance. 
+And after each lecture, it is recommended that 
+you re-read the material to deepen your understanding. 
+
+<!-- a datacamp module before lecture 2 on ggplot [ ] -->
 
 
 ### Syllabus & assignments {-}
 
+Discuss in class
 
 ### Datacamp {-}
+
+Discuss in class
+
+### cocalc {-}
+
+Discuss in class
+
+## Getting help and learning more {-#getting-help}
+
+This section is adapted from 
+<https://r4ds.had.co.nz/introduction.html#getting-help-and-learning-more>
+
+This book is not an island; 
+there is no single resource that will allow you to master R. 
+As you start to apply the techniques described in this book 
+to your own data, you will soon find questions that we do not answer. 
+This section describes a few tips on how to get help, 
+and to help you keep learning.
+
+If you get stuck, start with Google. 
+Typically adding "R" to a query is enough 
+to restrict it to relevant results: 
+if the search isn't useful, 
+it often means that there aren't any R-specific results available. 
+
+Google is particularly useful for error messages. 
+If you get an error message and you have no idea what it means, 
+try googling it! 
+Chances are that someone else has been confused by it in the past, 
+and there will be help somewhere on the web. 
+(If the error message isn't in English, run 
+`Sys.setenv(LANGUAGE = "en")` and re-run the code; 
+you're more likely to find help for English error messages.)
+
+Among all the search results returned by Google, 
+you will most likely encounter some from 
+[stackoverflow](http://stackoverflow.com), 
+a question and answer site for professional 
+and enthusiast programmers who use programming languages 
+such as Python and R. 
+While most of the highly voted answers on stack overflow 
+are trustworthy, 
+do pay attention to when the answer was contributed. 
+A solution that worked five years ago 
+may no longer work for the same problem today, 
+due to the fast evolving nature of R as a programming language. 
+The bottom line: if you find multiple answers to the same question, 
+prioritize the more recent ones. 
 

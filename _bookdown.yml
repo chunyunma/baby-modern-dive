@@ -4,10 +4,12 @@ rmd_files: [
   "00-housekeeping.Rmd", 
   "01-getting-started.Rmd", 
   # "02-data-visualization.Rmd", 
+  "05-regression.Rmd", 
   # "content/03-method.Rmd", 
   # "content/04-application.Rmd", 
   # "content/05-summary.Rmd", 
   # "content/06-references.Rmd", 
+  # "anscombe.Rmd", 
   "99-references.Rmd"
   ]
 before_chapter_script: ["rscript/setup.R"]

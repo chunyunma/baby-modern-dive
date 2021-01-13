@@ -1,0 +1,41 @@
+# Anscombe's Quartet {#anscombe}
+
+
+## Needed packages
+
+```{r load-package, eval=F}
+# Install xfun so that I can use xfun::pkg_load2
+if (find.package('xfun') == '') install.packages('xfun')
+xf <- loadNamespace('xfun')
+
+cran_primary <- c(
+          "tidyr", 
+          "dplyr", 
+          "readr"
+)
+
+cran_secondary <- c(
+                    ""
+                    )
+
+if (length(cran_primary) != 0) xf$pkg_load2(cran_primary)
+if (length(cran_secondary != 0) xf$pkg_load2(cran_secondary)
+```
+
+```{r}
+import::from(magrittr, '%>%', '%T>%')
+```
+
+
+```{r}
+df_anscombe <- anscombe %>%
+  tidyr::pivot_longer(everything(),
+    names_to = c(".value", "set"),
+    names_pattern = "(.)(.)"
+  ) %>%
+  dplyr::arrange(set)
+```
+
+<https://rpubs.com/debosruti007/anscombeQuartet>
+<https://rstudio-pubs-static.s3.amazonaws.com/52381_36ec82827e4b476fb968d9143aec7c4f.html>
+<https://eagereyes.org/criticism/anscombes-quartet>

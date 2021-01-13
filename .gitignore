@@ -15,5 +15,3 @@ renv/*
 _tmp
 baby-modern-dive.rds
 *.tsv
-bib/*
-docs/*

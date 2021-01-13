@@ -1,0 +1,17 @@
+## workflow related
+
+> 
+  Renouncing .Rdata and restarting R often are not intrinsically important 
+  or morally superior behaviours. 
+  They are important because they provide constant pressure for you 
+  to do the right thing: 
+  save the source code needed to create all important artefacts of your analysis.
+<
+<https://rstats.wtf/save-source.html>
+
+>
+  It’s like agreeing that we will all drive on the left or the right. 
+  A hallmark of civilization is following conventions 
+  that constrain your behavior a little, in the name of public safety.
+<
+<https://rstats.wtf/project-oriented-workflow.html>

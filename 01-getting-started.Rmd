@@ -1,0 +1,1091 @@
+# Getting Started with Data in R {#getting-started}
+
+```{r setup_getting_started, include=FALSE, purl=FALSE}
+# Used to define Learning Check numbers:
+chap <- 1
+lc <- 0
+
+# Set random number generator see value for replicable pseudorandomness.
+set.seed(76)
+```
+
+Before we can start exploring data in R, 
+there are some key concepts to understand first:
+
+1. What are R and RStudio?
+2. How do I code in R?
+3. What are R packages?
+
+We'll introduce these concepts in the upcoming Sections 
+\@ref(r-rstudio)-\@ref(packages). 
+If you are already somewhat familiar with these concepts, 
+feel free to skip to Section \@ref(nycflights13) 
+where we'll introduce our first dataset: 
+all domestic flights departing one of the three main New York City (NYC) 
+airports in 2013. 
+
+## What are R and RStudio? {#r-rstudio}
+
+Throughout this book, 
+we will assume that you are using R via RStudio. 
+First time users often confuse the two. 
+At its simplest, R is like a car's engine\index{R} 
+while RStudio is like a car's dashboard\index{RStudio} 
+as illustrated in Figure \@ref(fig:R-vs-RStudio-1). 
+
+```{r R-vs-RStudio-1, echo=FALSE, fig.cap="Analogy of difference between R and RStudio.", out.width="95%", purl=FALSE}
+knitr::include_graphics(here::here(
+                                   "docs", 
+                                   "images", 
+                                   "shutterstock", 
+                                   "R_vs_RStudio_1.png")
+)
+```
+
+More precisely, R is a programming language that runs computations, 
+while RStudio is an *integrated development environment (IDE)* 
+that provides an interface by adding many convenient features and tools. 
+So just as the way of having access to a speedometer, 
+rearview mirrors, and a navigation system makes driving much easier, 
+using RStudio's interface makes using R much easier as well. 
+
+
+### Installing R and RStudio {#installing}
+
+> 
+  If you have a pre-existing installation of R and/or RStudio, 
+  you may skip this part. 
+  However, we highly recommend that you upgrade both to the latest version, 
+  if they have not been upgraded for a while. 
+  Consult Section \@ref(upgrade-r-rstudio) if you are not sure how to upgrade. 
+<
+
+
+You will first need to download and install both R and RStudio 
+(Desktop version) on your computer. 
+It is important that you install R first and then install RStudio.
+
+1. **You must do this first:** 
+   Download and install R by going to <https://cloud.r-project.org/>. 
+   \index{R!installation}
+    + If you are a *Windows* user: Click on "Download R for Windows", 
+      then click on "base", then click on the Download link. 
+    + If you are a *macOS* user: Click on "Download R for (Mac) OS X", 
+      then under "**Latest release**:" click on **R-X.X.X.pkg**, 
+      where R-X.X.X is the version number. 
+      For example, the latest version of R as of 2020-10-10, was R 4.0.3.
+    + If you are a Linux user: Click on "Download R for Linux" 
+      and choose your distribution for more information 
+      on installing R for your setup.
+1. **You must do this second:** 
+   Download and install RStudio at 
+   <https://www.rstudio.com/products/rstudio/download/>.
+    + Scroll down and look for a big blue button that says 
+      "DOWNLOAD RSTUDIO FOR ...", where `...` is your operating system. 
+    + Click on the button to start downloading 
+    + Once downloading has completed, 
+      double-click it to open, and follow the installation instruction. 
+      \index{RStudio!installation}
+1. **Complete this additional step only if you are a *macOS* user:**
+  Download and install XQuartz.
+  <!-- What is XQuartz and why does macOS users need it? -->
+  <!-- <https://www.reddit.com/r/explainlikeimfive/comments/2nba2t/eli5_what_is_xquartz_and_what_does_it_do_running/cmc3t0b?utm_source=share&utm_medium=web2x&context=3> -->
+    + Go to <https://www.xquartz.org>. 
+      Under “Quick Download”, click on “XQuartz-2.7.11.dmg".
+    + Save the `.dmg` file, double-click it to open, 
+      and follow the installation instructions 
+      (you may need to restart your computer). 
+    + Reminder: you will need to re-install XQuartz 
+      when upgrading your macOS to a new major version.
+
+### Using R via RStudio
+
+Recall our car analogy from earlier. 
+Much as we don't drive a car by interacting directly with the engine 
+but rather by interacting with elements on the car's dashboard, 
+we won't be using R directly but rather we will use RStudio's interface. 
+After you install R and RStudio on your computer, 
+you'll have two new *programs* (also called *applications*) you can open. 
+We'll always work in RStudio and not in the R application. 
+Figure \@ref(fig:R-vs-RStudio-2) shows 
+what icon you should be clicking on your computer. 
+
+
+```{r R-vs-RStudio-2, echo=FALSE, fig.cap="Icons of R versus RStudio on your computer.", out.width="90%", purl=FALSE}
+knitr::include_graphics(here::here(
+                                   "docs", 
+                                   "images", 
+                                   "logos", 
+                                   "R_vs_RStudio.png")
+)
+```
+
+Unless otherwise specified, 
+I will be talking about `R` most of the time during this course, 
+even though we will be primarily using RStudio. 
+Here, I use `R` to refer to the programming language, 
+rather than the software you have just installed. 
+
+I will differentiate `R` and `RStudio` 
+whenever the topic is related to the interface of each application. 
+
+After you open RStudio, you should see something similar to Figure 
+\@ref(fig:RStudio-interface). 
+(Note that slight differences might exist 
+because this snapshot was taken in 2019 and 
+RStudio may have changed their interface since then.)
+
+```{r RStudio-interface, echo=FALSE, fig.cap="RStudio interface to R.", out.width="93%", purl=FALSE}
+knitr::include_graphics(here::here(
+                                   "docs", 
+                                   "images", 
+                                   "rstudio_screenshots", 
+                                   "rstudio.png")
+)
+```
+
+Note the three *panes* which are three panels dividing the screen: 
+the *console pane*, the *files pane*, and the *environment pane*. 
+Over the course of this chapter, 
+you'll come to learn what purpose each of these panes serves. 
+
+
+### Customize your RStudio {#setting}
+
+>
+  If you had preivously installed R and RStudio 
+  and have skipped the section on installation, 
+  I encourage you not to skip this part. 
+  There might be some recommended setting you have not done 
+  despite your familiarity with R and/or RStudio. 
+> 
+
+* In RStudio, go to *Tools >> Global Options*, 
+  make these changes to the setting as described in Figure \@ref(fig:RStudio-setting): 
+
+```{r RStudio-setting, fig.cap = "Start R with a blank slate, from R for Data Science, chapter 8", echo = FALSE}
+knitr::include_graphics(here::here(
+                                   "docs", 
+                                   "images", 
+                                   "rstudio-workspace.png")
+)
+```
+
+> 
+  [These settings] will cause you some short-term pain, 
+  because now when you restart RStudio 
+  it will not remember the results of the code that you ran last time. 
+  But this short-term pain will save you long-term agony 
+  because it forces you to capture all important interactions 
+  in your *source code*.
+  There’s nothing worse than discovering three months after the fact 
+  that you’ve only stored the *results* of an important calculation 
+  in your workspace, not the calculation itself in your source code.
+<
+
+* Optionally, you could also adjust the font size 
+via `Tools >> Global Options >> Appearance >> Editor font size`. 
+By default, it is set at 12. I find size 14 easier on my eyes. 
+
+
+### Test test test {#test-install}
+
+To make sure you have installed both R and RStudio properly, 
+type a simple command. 
+For example, place your cursor in the pane labelled `Console`, 
+type `x <- 2 + 2`, followed by `enter` or `return`. 
+Then type `x` followed by `enter` or `return`. 
+You should see the value `4` printed to the screen. 
+If yes, you've successfully installed R and RStudio. 
+
+## How do I code in R? {#code}
+
+<!-- An interactive demo to walk students through some basics.  -->
+<!-- Not necessarily in one go.  -->
+<!-- Can inject them into different lectures,  -->
+<!-- like mini sessions. -->
+<!--  -->
+<!-- Basics: -->
+<!--  -->
+<!-- Console pane -->
+<!-- Script -->
+<!-- Output/plot -->
+<!-- Environment (\*) -->
+<!--  -->
+<!-- Literate programming -->
+<!--  -->
+<!--  -->
+<!-- Objects -->
+<!-- Data types -->
+<!-- Vectors -->
+<!--  -->
+<!-- Factors -->
+<!-- Conditionals -->
+<!-- Functions -->
+
+The title of this section is mis-leading. 
+No one could answer the question "How to code in R" within a page or two. 
+Instead, what follows is some seeds I want to plant in your head 
+as you begin your coding journey in R. 
+We will revisit all of these concepts applied to various examples 
+as the course unfolds. 
+Before then, I want you to have a preview of them. 
+
+As you start using R --- the programming language, 
+the first thing to note is that unlike other statistical software programs 
+like Excel, SPSS, or Minitab that provide 
+[point-and-click](https://en.wikipedia.org/wiki/Point_and_click) interfaces, 
+R is an 
+[interpreted language](https://en.wikipedia.org/wiki/Interpreted_language). 
+This means you have to type in commands written in *R code*. 
+In other words, you have to code/program in R. 
+Note that we'll use the terms "coding" and "programming" interchangeably 
+in this book.
+
+While it is not required to be a seasoned coder/computer programmer to use R, 
+there is still a set of basic programming concepts 
+that new R users need to understand. 
+Consequently, while this book is not a book on programming, 
+you will still learn just enough of these basic programming concepts 
+needed to explore and analyze data effectively.
+
+
+### Basic programming concepts and terminology {#programming-concepts}
+
+We now introduce some basic programming concepts and terminology. 
+Instead of asking you to memorize all these concepts and terminology right now, 
+we'll guide you so that you'll "learn by doing." 
+To help you learn, we will always use a different font 
+to distinguish regular text from `computer_code`. 
+The best way to master these topics is, in our opinions, 
+through [deliberate practice](https://jamesclear.com/deliberate-practice-theory) 
+with R and lots of repetition.
+
+* Basics: \index{programming language basics}
+    + *Console pane*: where you enter in commands. \index{console}
+    + *Running code*: the act of telling R to perform an act by giving it commands in the console.
+    + *Objects*: where values are saved in R. We'll show you how to *assign* values to objects and how to display the contents of objects. \index{objects}
+    + *Data types*: integers, doubles/numerics, logicals, and characters. \index{data types} Integers are values like -1, 0, 2, 4092. Doubles or numerics are a larger set of values containing both the integers but also fractions and decimal values like -24.932 and 0.8. Logicals are either `TRUE` or `FALSE` while characters are text such as "cabbage", "Hamilton", "The Wire is the greatest TV show ever", and "This ramen is delicious." Note that characters are often denoted with the quotation marks around them.
+* *Vectors*: a series of values. These are created using the `c()` function, where `c()` stands for "combine" or "concatenate." For example, `c(6, 11, 13, 31, 90, 92)` creates a six element series of positive integer values \index{vectors}.
+* *Factors*: *categorical data* are commonly represented in R as factors. \index{factors} Categorical data can also be represented as *strings*. We'll study this difference as we progress through the book.
+* *Data frames*: rectangular spreadsheets. They are representations of datasets in R where the rows correspond to *observations* and the columns correspond to *variables* that describe the observations. \index{data frame} We'll cover data frames later in Section \@ref(nycflights13).
+* *Conditionals*: \index{conditionals}
+  + Testing for equality in R using `==` (and not `=`, which is typically used for assignment). For example, `2 + 1 == 3` compares `2 + 1` to `3` and is correct R code, while `2 + 1 = 3` will return an error.
+  + Boolean algebra: `TRUE/FALSE` statements and mathematical operators such as `<` (less than), `<=` (less than or equal), and `!=` (not equal to). \index{Boolean algebra} For example, `4 + 2 >= 3` will return `TRUE`, but `3 + 5 <= 1` will return `FALSE`.
+  + Logical operators: `&` representing "and" as well as `|` representing "or." For example, `(2 + 1 == 3) & (2 + 1 == 4)` returns `FALSE` since both clauses are not `TRUE` (only the first clause is `TRUE`). On the other hand, `(2 + 1 == 3) | (2 + 1 == 4)` returns `TRUE` since at least one of the two clauses is `TRUE`. \index{operators!logical}
+* *Functions*, also called *commands*: Functions perform tasks in R. They take in inputs called *arguments* and return outputs. You can either manually specify a function's arguments or use the function's *default values*. \index{functions} 
+  + For example, the function `seq()` in R generates a sequence of numbers. If you just run `seq()` it will return the value 1. That doesn't seem very useful! This is because the default arguments are set as `seq(from = 1, to = 1)`. Thus, if you don't pass in different values for `from` and `to` to change this behavior, R just assumes all you want is the number 1. You can change the argument values by updating the values after the `=` sign. If we try out `seq(from = 2, to = 5)` we get the result `2 3 4 5` that we might expect. 
+  + We'll work with functions a lot throughout this book and you'll get lots of practice in understanding their behaviors. To further assist you in understanding when a function is mentioned in the book, we'll also include the `()` after them as we did with `seq()` above.
+
+This list is by no means an exhaustive list of all the programming concepts and terminology needed to become a savvy R user; such a list would be so large it wouldn't be very useful, especially for novices. Rather, we feel this is a minimally viable list of programming concepts and terminology you need to know before getting started. We feel that you can learn the rest as you go.  Remember that your mastery of all of these concepts and terminology will build as you practice more and more.
+
+
+### Errors, warnings, and messages {#messages}
+
+One thing that intimidates new R and RStudio users is how it reports *errors*, *warnings*, and *messages*. R reports errors, warnings, and messages in a glaring red font, which makes it seem like it is scolding you. However, seeing red text in the console is not always bad.
+
+R will show red text in the console pane in three different situations:
+
+* **Errors**: \index{R!errors} When the red text is a legitimate error, it will be prefaced with "Error in…" and will try to explain what went wrong. Generally when there's an error, the code will not run. For example, we'll see in Subsection \@ref(package-use) if you see `Error in ggplot(...) : could not find function "ggplot"`, it means that the `ggplot()` function is not accessible because the package that contains the function (`ggplot2`) was not loaded with `library(ggplot2)`. Thus you cannot use the `ggplot()` function without the `ggplot2` package being loaded first.
+* **Warnings**: \index{R!warnings} When the red text is a warning, it will be prefaced with "Warning:" and R will try to explain why there's a warning. Generally your code will still work, but with some caveats. For example, you will see in Chapter \@ref(viz) if you create a scatterplot based on a dataset where two of the rows of data have missing entries that would be needed to create points in the scatterplot, you will see this warning: `Warning: Removed 2 rows containing missing values (geom_point)`. R will still produce the scatterplot with all the remaining non-missing values, but it is warning you that two of the points aren't there.
+* **Messages**: \index{R!messages} When the red text doesn't start with either "Error" or "Warning", it's *just a friendly message*. You'll see these messages when you load *R packages* in the upcoming Subsection \@ref(package-loading) or when you read data saved in spreadsheet files with the `read_csv()` function as you'll see in Chapter \@ref(tidy). These are helpful diagnostic messages and they don't stop your code from working. Additionally, you'll see these messages when you install packages too using `install.packages()` as discussed in Subsection \@ref(package-installation).
+
+Remember, when you see red text in the console, *don't panic*. It doesn't necessarily mean anything is wrong. Rather:
+
+* If the text starts with "Error", figure out what's causing it. <span style="color:red">Think of errors as a red traffic light: something is wrong!</span>
+* If the text starts with "Warning", figure out if it's something to worry about. For instance, if you get a warning about missing values in a scatterplot and you know there are missing values, you're fine. If that's surprising, look at your data and see what's missing. <span style="color:gold">Think of warnings as a yellow traffic light: everything is working fine, but watch out/pay attention.</span>
+* Otherwise, the text is just a message. Read it, wave back at R, and thank it for talking to you. <span style="color:green">Think of messages as a green traffic light: everything is working fine and keep on going!</span>
+
+
+### Tips on learning to code {#tips-code}
+
+Learning to code/program is quite similar to learning a foreign language. It can be daunting and frustrating at first. Such frustrations are common and it is normal to feel discouraged as you learn. However, just as with learning a foreign language, if you put in the effort and are not afraid to make mistakes, anybody can learn and improve. 
+
+Here are a few useful tips to keep in mind as you learn to program:
+
+* **Remember that computers are not actually that smart**: You may think your computer or smartphone is "smart," but really people spent a lot of time and energy designing them to appear "smart." In reality, you have to tell a computer everything it needs to do. Furthermore, the instructions you give your computer can't have any mistakes in them, nor can they be ambiguous in any way.
+* **Take the "copy, paste, and tweak" approach**: Especially when you learn your first programming language or you need to understand particularly complicated code, it is often much easier to take existing code that you know works and modify it to suit your ends. This is as opposed to trying to type out the code from scratch. We call this the *"copy, paste, and tweak"* approach. So early on, we suggest not trying to write code from memory, but rather take existing examples we have provided you, then copy, paste, and tweak them to suit your goals. After you start feeling more confident, you can slowly move away from this approach and write code from scratch. Think of the "copy, paste, and tweak" approach as training wheels for a child learning to ride a bike. After getting comfortable, they won't need them anymore. 
+* **The best way to learn to code is by doing**: Rather than learning to code for its own sake, we find that learning to code goes much smoother when you have a goal in mind or when you are working on a particular project, like analyzing data that you are interested in and that is important to you. 
+* **Practice is key**:  Just as the only method to improve your foreign language skills is through lots of practice and speaking, the only method to improving your coding skills is through lots of practice. Don't worry, however, we'll give you plenty of opportunities to do so!
+
+
+
+## What are R packages? {#packages}
+
+<!-- Would be worthwhile to go through some of the content  -->
+<!-- in this tutorial #R-ref -->
+<!-- <https://www.datacamp.com/community/tutorials/r-packages-guide> -->
+<!-- It explains how to get help for individual functions and packages  -->
+<!-- within command line, i.e., no need to leave IDE. -->
+<!-- Caveat: confusion around library vs. package, load vs. attach -->
+<!-- Caveat: somewhat outdated, RDocumentation is not actively maintained (?) -->
+<!--  -->
+<!--  -->
+<!-- Errors, warnings, and messages -->
+<!-- How to ask for help (reproducible example) -->
+<!--  -->
+<!-- Isolated environments (renv) -->
+
+Another point of confusion with many new R users is the idea of an R package. 
+R packages \index{R!packages} extend the functionality of R 
+by providing additional functions, data, and documentation. 
+They are written by a worldwide community of R users 
+and can be downloaded for free from the internet. 
+
+
+```{block many-r-packages, type="btw", purl=FALSE}
+\vspace{-0.15in}
+**_Many R packages_**
+
+\vspace{-0.1in}
+```
+
+Currently, the number of packages on CRAN, the Comprehensive R Archive 
+Network, is approaching 20,000, and has been growing exponentially. 
+Only four years ago, the number was 10,000. 
+<https://blog.revolutionanalytics.com/2017/01/cran-10000.html>
+
+```{block type="btw", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+For example, among the many packages we will use in this book 
+are the `ggplot2` package [@R-ggplot2] for data visualization 
+in Chapter \@ref(viz)\index{R packages!ggplot2}, 
+the `dplyr` package [@R-dplyr] for data wrangling in Chapter 
+\@ref(wrangling)\index{R packages!dplyr}, 
+the `moderndive` package [@R-moderndive] that accompanies this book
+\index{R packages!moderndive}, 
+and the `infer` package [@R-infer] for "tidy" 
+and transparent statistical inference in Chapters \@ref(confidence-intervals), 
+\@ref(hypothesis-testing), 
+and \@ref(inference-for-regression)\index{R packages!infer}.
+
+A good analogy for R packages \index{R packages} 
+is they are like apps you can download onto a mobile phone:
+
+```{r R-vs-R-packages, echo=FALSE, fig.cap="Analogy of R versus R packages.", out.width="70%", purl=FALSE}
+knitr::include_graphics(here::here(
+                                   "docs", 
+                                   "images", 
+                                   "shutterstock", 
+                                   "R_vs_R_packages.png")
+)
+```
+
+So R is like a new mobile phone: 
+while it has a certain amount of features when you use it for the first time, 
+it doesn't have everything. 
+R packages are like the apps you can download onto your phone 
+from Apple's App Store or Android's Google Play. 
+
+Let's continue this analogy by considering the Instagram app 
+for editing and sharing pictures. 
+Say you have purchased a new phone 
+and you would like to share a photo on Instagram. 
+Since your phone is new and does not include the Instagram app, 
+you need to download and install the app 
+from either the App Store or Google Play. 
+You do this once and you're set for the time being. 
+You might need to do this again in the future 
+when there is an update to the app.
+Once Instagram is installed on your phone, 
+you can then proceed to share your photo with your friends and family. 
+assuming you already have an Instagram account set up. 
+
+
+Using an R package is a very similar process. 
+You need to *install the package*. 
+Although there are some packages already bundled with the base R 
+you just installed from the previous section, 
+most packages are not installed by default when you install R and RStudio. 
+Thus if you want to use such a package for the first time, 
+you need to install it first. 
+Once you've installed a package, 
+you likely won't install it again 
+until you need to update it to a newer version.
+
+### Before we install any packages {#workflow}
+
+Having made this much fuss about what packages are, 
+you'd expect that we are going to install some packages next. 
+
+I must confess that that is what I have practiced and taught in the past: 
+Set up R and RStudio, install a bunch of packages, 
+and start crunching numbers. 
+Although it is an easier path to take, 
+over the past year or so, I have come to realize that it is not the optimal one. 
+Worse still, it becomes problematic as soon as you finish the course 
+and start tackling real-world data which often are messy and complex. 
+To prepare you for the real world, 
+we must discuss **workflow** first. 
+
+I made this decision, fully aware that this section could be confusing 
+to some of you at first, or even turn away some faint-hearted. 
+Understanding what a workflow is, and setting it up, requires you to 
+be familiar with the basics of R syntax and some programming concepts. 
+However, neither of them is a prerequisite for this course. 
+Therefore, I have to assume that what I am about to explain 
+may seem disconnected or outright nonsense. 
+
+I will describe steps for you to follow, 
+and provide rationale for these steps whenever possible. 
+Some of the explanations may still seem nebulous to you, 
+especially if you have not done programming before. 
+Rest assured, by the end of this semester, 
+you will understand them much better. 
+I ask everyone to tolerate some ambiguity at this point. 
+Buckle up. The ride is about to get wild. 
+
+* Setting up a project folder as your first sandbox. 
+
+During your interaction with RStudio, 
+you will generate different types of files. 
+It is recommended that you group these files into *project folders*. 
+Each folder corresponds to one project. 
+A project could be a dataset you need to analyze for a course, 
+or your entire thesis. 
+For the purpose of this course, 
+I suggest that you set up at least two project folders. 
+One for the final project, 
+another as a playground for you to practice various R functions. 
+Let's start by creating the second project folder, and 
+name it however you want. 
+For example, go to "Documents" on your computer 
+and create a folder there called "cgsc5101-sandbox". 
+Think carefully about where this project folder should live. 
+Place it somewhere sensible, so that it will be easy to find in the future. 
+
+
+Once this folder has been created, 
+next is to let RStudio know that you want to associate this folder with 
+all the files related to the intended project. 
+
+1. Click the "File" menu button, 
+	 make sure that the second to last item "Close Project" is greyed out. 
+	 Otherwise, close the current project that you are in. 
+1. Under the same "File" menu, 
+	 click "New Project". 
+1. Click "Existing Directory". 
+1. Click "Browse", and select the folder you have just created moments ago, 
+	 then click "Open". 
+1. Click the "Create Project" button.
+
+Now, if you look at the folder you have created before, 
+if it used to be empty, it should have a new file named `xxx.Rproj`, 
+where `xxx` is the name of your folder as well as the project. 
+
+To confirm that the project has been set up properly, 
+
+1. Exist RStudio. 
+1. Double click on the `.Rproj`	file. 
+
+RStudio should open now, 
+with the the project name displayed on the far right corner of the window. 
+
+Execute the following command to add a few more empty subfolders 
+inside the project: 
+
+```{r project-structure, eval=F}
+sapply(c("data", "scripts", "results"), dir.create)
+```
+
+Now you should see these newly added sub-folders inside your project folder. 
+
++ **data** - this will be the subfolder to store raw data files 
+	for analysis. 
+	These files could be anything from SPSS (*.sav) files, Excel / CSV files, 
+	or *.RDS files. 
+	The key idea is that these source data files should be treated as 
+	"read-only". 
+	They should be preserved in their original condition 
+	to ensure reproducibility. 
++ **scripts** - this is where you will store your R scripts and RMarkdown files. 
+	This is where you will spend most of your time on. 
++ **results** - save all the output from your analysis here, 
+	including plots, reports, etc. 
+	Treat this folder as disposable. 
+	Everything in this folder should be able to be regenerated from your scripts. 
+
+Up to this point, you have set up a simple project. 
+There are many ways to set up a project. 
+Look up "R project structure" and take your pick. 
+Here are a few links for you to explore: 
+
++ <https://r4ds.had.co.nz/workflow-projects.html>
++ <https://martinctc.github.io/blog/rstudio-projects-and-working-directories-a-beginner's-guide/>
++ <http://swcarpentry.github.io/r-novice-gapminder/02-project-intro/>
++ <https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects>
+
+
+We have completed the first step in our workflow 101. 
+Next on the agenda is `renv`. 
+I will leave out a detailed account of the rationale for now, 
+and only describe the steps you need to take. 
+
+Excute these commands one at a time in the console, 
+wait while each command takes time to complete. 
+Lines starting with `#` are comments.
+ 
+
+```{r renv, eval=F}
+# install package "remotes"
+if (!requireNamespace("remotes")) install.packages("remotes")
+
+# install package "renv"
+remotes::install_github("rstudio/renv")
+
+# initialize `renv` for the current project
+renv::init()
+```
+
+After successfully executing these three commands, 
+use the RStudio menu itme "Session > Restart R" to restart R. 
+Alternatively, you can use keyboard shortcut 
+Ctrl+Shift+F10 (Windows and Linux) or Command+Shift+F10 (Mac OS) 
+to restart R. 
+
+Inside the console, type `.libPaths()`, 
+and confirm that the output looks similar to this: 
+
+> 
+	[1] "/Users/chunyun/Documents/cgsc5101-sandbox/renv/library/R-4.0/..."
+
+	[2] ...
+<
+
+Presumably, your output will not have "chunyun", but your own user name, 
+and the "cgsc5101-sandbox" would be replaced with whatever folder name 
+you have used. 
+
+If the output looks different, repeat the three commands 
+I have mentioned and try again, or consult Google. 
+If nothing works, book a coaching session with me. 
+
+
+If you get a warning that starts with  
+"The following required packages are not installed", 
+try execute an additional command `renv::hydrate()`, 
+followed by `renv::snapshot()`, to update the state of the project. 
+
+Confirm that `renv` is working properly by typing `.libPahts()` again 
+in the console and look for an output as described above. 
+
+At this point, you should find an additional file called `renv.lock` 
+and a folder `renv` in your project folder. 
+
+Congratulations! You have set up a workflow 
+that will prove its value as you learn to become a pro. 
+
+<https://rstudio.github.io/renv/index.html>
+
+Now you are ready to install more packages. 
+Let's install the `ggplot2` package for data visualization.
+
+
+### Package installation {#package-installation}
+
+Install `ggplot2` by typing `install.packages("ggplot2")` 
+in the console pane of RStudio and pressing Return/Enter on your keyboard. 
+Note you must include the quotation marks around the name of the package.
+Much like an app on your phone, you only have to install a package once. 
+
+\vspace{0.1in}
+
+```{block lc2-0, type="learncheck", purl=FALSE}
+\vspace{-0.15in}
+**_Learning check_**
+\vspace{-0.1in}
+```
+
+**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
+Repeat the earlier installation steps, but for the `dplyr`, `nycflights13`, and `knitr` packages. This will install the earlier mentioned `dplyr` package for data wrangling, the `nycflights13` package containing data on all domestic flights leaving a NYC airport in 2013, and the `knitr` package for generating easy-to-read tables in R. We'll use these packages in the next section.
+
+```{block type="learncheck", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+ 
+\vspace{0.1in}
+ 
+
+
+## Explore your first datasets {#nycflights13}
+
+Let's put everything we've learned so far into practice 
+and start exploring some real data! 
+
+<!-- Data comes to us in a variety of formats,  -->
+<!-- from pictures to text to numbers.   -->
+<!-- Throughout this book,  -->
+<!-- we'll focus on datasets that are saved in "spreadsheet"-type format.  -->
+<!-- This is probably the most common way data are collected  -->
+<!-- and saved in many fields.   -->
+<!-- Remember from Subsection \@ref(programming-concepts) that  -->
+<!-- these "spreadsheet"-type datasets are called  -->
+<!-- _data frames_ in R. \index{data frame}  -->
+<!-- We'll focus on working with data saved as data frames throughout this book. -->
+
+<!-- Let's first load all the packages needed for this chapter,  -->
+<!-- assuming you've already installed them.  -->
+<!-- Read Section \@ref(packages) for information  -->
+<!-- on how to install and load R packages if you haven't already. -->
+
+<!-- Maybe a snapshot of the data in spreadsheet form  -->
+
+This is a dataset that contains on-time data for all domestic flights 
+departing from one of New York City's three main airports in 2013: 
+Newark Liberty International (EWR), 
+John F. Kennedy International (JFK), 
+and LaGuardia Airport (LGA).
+
+<!-- Different ways to explore data,  -->
+<!-- including View(), glimpse, str, head, kable, `$`,  -->
+<!--  -->
+<!-- Type of variables (segue to theory) -->
+
+
+The following code gives us access to the data, 
+as well as the to some tools so we can interact with the data. 
+
+```{r install-package, eval=F}
+# Install xfun so that I can use xfun::pkg_load2
+if (find.package('xfun') == '') install.packages('xfun')
+xf <- loadNamespace('xfun')
+
+cran_primary <- c(
+                  "dplyr", 
+                  "knitr", 
+                  "nycflights13"
+)
+cran_secondary <- c(
+                    # "patchwork", 
+                    # "readr", 
+                    # "scales", 
+                    # "stringr"
+)
+
+if (length(cran_primary) != 0) xf$pkg_load2(cran_primary)
+if (length(cran_secondary != 0) xf$pkg_load2(cran_secondary)
+```
+
+```{r import, message=FALSE, warning=FALSE}
+import::from(nycflights13, df_flights = flights)
+
+# gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+# dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
+
+import::from(magrittr, '%>%', '%T>%')
+```
+
+Looks intimidating? 
+Fear not!
+As the course unfolds, we will unpack codes like these 
+and you will become a master!
+For now, let me reassure you that 
+the tools are set and 
+the data are ready for inspectation. 
+Let's proceed! 
+
+### First impression of a data frame
+
+Let's begin by exploring the `df_flights` data frame 
+and get an idea of its structure. 
+Run the following code in your console, 
+either by typing it or by cutting-and-pasting it. 
+It displays the contents of the `df_flights` data frame in your console. 
+Note that depending on the size of your monitor, the output may vary slightly. 
+
+
+```{r vis-df-flights}
+df_flights
+```
+
+```{r echo=FALSE, purl=FALSE}
+# This redundant code is used for dynamic non-static in-line text output purposes
+# flights_rows <- nrow(df_flights)
+flights_rows <- df_flights %>%
+  nrow() %>%
+  formatC(big.mark = ",")
+#   scales::comma()
+flights_cols <- df_flights %>% ncol()
+```
+
+Let's unpack this output:
+
+* ``A tibble: `r flights_rows` x `r flights_cols` ``: 
+  A `tibble` is a specific kind of data frame in R.
+  This particular data frame has
+    + `` `r flights_rows` `` rows corresponding to different *observations*. 
+      Here, each observation is a flight.
+    + `` `r flights_cols` `` columns corresponding to `r flights_cols` 
+      *variables* describing each observation.
+* `year`, `month`, `day`, `dep_time`, `sched_dep_time`, `dep_delay`, 
+  and `arr_time` are the different columns, 
+  in other words, the different variables of this dataset.
+* We then have a preview of the first 10 rows of observations corresponding 
+  to the first 10 flights. R is only showing the first 10 rows, 
+  because if it showed all `` `r flights_rows` `` rows, 
+  it would overwhelm your screen.
+* ``... with `r (df_flights %>% nrow() - 10L) %>% formatC(
+  big.mark = ",")` more rows, 
+  and `r flights_cols - 8` more variables:`` 
+  indicating to us that 
+  `r (df_flights %>% nrow() - 10) %>% formatC(big.mark = ",")` 
+  more rows of data and 11 more variables could not fit in this screen.
+
+This output gives us a nice preview. 
+Let's look at some different ways to explore data frames.
+
+
+### exploring data frames {#exploredataframes}
+
+There are many ways to get a feel for the data 
+contained in a data frame such as `df_flights`. 
+We present three functions,
+all take as their "argument" (their input) the data frame in question. 
+We also include a fourth method 
+for exploring one particular column of a data frame:
+
+1. using the `View()` function, which brings up rstudio's built-in data viewer.
+1. using the `glimpse()` function, which is included in the `dplyr` package.
+1. using the `kable()` function, which is included in the `knitr` package.
+1. using the `$` "extraction operator," 
+   which is used to view a single variable/column in a data frame.
+
+**1. `View()`**:
+
+Run `View(df_flights)` \index{r packages!utils!view()} 
+in your console in rstudio, 
+either by typing it or cutting-and-pasting it into the console pane. 
+Explore this data frame in the resulting pop up viewer. 
+You should get into the habit of viewing any data frames you encounter. 
+Note the uppercase `V` in `View()`. r is case-sensitive, 
+so you'll get an error message if you run `view(df_flights)` 
+instead of `View(df_flights)`.
+
+
+\vspace{0.1in}
+
+```{block lc2-2, type="learncheck", purl=FALSE}
+\vspace{-0.15in}
+**_learning check_**
+\vspace{-0.1in}
+```
+
+**`r paste0("(lc", chap, ".", (lc <- lc + 1), ")")`** 
+what does any *one* row in this `flights` dataset refer to?
+
+- a. data on an airline 
+- b. data on a flight
+- c. data on an airport
+- d. data on multiple flights
+
+```{block, type="learncheck", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+\vspace{0.1in}
+
+By running `View(df_flights)`, 
+we can explore the different *variables* listed in the columns. 
+Observe that there are many different types of variables.  
+Some of the variables like `distance`, `day`, and `arr_delay` 
+are what we will call *quantitative* variables. \index{quantitative} 
+These variables are numerical in nature.  
+Other variables here are \index{categorical} *categorical*.
+
+
+
+Note that if you look in the leftmost column of the `view(df_flights)` output, 
+you will see a column of numbers. 
+These are the row numbers of the dataset. 
+If you glance across a row with the same number, say row 5, 
+you can get an idea of what each row is representing. 
+This will allow you to identify what object is being described in a given row 
+by taking note of the values of the columns in that specific row. 
+
+This is often called the *observational unit*.\index{observational unit} 
+The observational unit in this example is an individual flight departing 
+from new york city in 2013. 
+You can identify the observational unit 
+by determining what "thing" is being measured 
+or described by each of the variables. 
+We'll talk more about observational units in subsection 
+\@ref(identification-vs-measurement-variables) 
+on *identification* and *measurement* variables.
+
+
+**2. `dplyr::glimpse()`**:
+
+The second way we'll cover to explore a data frame 
+is using the `glimpse()` function \index{dplyr!glimpse()} 
+included in the \index{dplyr|seealso{r packages!dplyr}} `dplyr` package. 
+
+<!-- you can only use the `glimpse()` function  -->
+<!-- after you've loaded the `dplyr` package by running `library(dplyr)`.  -->
+This function provides us with an alternative perspective 
+for exploring a data frame than the `View()` function:
+
+```{r}
+dplyr::glimpse(df_flights)
+```
+
+Observe that `dplyr::glimpse()` will give you the first few entries 
+of each variable in a row after the variable name.  
+In addition, the *data type* (see subsection \@ref(programming-concepts)) 
+of the variable is given immediately after each variable's name inside `< >`.  
+Here, `int` and `dbl` refer to "integer" and "double", 
+which are computer coding terminology for quantitative/numerical variables. 
+"doubles" take up twice the size to store on a computer compared to integers. 
+
+In contrast, `chr` refers to "character", 
+which is computer terminology for text data. 
+In most forms, text data, such as the `carrier` or `origin` of a flight, 
+are categorical variables. 
+The `time_hour` variable is another data type: `dttm`. 
+These types of variables represent date and time combinations. 
+However, we won't work with dates and times in this book; 
+we leave this topic for other data science books like 
+[*introduction to data science* by tiffany-anne timbers, melissa lee, and trevor campbell](https://ubc-dsci.github.io/introduction-to-datascience/) 
+or [*r for data science*](https://r4ds.had.co.nz/dates-and-times.html). 
+
+
+\vspace{0.05in}
+
+```{block lc2-3, type="learncheck", purl=FALSE}
+\vspace{-0.15in}
+**_learning check_**
+\vspace{-0.1in}
+```
+
+**`r paste0("(lc", chap, ".", (lc <- lc + 1), ")")`** what are some other examples in this dataset of *categorical* variables?  what makes them different than *quantitative* variables?
+
+```{block, type="learncheck", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+\vfill\smallskip
+
+
+**3. `knitr::kable()`**:
+
+Another way to explore the entirety of a data frame is using the `kable()` 
+\index{knitr!kable()} function from the \index{knitr|seealso{R packages!knitr}}
+`knitr` package. 
+Let's explore the different carrier codes for all the airlines 
+in our dataset two ways. 
+Run both of these lines of code in the console:
+
+```{r eval=FALSE}
+df_flights
+kable(df_flights)
+```
+
+At first glance, 
+it may not appear that there is much difference in the outputs. 
+However, when using tools for producing reproducible reports such as 
+[R Markdown](http://rmarkdown.rstudio.com/lesson-1.html), 
+the latter code produces output that is much more legible and reader-friendly. 
+You'll see us use this reader-friendly style in many places in the book 
+when we want to print a data frame as a nice table.
+
+**4. `$` operator**
+
+Lastly, the `$` operator \index{operators!dollar sign} 
+allows us to extract and then explore a single variable within a data frame. 
+For example, run the following in your console
+
+```{r eval=FALSE}
+df_flights$carrier
+```
+
+We used the `$` operator to extract only the `carrier` variable 
+and return it as a vector of length 16\index{vectors}. 
+We'll only be occasionally exploring data frames using the `$` operator, 
+instead favoring the `View()` and `glimpse()` functions.
+
+
+### Identification and measurement variables {#identification-vs-measurement-variables}
+
+There is a subtle difference between the kinds of variables 
+that you will encounter in data frames. 
+There are *identification variables* and *measurement variables*. 
+For example, let's explore another data frame, `airports`,  
+using the function we have just used, `dplyr::glimpse`.
+
+```{r}
+import::from(nycflights13, df_airports = flights)
+dplyr::glimpse(df_airports)
+```
+
+The data frame `df_airports` contains names, codes, and locations of 1000+ 
+US airports. 
+The variables `faa` and `name` are what we will call *identification variables*, 
+variables that uniquely identify each observational unit. 
+In this case, the identification variables uniquely identify airports. 
+Such variables are mainly used in practice to uniquely identify 
+each row in a data frame. 
+`faa` gives the unique code provided by the FAA for that airport, 
+while the `name` variable gives the longer official name of the airport. 
+The remaining variables (`lat`, `lon`, `alt`, `tz`, `dst`, `tzone`) 
+are often called *measurement* or *characteristic* variables: 
+variables that describe properties of each observational unit. 
+For example, 
+`lat` and `long` describe the latitude and longitude of each airport. 
+
+Furthermore, sometimes a single variable might not be enough 
+to uniquely identify each observational unit: 
+combinations of variables might be needed. 
+While it is not an absolute rule, 
+for organizational purposes it is considered good practice 
+to have your identification variables 
+in the leftmost columns of your data frame.
+
+```{block lc3-3c, type="learncheck", purl=FALSE}
+\vspace{-0.15in}
+**_Learning check_**
+\vspace{-0.1in}
+```
+
+**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
+What properties of each airport do the variables 
+`lat`, `lon`, `alt`, `tz`, `dst`, and `tzone` 
+describe in the `airports` data frame? Take your best guess.
+
+**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
+Provide the names of variables in a data frame with 
+at least three variables where one of them is an identification variable 
+and the other two are not. 
+Further, create your own tidy data frame that matches these conditions.
+
+```{block, type="learncheck", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+
+### Help files
+
+`R` comes with a comprehensive "how-to" manual. 
+Let's try to use it: 
+
+```{r eval=F}
+help("flights", package="nycflights13")
+```
+
+
+This is another nice feature of R: its vast collection of help files, 
+which provide documentation for various functions and datasets. 
+
+A shorthand for the `help` function is 
+by adding a `?` \index{operators!?} before the name of inquiry. 
+You will then be presented with a page showing the corresponding documentation 
+if it exists.  
+
+
+```{r eval=F}
+# This is equivalent to help("flights", package="nycflights13")
+?nycflights13::flights
+```
+
+
+```{block lc4, type="learncheck", purl=FALSE}
+\vspace{-0.15in}
+**_Learning check_**
+\vspace{-0.1in}
+```
+
+**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
+What happens when you type `?flights` into the console? 
+How about `?cars`?
+
+```{block type="learncheck", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+## Conclusion
+
+We've given you what we feel is a minimally viable set of tools 
+to explore data in R. 
+Does this chapter contain everything you need to know? 
+Absolutely not. 
+To try to include everything in this chapter would make the chapter 
+so large it wouldn't be useful! 
+As we said earlier, 
+the best way to add to your toolbox is to get into RStudio 
+and run and write code as much as possible.
+
+
+## Additional resources
+
+If you are new to the world of coding, R, and RStudio 
+and feel you could benefit from a more detailed introduction, 
+we suggest you check out the short book, 
+[*Getting Used to R, RStudio, and R Markdown*](https://rbasics.netlify.app/) 
+[@usedtor2016]. It includes screencast recordings 
+that you can follow along and pause as you learn. 
+This book also contains an introduction to R Markdown, 
+a tool used for reproducible research in R.
+
+(ref:ismay-book) Preview of *Getting Used to R, RStudio, and R Markdown*.
+
+```{r ismay-book, echo=FALSE, fig.cap="(ref:ismay-book)", purl=FALSE}
+knitr::include_graphics(here::here("docs", "images", "copyright", 
+                            "getting-used-to-R.png"))
+```
+
+### Upgrade R and/or RStudio {#upgrade-r-rstudio}
+
+There are many ways to upgrade R and/or RStudio. 
+I will describe one of them here. 
+If you alreays know how to upgrade them, keep doing what you have been doing. 
+
+To upgrade R, find out the current version of R running on your computer. 
+You can do so from within RStudio.  
+
+Type `R.version.string` in the console 
+and you should see something like this printed out: 
+
+> [1] "R version 4.0.3 (2020-10-10)"
+
+As of 2021 January, the latest R version is `4.0.3`. 
+If you have an older version installed on your computer, 
+go to <https://cloud.r-project.org> and 
+follow the steps described in xx to install the latest version of R. 
+
+Restart RStudio and type `R.version.string` in the console 
+to confirm the upgrade was successful. 
+
+To upgrade RStudio from within RStudio, 
+go to `Help > Check for Updates` 
+to install newer version of RStudio (if available).
+
+Once both R and RStudio have been upgraded, 
+test by typing some simple command in the console (e.g., \@ref(test-install)). 
+
+## What's to come?
+
+We're now going to start the "Data Science with `tidyverse`" portion 
+of this book in Chapter \@ref(viz) as shown 
+in Figure \@ref(fig:moderndive-flowchart) 
+with what we feel is the most important tool in a data scientist's toolbox: 
+data visualization. 
+We'll continue to explore the data included in the `nycflights13` package 
+using the `ggplot2` package for data visualization. 
+You'll see that data visualization is a powerful tool 
+to add to your toolbox for data exploration 
+that provides additional insight 
+to what the `View()` and `glimpse()` functions can provide. 
+
+(ref:flowchart2) *ModernDive* flowchart - on to Part I!
+
+```{r moderndive-flowchart, echo=FALSE, fig.cap="(ref:flowchart2)", out.width="100%", out.height="100%", purl=FALSE}
+knitr::include_graphics(here::here("docs", "images", "flowcharts", "flowchart", 
+                                   "flowchart.004.png"))
+```
+

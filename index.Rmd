@@ -1,12 +1,13 @@
 --- 
 title: "Baby Modern Dive"
-author: "Chunyun Ma, Chester Ismay, Albert Y. Kim"
+subtitle: "A ModernDive into R and the Tidyverse"
+author: "Chester Ismay, Albert Y. Kim, Chunyun Ma"
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 output: bookdown::gitbook
 documentclass: book
-bibliography: [bib/book.bib, bib/packages.bib]
-biblio-style: apalike
+bibliography: [bib/books.bib, bib/packages.bib]
+biblio-style: "apalike"
 link-citations: yes
 github-repo: chunyunma/baby-modern-dive
 description: 'Adapted Modern Dive for CGSC5101\/HCIN5400'
@@ -15,23 +16,126 @@ url: 'https\://.chunyunma.me'
 
 # Prerequisites
 
-This is a _sample_ book written in **Markdown**. You can use anything that Pandoc's Markdown supports, e.g., a math equation $a^2 + b^2 = c^2$.
+```{r load-package, message=F, warning=F}
+#
+# Install packages
+#
+# Install xfun so that I can use xfun::pkg_load2
+if (find.package('xfun') == '') install.packages('xfun')
+xf <- loadNamespace('xfun') # use function from base R before import is installed
 
-The **bookdown** package can be installed from CRAN or Github:
 
-```{r eval=FALSE}
-install.packages("bookdown")
-# or the development version
-# devtools::install_github("rstudio/bookdown")
+cran_packages = c(
+                  # Packages required by students: 
+                  "gapminder", 
+                  "ggplot2", 
+                  "knitr", 
+                  "nycflights13", 
+                  "moderndive", 
+                  "skimr", 
+                  # Packages used internally: 
+                  "bookdown", 
+                  "broom", 
+                  "janitor", 
+                  "dplyr", 
+                  "here", 
+                  "import", 
+                  "kableExtra", 
+                  "magrittr", 
+                  "mvtnorm", 
+                  "patchwork", 
+                  "readr", 
+                  "remotes", 
+                  "rmarkdown", 
+                  # "scales", 
+                  "stringr", 
+                  "tibble"
+)
+
+# Need to cite these packages separately
+gh_repos = c(
+             # Required by students:
+             
+             # Used internally: 
+             "cboettig/knitcitations", 
+             "ROpenSci/bibtex"
+             )
+
+if (length(cran_packages) != 0) xf$pkg_load2(cran_packages)
+if (length(gh_repos) != 0) xf$install_github(gh_repos)
 ```
 
-Remember each Rmd file contains one and only one chapter, and a chapter is defined by the first-level heading `#`.
-
-To compile this example to PDF, you need XeLaTeX. You are recommended to install TinyTeX (which includes XeLaTeX): <https://yihui.name/tinytex/>.
+```{r bib, echo=F, message=F, warning=F}
+kn <- import::from(knitr, .all=TRUE, .into={new.env()})
 
 ```{r include=FALSE}
 # automatically create a bib database for R packages
-knitr::write_bib(c(
-  .packages(), 'bookdown', 'knitr', 'rmarkdown'
-), 'bib/packages.bib')
+#
+kn$write_bib(
+                 c('xfun', 
+                   cran_packages, gh_repos
+                   ), 
+                 here::here('bib', 'packages.bib')
+)
 ```
+
+
+
+# Welcome {-#welcome}
+
+This website contains course notes for CGSC5101/HCIN5400. 
+
+## Colophone {-}
+
+This website is built using [`bookdown`](https://github.com/rstudio/bookdown) package 
+and hosted with [Netlify](https://www.netlify.com/). 
+For more information on how to use `bookdown` 
+see [bookdown.org](https://bookdown.org/). 
+The complete source of this website is available on 
+[Github](https://github.com/chunyunma/baby-modern-dive). 
+You are encouraged to report any errors or to make suggestions 
+via the `issues` function on the github page. 
+
+</br>
+
+## License {-}
+
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />This work by [Chester Ismay](https://chester.rbind.io/), [Albert Y. Kim](https://rudeboybert.rbind.io/), and Chunyun Ma is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
+
+*Below is a human-readable summary of (and not a substitute for) the license.
+Please see <https://creativecommons.org/licenses/by-sa/4.0/legalcode> for the full legal text.*
+
+**You are free to:**
+
+- **Share**---copy and redistribute the material in any medium or format
+
+- **Remix**---remix, transform, and build upon the material for any
+  purpose, even commercially.
+
+The licensor cannot revoke these freedoms as long as you follow the
+license terms.
+
+**Under the following terms:**
+
+- **Attribution**---You must give appropriate credit, provide a link
+  to the license, and indicate if changes were made. You may do so in
+  any reasonable manner, but not in any way that suggests the licensor
+  endorses you or your use.
+  
+- **ShareAlike**---If you remix, transform, or build upon the material, 
+  you must distribute your contributions under the same license as the original. 
+
+- **No additional restrictions**---You may not apply legal terms or
+  technological measures that legally restrict others from doing
+  anything the license permits.
+
+**Notices:**
+
+You do not have to comply with the license for elements of the
+material in the public domain or where your use is permitted by an
+applicable exception or limitation.
+
+No warranties are given. The license may not give you all of the
+permissions necessary for your intended use. For example, other rights
+such as publicity, privacy, or moral rights may limit how you use the
+material.

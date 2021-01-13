@@ -1,10 +1,19 @@
 book_filename: "baby-modern-dive"
-# prefix to each chapter heading
-chapter_name: "Chapter "
-rmd_files: ["index.Rmd", "content/01-intro.Rmd", "content/02-literature.Rmd", 
-            "content/03-method.Rmd", "content/04-application.Rmd", 
-            "content/05-summary.Rmd", "content/06-references.Rmd"]
-# new_session: yes
+rmd_files: [
+  "index.Rmd", 
+  "00-housekeeping.Rmd", 
+  "01-getting-started.Rmd", 
+  # "02-data-visualization.Rmd", 
+  "05-regression.Rmd", 
+  # "content/03-method.Rmd", 
+  # "content/04-application.Rmd", 
+  # "content/05-summary.Rmd", 
+  # "content/06-references.Rmd", 
+  # "anscombe.Rmd", 
+  "99-references.Rmd"
+  ]
+before_chapter_script: ["rscript/setup.R"]
+new_session: yes
 language:
   ui:
     chapter_name: "Chapter "

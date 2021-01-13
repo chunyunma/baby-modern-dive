@@ -6,3 +6,5 @@ local({
 
 source("renv/activate.R")
 options(bookdown.clean_book = TRUE)
+options(pkgType = "binary")
+options("citation_format" = "pandoc")

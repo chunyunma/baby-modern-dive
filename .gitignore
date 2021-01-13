@@ -14,4 +14,6 @@ renv/*
 !renv/activate.R
 _tmp
 baby-modern-dive.rds
-
+*.tsv
+bib/*
+docs/*

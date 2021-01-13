@@ -47,7 +47,7 @@ jobs:
       - name: Build site
         run: Rscript -e 'bookdown::render_book("index.Rmd", quiet = TRUE)'
 
-      - name: Deploy to Netlify
+      - name: Deploy to Netlify # stole from Hadley's r4ds repo
         uses: nwtgck/actions-netlify@v1.1
         with:
           publish-dir: './_book'

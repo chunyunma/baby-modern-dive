@@ -15,7 +15,13 @@ rmd_files: [
 before_chapter_script: ["rscript/setup.R"]
 new_session: yes
 language:
+  label:
+    # keeping the default, may change later
+    fig: 'Figure '
+    tab: 'Table '
+    eq: 'Equation '
   ui:
-    chapter_name: "Chapter "
+    chapter_name: 'Chapter ' 
+    appendix_name: 'Appendix '
 delete_merged_file: true
-clean: ["my-book.bbl", "R-packages.bib"]
+# clean: ["bib/book.bib", "bib/packages.bib"]

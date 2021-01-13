@@ -14,9 +14,8 @@ description: 'Adapted Modern Dive for CGSC5101\/HCIN5400'
 url: 'https\://.chunyunma.me'
 ---
 
-# Prerequisites
 
-```{r load-package, message=F, warning=F}
+```{r load-package, echo=F, message=F, warning=F}
 #
 # Install packages
 #
@@ -68,7 +67,7 @@ if (length(gh_repos) != 0) xf$install_github(gh_repos)
 ```{r bib, echo=F, message=F, warning=F}
 kn <- import::from(knitr, .all=TRUE, .into={new.env()})
 
-```{r include=FALSE}
+#
 # automatically create a bib database for R packages
 #
 kn$write_bib(

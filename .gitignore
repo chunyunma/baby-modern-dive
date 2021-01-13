@@ -1,6 +1,6 @@
 myrbook-link
 .DS_Store
-content/.DS_Store
+content
 .lintr
 .Rproj.user
 .Rhistory

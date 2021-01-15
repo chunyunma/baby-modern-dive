@@ -1871,13 +1871,16 @@ if (!file.exists(here::here(
                             "summary_table_ch2.rds"))) {
   summary_table_ch2 <-
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vRGaUW6EMIGPhg2V7CahoSdVi_JCcESFRYV5tov6bjcwOcn7DZDzfpZgrvjfFG6PV57gcJYIrwl_Q2c/pub?gid=0&single=true&output=csv" %>%
-    readr::read_csv(na = "") %>% 
-    dp$rename(` ` = `X1`)
+    readr::read_csv(na = "")
+    # dp$rename(` ` = `X1`)
   summary_table_ch2$Notes[2] <- "Used when there is a sequential order to x-variable, e.g., time"
-  readr::write_rds(summary_table_ch2, "rds/summary_table_ch2.rds")
+  readr::write_rds(summary_table_ch2, here::here("rds", "summary_table_ch2.rds"))
 } else {
-  summary_table_ch2 <- readr::read_rds("rds/summary_table_ch2.rds") %>%
-    dp$rename(` ` = `X1`)
+  summary_table_ch2 <- readr::read_rds(here::here(
+                                                  "rds", 
+                                                  "summary_table_ch2.rds")
+  )
+    # dp$rename(` ` = `X1`)
 }
 
 summary_table_ch2 %>%

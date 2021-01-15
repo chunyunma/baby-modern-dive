@@ -54,7 +54,7 @@ thanks to my degree in math cognition and years of teaching/coaching experience.
 If you are one of them, you are not alone. 
 Fear not. 
 This course is geared towards students who have very diverse backgrounds 
-and advanced math skill is not an requirement. 
+and therefore advanced math skill is not an requirement. 
 Whenever a formula is introduced, I will unpack it so you can see 
 how it works for yourself. 
 
@@ -69,22 +69,23 @@ please refer to wikipedia and numerous books about R.
 What you will find here is my personal journey with R, 
 an ulterly biased and opinionated version. 
 
-I heard about R for the first time at a Christmas party, perhaps 7-8 years ago. 
+I heard about R for the first time at a Christmas party, 
+perhaps 7 or 8 years ago. 
 At the time, it was described as a geeky statistical software, 
 powerful, but difficult to learn. 
 My first instinct at hearing this was "I what to learn how to use R as well."
 It was not until 2015, when I was starting to work on my PhD dissertation, 
 that I actually decided to make a serious attempt. 
 My motivation was very simple: 
-I needed to run some analyses that I only knew then how to do in SAS. 
-However, SAS being SAS, it did not support Mac. 
+I needed to run some analyses which I only knew then how to do in SAS. 
+However, SAS being SAS, it did not support Mac.
 After wasting some time on finding a hacked solution to make SAS run 
 on my Mac, 
 I decided that it was time for me to adopt R, 
 It would allow me to run the indended analysis properly, it is cross-platform, 
 it is free, 
 and what better opportunity to learn a new toy 
-than while working on a PhD dissertation?
+than a PhD dissertation?
 
 Fast forward to 2017, I completed my dissertation, including all the analyses 
 done with R. 
@@ -144,7 +145,7 @@ which contains detailed instructions about what operations to apply
 to the data, be it transposing, filtering, or aggregating.
 This source code can be saved on a computer and re-executed at any time, 
 which would produce the same result as it did last time, 
-provided that the source code has not be modified. 
+provided that the source code has not been modified. 
 It could also be shared with one another, 
 producing the same results, transcending space and time change. 
 Had to correct a typo in the data set? 
@@ -200,7 +201,7 @@ I am a geek.
 My background is so mixed that 
 I often have trouble telling people succinctly who I am. 
 For a long time, I always felt a tingle of guilt for having so many identities, 
-instead of a nice single, unified, simple identity. 
+instead of a simple and unified identity. 
 But now I think differently. 
 What if I am all of them? 
 Each of those identities will take the spotlight when the situation calls for it. 
@@ -234,16 +235,16 @@ to adapt to the fully-online situation.
   and it seemed to have worked. 
   You will get a chance to familiarize yourself with the tool 
   as part of your first assignment. 
-+ CUlearn. I don't expect we will use CUlearn for communication purposes, 
++ cuLearn. I don't expect we will use cuLearn for communication purposes, 
   although it does have some neat functions such as anonymous message. 
   If you have some constructive suggestion about the course 
   but feel shy to talk to me, you can use this function. 
   Without the help from a TA, 
-  I will only periodically monitor your posts on CUlearn. 
+  I will only periodically monitor your posts on cuLearn. 
 + Email. I respect that some of you still prefer emails to other tools. 
   Depending on the nature of your question, I may respond as soon as I see it, 
   or wait a bit until I can process it in a quiet space 
-  so that I can response in a thoughtful way. 
+  so that I can respond in a thoughtful way. 
   If you don't hear from you in 48 hours, 
   please send me a reminder. 
   I would much appreciate it. 
@@ -255,14 +256,14 @@ to adapt to the fully-online situation.
 ### Minimize distraction {-}
 
 Let's face it. 
-Online class is not one of the most absorbing activities you have done. 
+Online class is not one of the most absorbing activities you have participated.  
 I took an online French class last fall and 
 often caught myself multi-tasking during the class. 
 I know the pain. 
 The good news is that, in an online setting, 
 your classmates cannot peer behind you 
 and be distracted by the facebook page on your screen. 
-However, I do encourage you to use some discipline 
+However, I do encourage you to use some self-discipline 
 and minimize distractions while you are attending the class. 
 I understand that there will be times during the course 
 when the content simply does not interest you, 

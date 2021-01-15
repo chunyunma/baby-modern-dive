@@ -1,0 +1,14 @@
+# Data Importing and "Tidy" Data {#tidy}
+
+```{r setup_tidy, include=FALSE, purl=FALSE}
+# Used to define Learning Check numbers:
+chap <- 4
+lc <- 0
+
+# Set output digit precision
+options(scipen = 99, digits = 3)
+
+# Set random number generator see value for replicable pseudorandomness.
+set.seed(76)
+```
+

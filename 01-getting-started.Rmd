@@ -58,7 +58,6 @@ using RStudio's interface makes using R much easier as well.
   However, we highly recommend that you upgrade both to the latest version, 
   if they have not been upgraded for a while. 
   Consult Section \@ref(upgrade-r-rstudio) if you are not sure how to upgrade. 
-<
 
 
 You will first need to download and install both R and RStudio 
@@ -145,20 +144,18 @@ knitr::include_graphics(here::here(
 ```
 
 Note the three *panes* which are three panels dividing the screen: 
-the *console pane*, the *files pane*, and the *environment pane*. 
+the *console pane*, the *environment pane*, and the *files pane*. 
 Over the course of this chapter, 
 you'll come to learn what purpose each of these panes serves. 
 
 
 ### Customize your RStudio {#setting}
 
->
-  If you had preivously installed R and RStudio 
-  and have skipped the section on installation, 
-  I encourage you not to skip this part. 
-  There might be some recommended setting you have not done 
-  despite your familiarity with R and/or RStudio. 
-> 
+If you had preivously installed R and RStudio 
+and have skipped the section on installation, 
+I encourage you not to skip this part. 
+There might be some recommended setting you have not done 
+despite your familiarity with R and/or RStudio. 
 
 * In RStudio, go to *Tools >> Global Options*, 
   make these changes to the setting as described in Figure \@ref(fig:RStudio-setting): 
@@ -181,7 +178,6 @@ knitr::include_graphics(here::here(
   There’s nothing worse than discovering three months after the fact 
   that you’ve only stored the *results* of an important calculation 
   in your workspace, not the calculation itself in your source code.
-<
 
 * Optionally, you could also adjust the font size 
 via `Tools >> Global Options >> Appearance >> Editor font size`. 
@@ -286,9 +282,17 @@ One thing that intimidates new R and RStudio users is how it reports *errors*, *
 
 R will show red text in the console pane in three different situations:
 
-* **Errors**: \index{R!errors} When the red text is a legitimate error, it will be prefaced with "Error in…" and will try to explain what went wrong. Generally when there's an error, the code will not run. For example, we'll see in Subsection \@ref(package-use) if you see `Error in ggplot(...) : could not find function "ggplot"`, it means that the `ggplot()` function is not accessible because the package that contains the function (`ggplot2`) was not loaded with `library(ggplot2)`. Thus you cannot use the `ggplot()` function without the `ggplot2` package being loaded first.
+* **Errors**: \index{R!errors} When the red text is a legitimate error, 
+  it will be prefaced with "Error in…" 
+  and will try to explain what went wrong. 
+  Generally when there's an error, the code will not run. 
+  For example, we will see in Subsection \@ref(package-use), 
+  if you receive an error
+  `Error in find.package ... there is no package called ‘import’`, 
+  it means that the package `import` is not accessible 
+  and needs to be installed first. 
 * **Warnings**: \index{R!warnings} When the red text is a warning, it will be prefaced with "Warning:" and R will try to explain why there's a warning. Generally your code will still work, but with some caveats. For example, you will see in Chapter \@ref(viz) if you create a scatterplot based on a dataset where two of the rows of data have missing entries that would be needed to create points in the scatterplot, you will see this warning: `Warning: Removed 2 rows containing missing values (geom_point)`. R will still produce the scatterplot with all the remaining non-missing values, but it is warning you that two of the points aren't there.
-* **Messages**: \index{R!messages} When the red text doesn't start with either "Error" or "Warning", it's *just a friendly message*. You'll see these messages when you load *R packages* in the upcoming Subsection \@ref(package-loading) or when you read data saved in spreadsheet files with the `read_csv()` function as you'll see in Chapter \@ref(tidy). These are helpful diagnostic messages and they don't stop your code from working. Additionally, you'll see these messages when you install packages too using `install.packages()` as discussed in Subsection \@ref(package-installation).
+* **Messages**: \index{R!messages} When the red text doesn't start with either "Error" or "Warning", it's *just a friendly message*. You'll see these messages when you read data saved in spreadsheet files with the `read_csv()` function as you'll see in Chapter \@ref(tidy). These are helpful diagnostic messages and they don't stop your code from working. Additionally, you'll see these messages when you install packages using `install.packages()` as discussed in Subsection \@ref(package-installation).
 
 Remember, when you see red text in the console, *don't panic*. It doesn't necessarily mean anything is wrong. Rather:
 
@@ -337,18 +341,14 @@ and can be downloaded for free from the internet.
 \vspace{-0.15in}
 **_Many R packages_**
 
-\vspace{-0.1in}
-```
-
 Currently, the number of packages on CRAN, the Comprehensive R Archive 
 Network, is approaching 20,000, and has been growing exponentially. 
 Only four years ago, the number was 10,000. 
 <https://blog.revolutionanalytics.com/2017/01/cran-10000.html>
 
-```{block type="btw", purl=FALSE}
-\vspace{-0.25in}
-\vspace{-0.25in}
+\vspace{-0.1in}
 ```
+
 
 For example, among the many packages we will use in this book 
 are the `ggplot2` package [@R-ggplot2] for data visualization 
@@ -436,33 +436,58 @@ especially if you have not done programming before.
 Rest assured, by the end of this semester, 
 you will understand them much better. 
 I ask everyone to tolerate some ambiguity at this point. 
-Buckle up. The ride is about to get wild. 
+Buckle up. The ride is about to get a bit turbulent. 
 
 * Setting up a project folder as your first sandbox. 
 
 During your interaction with RStudio, 
 you will generate different types of files. 
-It is recommended that you group these files into *project folders*. 
+I recommend that you group these files into *project folders*. 
 Each folder corresponds to one project. 
-A project could be a dataset you need to analyze for a course, 
-or your entire thesis. 
+A project could be as simple as a dataset you need to analyze for a course, 
+or as complex as your entire thesis. 
 For the purpose of this course, 
 I suggest that you set up at least two project folders. 
 One for the final project, 
 another as a playground for you to practice various R functions. 
-Let's start by creating the second project folder, and 
-name it however you want. 
+Let's start by creating the second project folder, your playground, 
+and name it however you want. 
 For example, go to "Documents" on your computer 
 and create a folder there called "cgsc5101-sandbox". 
+<!-- Sague to how to name files. [TODO]  -->
 Think carefully about where this project folder should live. 
 Place it somewhere sensible, so that it will be easy to find in the future. 
+
+```{block name-files, type="btw", purl=F}
+\vspace{-0.15in}
+**_What is in a name?_**
+
+Do you often have trouble finding a file that you had in mind 
+and end up opening up a bunch of files to see if it is the right one? 
+If so, then you may need to brush up your file-naming skills. 
+It may sound trivial, but naming files is harder than you think. 
+As the late [ Phil Karlton ](http://karlton.hamilton.com/mercury.html) once put it: 
+
+> 
+  There are only two hard things in Computer Science: 
+  cache invalidation and naming things.
+
+<https://www.karlton.org/2017/12/naming-things-hard/>
+
+I encourage you to check out the following reference 
+for some practical guidance on how to name files 
+(scroll down to see the slides). 
+<https://github.com/jennybc/organization-and-naming/tree/master/naming-things>
+
+\vspace{-0.1in}
+```
 
 
 Once this folder has been created, 
 next is to let RStudio know that you want to associate this folder with 
 all the files related to the intended project. 
 
-1. Click the "File" menu button, 
+1. In RStudio, click the "File" menu button, 
 	 make sure that the second to last item "Close Project" is greyed out. 
 	 Otherwise, close the current project that you are in. 
 1. Under the same "File" menu, 
@@ -519,8 +544,8 @@ Here are a few links for you to explore:
 + <https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects>
 
 
-We have completed the first step in our workflow 101. 
-Next on the agenda is `renv`. 
+We have completed the first step in our workflow setup. 
+Next on the agenda is [`renv`](https://rstudio.github.io/renv/index.html). 
 I will leave out a detailed account of the rationale for now, 
 and only describe the steps you need to take. 
 
@@ -541,7 +566,7 @@ renv::init()
 ```
 
 After successfully executing these three commands, 
-use the RStudio menu itme "Session > Restart R" to restart R. 
+use the RStudio menu itme "Session >> Restart R" to restart R. 
 Alternatively, you can use keyboard shortcut 
 Ctrl+Shift+F10 (Windows and Linux) or Command+Shift+F10 (Mac OS) 
 to restart R. 
@@ -553,7 +578,6 @@ and confirm that the output looks similar to this:
 	[1] "/Users/chunyun/Documents/cgsc5101-sandbox/renv/library/R-4.0/..."
 
 	[2] ...
-<
 
 Presumably, your output will not have "chunyun", but your own user name, 
 and the "cgsc5101-sandbox" would be replaced with whatever folder name 
@@ -577,9 +601,6 @@ and a folder `renv` in your project folder.
 
 Congratulations! You have set up a workflow 
 that will prove its value as you learn to become a pro. 
-
-<https://rstudio.github.io/renv/index.html>
-
 Now you are ready to install more packages. 
 Let's install the `ggplot2` package for data visualization.
 
@@ -609,6 +630,165 @@ Repeat the earlier installation steps, but for the `dplyr`, `nycflights13`, and 
  
 \vspace{0.1in}
  
+### Package use {#package-use}
+
+What I am about to explain is arguably one of the most controversial topics 
+in the R community. 
+I personally summarize it as "to load or not to load". 
+I spent many hours mulling over which aproach to take for this class. 
+In the end, I decided to take the second, slightly harder one. 
+I believe that you will benefit from this seemingly harder approach 
+in the long run. 
+
+Now that you have installed the package `ggplot2`, 
+you have gained access to all the functions that come with, 
+such as `geom_point`, `geom_bar`, `geom_histogram`, to name a few. 
+To access any function within the package, 
+you can type `ggplot2::geom_point`, as in `PACKAGE::FUNCTION`. 
+For example, type `?ggplot2::geom_point` in the console 
+and read about the function `geom_point()`. 
+
+As you write more codes, the `PACKAGE::FUNCTION` becomes rather unwieldy. 
+Why can't I juse use `FUNCTION` without the `PACKAGE::` part? 
+You ask. 
+This is because `FUNCTION` without `PACKAGE::` is ambiguous. 
+Say there are two packages `PKG1` and `PKG2`, 
+both have a function `FUNC`. 
+When you type `FUNC` in your code, which one do you want R to summon? 
+
+Is there a way to use functions both explicitly and concisely? 
+Yes! 
+I present the solution first and and then explain how it works. 
+
+```{r import-demo, eval=F}
+gg <- import::from(ggplot2, .all=T, .into={new.env()})
+```
+
+In plain English, what the code above does is to  
+* place all functions from `ggplot2` in a self-contained box,  
+* assign a new, shorter name -- `gg` to this box.  
+Afterwards, we will be able to refer to any function from `ggplot2` 
+using the shorthand form `gg$FUNC`, 
+such as `gg$geom_point`. 
+
+If you have been following along and trying all the codes introduced here, 
+you may have encountered an error similar to: 
+
+```
+Error in find.package ... there is no package called ‘import’
+```
+
+when you typed the previous command. 
+
+In the solution presented previously, 
+you used the function `from` from the `import` package. 
+You need to first install `import` package before you can use its functions.  
+
+```{r install-import, eval=F}
+install.packages("import")
+```
+
+Now try the `gg <- import::from(...)` command and it should run successfully. 
+
+For those of you who have used `R` before, 
+you may be thinking: what about using `library()` to load a package? 
+This is why I said "controversial" at the beginning. 
+Please allow me to elaborate. 
+
+There are two types of `R` users. 
+Those that load packages using `library()`, 
+and those that do not load packages. 
+Based on my estimate, 99% of `R` users fall into first category. 
+Until three months ago, I was also a "loader." 
+Now I am one of the 1%. 
+And if everything goes well, you will join me in the 1% group 
+by the end of this chapter. 
+
+* This is what majority of `R` users do: 
+
+```{r loaders, eval=F}
+# first approach
+install.packages("ggplot2")
+library("ggplot2")
+ggplot(data = mpg, 
+       mapping = aes(displ, hwy)) + 
+  geom_point()
+```
+
+* This is what I do now and what I recommend that you do: 
+
+```{r non-loaders, eval=F}
+# second approach
+install.packages("ggplot2")
+gg <- import::from(ggplot2, .all=T, .into={new.env()})
+gg$ggplot(data = mpg, 
+          mapping = gg$aes(displ, hwy)) + 
+  gg$geom_point()
+```
+
+At a glance, the first approach seems more convenient. 
+So why bother using the second one? 
+Two reasons. 
+By using `library()`, 
+you would be unleashing all functions from every package into the same pool. 
+In case there are two functions with identical names, say `count()`, 
+from two different packages unleashed into the same pool, 
+only one of them would be accessible via `count()`; 
+the other one would be "masked" 
+and only accessible through explicit referencing, `PACKAGE::FUNCTION()`. 
+Worse still, you will not know ahead of time which one of the pair 
+is masked. 
+If you are familiar with `python`, `library(ggplot2)` is akin to 
+`from ggplot2 import *`, 
+which has many undesirable consequences 
+and is strongly discouraged among `python` users. 
+
+The second reason is more pedagogical. 
+As I mentioned, 
+I had been using `library()` since day one until three months ago. 
+Three months ago, I started thinking about this course 
+and something my students told me last year suddenly struck me. 
+
+> 
+  There are so many functions in R, 
+  and I often have no clue [which packages] these functions belong to. 
+
+When I first heard this comment last winter, 
+I did not take it very seriously and just reassured the student that 
+it was just part of the learning curve, that over time 
+they would learn the membership of most commonly used R functions. 
+However, when I started giving more thoughts to this anecdote, 
+I realized that it might be an unnecessary obstacle to learning `R`. 
+
+Giving up on `library()` has a series of consequences, 
+one of which is needing to modify most of the lecture notes 
+I have developed last year. 
+It was not an easy task. 
+But the more I work on it, 
+the more I am convinced that this is worthwhile. 
+For example, over the past few days, 
+on several occasions I have had to look up a function 
+mentioned in someone's code 
+because the function was used without its package explictly referenced. 
+If I am experiencing this problem and I am relatively familar with `R`, 
+how can I expect learners new to `R` not frustrated by it? 
+
+To conclude, I will avoid using `library()` throughout this course, 
+and explicitly reference each function in association with its package. 
+There are two exceptions to this rule. 
+
+* There are some `R` functions that come with every clearn install of `R`, 
+  such as `install.packages()`, `c()`. 
+  These functions are often referred to as "base R functions". 
+  When using them, no package reference is required. 
+
+* Other of the lecture notes, you will be assigned other reading material 
+  and exercises. 
+  And most of them will use `library()` and non-explicit package reference, 
+  over which I have very little control. 
+  You are encouraged to look up functions whenever you are unsure 
+  which packages they belong to. 
+
 
 
 ## Explore your first datasets {#nycflights13}
@@ -616,16 +796,16 @@ Repeat the earlier installation steps, but for the `dplyr`, `nycflights13`, and 
 Let's put everything we've learned so far into practice 
 and start exploring some real data! 
 
-<!-- Data comes to us in a variety of formats,  -->
-<!-- from pictures to text to numbers.   -->
-<!-- Throughout this book,  -->
-<!-- we'll focus on datasets that are saved in "spreadsheet"-type format.  -->
-<!-- This is probably the most common way data are collected  -->
-<!-- and saved in many fields.   -->
-<!-- Remember from Subsection \@ref(programming-concepts) that  -->
-<!-- these "spreadsheet"-type datasets are called  -->
-<!-- _data frames_ in R. \index{data frame}  -->
-<!-- We'll focus on working with data saved as data frames throughout this book. -->
+Data comes to us in a variety of formats, 
+from pictures to text to numbers.  
+Throughout this book, 
+we'll focus on datasets that are saved in "spreadsheet"-type format. 
+This is probably the most common way data are collected 
+and saved in many fields.  
+Remember from Subsection \@ref(programming-concepts) that 
+these "spreadsheet"-type datasets are called 
+_data frames_ in R. \index{data frame} 
+We'll focus on working with data saved as data frames throughout this book.
 
 <!-- Let's first load all the packages needed for this chapter,  -->
 <!-- assuming you've already installed them.  -->
@@ -634,7 +814,8 @@ and start exploring some real data!
 
 <!-- Maybe a snapshot of the data in spreadsheet form  -->
 
-This is a dataset that contains on-time data for all domestic flights 
+The first dataset that we are going to see 
+contains on-time data for all domestic flights 
 departing from one of New York City's three main airports in 2013: 
 Newark Liberty International (EWR), 
 John F. Kennedy International (JFK), 
@@ -648,9 +829,10 @@ and LaGuardia Airport (LGA).
 
 The following code gives us access to the data, 
 as well as the to some tools so we can interact with the data. 
+Make sure that you run them before proceeding. 
 
 ```{r install-package, eval=F}
-# Install xfun so that I can use xfun::pkg_load2
+# Install xfun so that we can use xfun::pkg_load2
 if (find.package('xfun') == '') install.packages('xfun')
 xf <- loadNamespace('xfun')
 
@@ -660,23 +842,16 @@ cran_primary <- c(
                   "nycflights13"
 )
 cran_secondary <- c(
-                    # "patchwork", 
-                    # "readr", 
-                    # "scales", 
-                    # "stringr"
+                    "import"
 )
 
 if (length(cran_primary) != 0) xf$pkg_load2(cran_primary)
-if (length(cran_secondary != 0) xf$pkg_load2(cran_secondary)
+if (length(cran_secondary) != 0) xf$pkg_load2(cran_secondary)
 ```
 
 ```{r import, message=FALSE, warning=FALSE}
-import::from(nycflights13, df_flights = flights)
-
-# gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
-# dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
-
 import::from(magrittr, '%>%', '%T>%')
+import::from(nycflights13, df_flights = flights)
 ```
 
 Looks intimidating? 
@@ -761,7 +936,7 @@ in your console in rstudio,
 either by typing it or cutting-and-pasting it into the console pane. 
 Explore this data frame in the resulting pop up viewer. 
 You should get into the habit of viewing any data frames you encounter. 
-Note the uppercase `V` in `View()`. r is case-sensitive, 
+Note the uppercase `V` in `View()`. `R` is case-sensitive, 
 so you'll get an error message if you run `view(df_flights)` 
 instead of `View(df_flights)`.
 
@@ -798,8 +973,7 @@ These variables are numerical in nature.
 Other variables here are \index{categorical} *categorical*.
 
 
-
-Note that if you look in the leftmost column of the `view(df_flights)` output, 
+Note that if you look in the leftmost column of the `View(df_flights)` output, 
 you will see a column of numbers. 
 These are the row numbers of the dataset. 
 If you glance across a row with the same number, say row 5, 
@@ -849,8 +1023,10 @@ The `time_hour` variable is another data type: `dttm`.
 These types of variables represent date and time combinations. 
 However, we won't work with dates and times in this book; 
 we leave this topic for other data science books like 
-[*introduction to data science* by tiffany-anne timbers, melissa lee, and trevor campbell](https://ubc-dsci.github.io/introduction-to-datascience/) 
-or [*r for data science*](https://r4ds.had.co.nz/dates-and-times.html). 
+[*introduction to data science*](https://ubc-dsci.github.io/introduction-to-datascience/) 
+by Tiffany-Anne Timbers, Melissa Lee, and Trevor Campbell. 
+or [*r for data science*](https://r4ds.had.co.nz/dates-and-times.html) 
+by Hadley Wickham. 
 
 
 \vspace{0.05in}
@@ -882,7 +1058,7 @@ Run both of these lines of code in the console:
 
 ```{r eval=FALSE}
 df_flights
-kable(df_flights)
+knitr::kable(df_flights)
 ```
 
 At first glance, 
@@ -968,7 +1144,7 @@ Further, create your own tidy data frame that matches these conditions.
 ```
 
 
-### Help files
+### Help files {#help}
 
 `R` comes with a comprehensive "how-to" manual. 
 Let's try to use it: 
@@ -1045,7 +1221,7 @@ There are many ways to upgrade R and/or RStudio.
 I will describe one of them here. 
 If you alreays know how to upgrade them, keep doing what you have been doing. 
 
-To upgrade R, find out the current version of R running on your computer. 
++ To upgrade R, find out the current version of R running on your computer. 
 You can do so from within RStudio.  
 
 Type `R.version.string` in the console 
@@ -1056,15 +1232,14 @@ and you should see something like this printed out:
 As of 2021 January, the latest R version is `4.0.3`. 
 If you have an older version installed on your computer, 
 go to <https://cloud.r-project.org> and 
-follow the steps described in xx to install the latest version of R. 
+follow the steps described in \@ref(installing) to install the latest version of R. 
 
 Restart RStudio and type `R.version.string` in the console 
 to confirm the upgrade was successful. 
 
-To upgrade RStudio from within RStudio, 
++ To upgrade RStudio from within RStudio, 
 go to `Help > Check for Updates` 
-to install newer version of RStudio (if available).
-
+to install newer version of RStudio (if available). 
 Once both R and RStudio have been upgraded, 
 test by typing some simple command in the console (e.g., \@ref(test-install)). 
 

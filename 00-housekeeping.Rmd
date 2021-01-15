@@ -315,9 +315,6 @@ Discuss in class
 
 Discuss in class
 
-### cocalc {-}
-
-Discuss in class
 
 ## Getting help and learning more {-#getting-help}
 

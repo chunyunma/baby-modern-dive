@@ -131,10 +131,7 @@ and what it means for a line to be "best-fitting."
 
 ### Needed packages {-#reg-packages}
 
-<!-- Let's now load all the packages needed for this chapter ... -->
-
 Let's get ready all the packages we will need for this chapter. 
-
 
 ```{r load-package, eval=F}
 # Install xfun so that I can use xfun::pkg_load2
@@ -177,8 +174,6 @@ dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
 import::from(magrittr, '%>%')
 import::from(patchwork, .all=TRUE)
 ```
-
-
 
 <!-- ## One numerical explanatory variable {#model1} -->
 
@@ -237,7 +232,6 @@ df_gapminder2007 <- gapminder::gapminder %>%
             life_exp = lifeExp,
             gdp_per_cap = gdpPercap
             ) %>% 
-  # [TODO] need to explain the next line
   dp$mutate(income = log10(gdp_per_cap)*10000)
 ```
 
@@ -278,9 +272,9 @@ where each row corresponds to one observed country.
 
 A full documentation of the dataset `gapminder`, including its background, 
 can be found at [gapminder.org](https://www.gapminder.org/data/documentation/). 
-
 A full description of all the variables included in `gapminder` 
-can be found in its associated help file (run `?gapminder` in the console). 
+can be found in its associated help file 
+(run `?gapminder::gapminder` in the console). 
 
 Here is a brief description of `r df_gapminder2007 %>% ncol()` variables 
 we selected in `df_gapminder2007`:
@@ -305,15 +299,9 @@ we selected in `df_gapminder2007`:
 \vspace{-0.15in}
 **_Types of data_**
 
-\vspace{-0.1in}
-```
-
 nominal, ordinal, interval, ratio
 
-
-```{block type="btw", purl=FALSE}
-\vspace{-0.25in}
-\vspace{-0.25in}
+\vspace{-0.1in}
 ```
 
 An alternative way to look at the raw data values 
@@ -385,14 +373,11 @@ df_gapminder2007 %>%
 ```{block summary-statistics, type="btw", purl=FALSE}
 \vspace{-0.15in}
 **_Mean and Median_**
-\vspace{-0.1in}
-```
+
 What is mean?
 What is median?
 
-```{block, type="btw", purl=FALSE}
-\vspace{-0.25in}
-\vspace{-0.25in}
+\vspace{-0.1in}
 ```
 
 For the numerical variables  `life_exp` and `income` it returns:
@@ -474,7 +459,10 @@ However, this relationship is not strictly linear.
 Instead of tightly hugging the imaginary line that goes from bottom left 
 to upper right, 
 as should be in a strictly linear relationship, 
-some of the dots deviated, such as the ones highlighted in red in figure xx. 
+some of the dots deviated, such as the ones highlighted in red 
+in figure xx. 
+<!-- [TODO] -->
+<!-- colour points with pop = 1454867, 1639131, 551201, 43997828, 12420476, 1133066 -->
 
 Such deviation have implications for the strength of correlation coefficient 
 between income and life expectancy. 
@@ -486,7 +474,9 @@ between income and life expectancy.
 
 \vspace{-0.1in}
 ```
-Compare Figure \@ref(fig:numxplot1) to the following:
+
+Run the following code chunk 
+and compare the result to Figure \@ref(fig:numxplot1):
 
 ```{r eval = FALSE}
 # Code not run. Try on your own.
@@ -503,7 +493,6 @@ gg$ggplot(df_gapminder2007,
   gg$labs(title = "Relationship of wealth and health")
 ```
 
-
 ```{block, type="btw", purl=FALSE}
 \vspace{-0.25in}
 \vspace{-0.25in}
@@ -514,7 +503,7 @@ When two variables are numerical,
 we can compute the \index{correlation (coefficient)} *correlation coefficient* 
 between them. 
 Generally speaking, *coefficients* are quantitative expressions 
-of a specific phenomenon.  
+of a specific phenomenon. 
 A *correlation coefficient* is a quantitative expression 
 of the *strength of the linear relationship between two numerical variables*. 
 Its value ranges between -1 and 1 where:
@@ -531,11 +520,11 @@ Its value ranges between -1 and 1 where:
 
 A [rule of thumb](https://ocul-crl.primo.exlibrisgroup.com/permalink/01OCUL_CRL/1s70ib5/alma991014673689705153):
 
-+ [.1, .3]: weak
++ `[.1, .3]`: weak
 
-+ [.3, .5]: moderate
++ `[.3, .5]`: moderate
 
-+ [.5, 1.): strong
++ `[.5, 1)`: strong
 
 
 Figure \@ref(fig:correlation1) gives examples 
@@ -631,7 +620,7 @@ mentioned in Subsection \@ref(additional-resources-basic-regression).
 
 
 ### Recap
-
+<!-- [TODO] expand -->
 - A typical EDA (exploratory data analysis) includes: 
   eyeball raw data, summary statistics, visualize
 - EDA is not the same as data snooping
@@ -816,14 +805,15 @@ in that it minimizes the sum of squared residuals, hence "lease-squares".
 ```
 
 **`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
-??
-
-(a) Looking at the raw data values.
-(a) Computing summary statistics.
-(a) Creating data visualizations.
-
-What can you say about the relationship between 
-age and teaching scores based on this exploration?
+[TODO]
+<!-- ?? -->
+<!--  -->
+<!-- (a) Looking at the raw data values. -->
+<!-- (a) Computing summary statistics. -->
+<!-- (a) Creating data visualizations. -->
+<!--  -->
+<!-- What can you say about the relationship between  -->
+<!-- age and teaching scores based on this exploration? -->
 
 ```{block, type="learncheck", purl=FALSE}
 \vspace{-0.25in}
@@ -1246,8 +1236,9 @@ out of all possible lines we can draw through the points.
 ```
 
 **`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
-Generate a data frame of the residuals of the model 
-where you used `age` as the explanatory $x$ variable.
+[TODO]
+<!-- Generate a data frame of the residuals of the model  -->
+<!-- where you used `age` as the explanatory $x$ variable. -->
 
 ```{block, type="learncheck", purl=FALSE}
 \vspace{-0.25in}

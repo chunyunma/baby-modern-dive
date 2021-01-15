@@ -1264,3 +1264,6 @@ knitr::include_graphics(here::here("docs", "images", "flowcharts", "flowchart",
                                    "flowchart.004.png"))
 ```
 
+## Assignment 1
+
+**Complete Assignment 1 following instructions in Appendix \@ref(assignments).**

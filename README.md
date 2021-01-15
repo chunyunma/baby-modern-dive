@@ -51,7 +51,9 @@ from the `master` branch of this repo.
 
 + [ModernDive.com](https://moderndive.com/)
 
-+ 
++ [WhatTheyForgot](https://rstats.wtf)
+
++ [STAT545](https://stat545.com)
 
 ## License
 

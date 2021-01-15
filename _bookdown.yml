@@ -12,6 +12,9 @@ rmd_files: [
   # "content/05-summary.Rmd", 
   # "content/06-references.Rmd", 
   # "anscombe.Rmd", 
+  "91-appendixA.Rmd", 
+  "94-appendixD.Rmd", 
+  "95-appendixE.Rmd", 
   "99-references.Rmd"
   ]
 before_chapter_script: ["rscript/setup.R"]

@@ -1,0 +1,62 @@
+# Sample cheat sheet {#appendix-cheat-sheet}
+
+As you make progress with Datacamp modules, 
+you will learn an increasing number of new `R` functions, routines, etc. 
+Before you realize it, the number will exceed what your memory can handle. 
+This is when an external memory is needed: or what I call a *cheat sheet*. 
+
+I suggest that you start with an empty file called `master-cheatsheet.R`. 
+You can place the file inside one of the project folders 
+that you created in Chapter \@ref(getting-started). 
+From now on, 
+whenever you encounter a new function or a new way of using a familiar function, 
+I suggest that you write them down in the cheat sheet. 
+I attach a snippet of a sample cheet sheet below for your reference. 
+By no means do you have to use the same style. 
+
+```
+# sample cheat sheet
+
+#
+# Logical Operations
+#
+
+# < for less than
+# > for greater than
+# <= for less than or equal to
+# >= for greater than or equal to
+
+#
+# Elements with data
+# 
+
+#	- Vectors (one dimensional array): can hold numeric, character or logical 
+values. The elements in a vector all have the same data type.
+
+#	- Matrices (two dimensional array): can hold numeric,
+
+
+#
+# Plotting
+#
+
+# Faceted histogram
+ggplot2::ggplot(cars, ggplot2::aes(x = city_mpg)) +
+  ggplot2::geom_histogram() +
+  ggplot2::facet_wrap(~ suv)
+```
+
+
+Keep in mind that you will be working on YOUR cheat sheet 
+and will refer to it from time to time 
+as you learn to become a seasoned `R` user. 
+Customize it. Own it. 
+Put whatever content that is deemed useful to you. 
+Each week, you will hand in an updated version of the **same** file ---
+your cheat sheet, to fulfill the course requirement. 
+I expect that everyone's cheat sheet will evolve over time. 
+Your cheat sheet by the end of the first week 
+may contain a line on how to examine the structure of a dataframe, for example; 
+and by the end of the semester, 
+you may know this line by heart and no longer need it on the cheat sheet. 
+

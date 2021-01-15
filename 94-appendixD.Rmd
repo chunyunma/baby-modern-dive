@@ -1,0 +1,59 @@
+# Assignments {#assignments}
+
+```{r setup_appD, include=FALSE}
+chap <- "D"
+lc <- 0
+rq <- 0
+
+options(scipen = 99, digits = 3)
+
+# Set random number generator see value for replicable pseudorandomness.
+set.seed(76)
+```
+
+| Item                           | Weight (%)   | Due date                  |
+| ------------------------------ | ------------ | ------------------------- |
+| Set-up                         | 5            | Friday, Jan 22, 1400      |
+| Online Module + Cheat sheet    | 2 + 3        | Saturday, Jan 23, 1400    |
+| Online Module + Cheat sheet    | 2 + 3        | Saturday, Jan 30, 1400    |
+| Online Module + Cheat sheet    | 2 + 3        | Saturday, Feb 6, 1400     |
+| Online Module + Cheat sheet    | 2 + 3        | Friday, Feb 12, 1900      |
+| Reading week, no class         | -            | -                         |
+| Data Challenge                 | 15           | Saturday, Feb 27, 1400    |
+| Online Module + Cheat sheet    | 2 + 3        | Saturday, Mar 6, 1400     |
+| Project seed                   | 5            | Saturday, Mar 13, 1400    |
+| Online Module + Cheat sheet    | 2 + 3        | Saturday, Mar 20, 1400    |
+| Project synopsis               | 5            | Saturday, Mar 27, 1400    |
+| Online Module + Cheat sheet    | 2 + 3        | Saturday, Apr 03, 1400    |
+| Descriptives                   | 5            | Saturday, Apr 10, 1400    |
+| Final project deliverable      | 30           | Monday, Apr. 26, 1400     |
+
+
+
+## Week 1 {#appendix-assign-1}
+
+There are two parts to this week's assignment. 
+
+* Set-up (5%) 
+  1. You will be setting up R & RStudio 
+     after reading Chapter \@ref(getting-started). 
+     Specifically, you will show me that you have properly customized 
+     the settings in RStudio regarding `.RData`. 
+  2. You will show me that you have adopted the workflow as instructed 
+     in Chapter \@ref(getting-started). 
+     Specifically, you will show me that you have successfully installed 
+     `renv` by running `.libPaths()` in the RStudio console, 
+     as well as set up the project folder. 
+  3. Book a session with me using <https://chunyun.youcanbook.me> 
+     and walk me through your set-up. 
+  4. Sign up for an account on [cocalc](https://cocalc.com) 
+  5. Sign up for an account on slack 
+     and join the workspace on slack for this course. 
+
+* Datacamp (5%)  
+  1. Sign up for Datacamp following the invitation link 
+  and complete the module assigned to you (2%).  
+  1. Write down R commands that you learned from the module (3%). 
+  See Appendix \@ref(appendix-cheat-sheet) for an example of the deliverable. 
+
+

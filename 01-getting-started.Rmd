@@ -643,8 +643,8 @@ in the long run.
 Now that you have installed the package `ggplot2`, 
 you have gained access to all the functions that come with, 
 such as `geom_point`, `geom_bar`, `geom_histogram`, to name a few. 
-To access any function within the package, 
-you can type `ggplot2::geom_point`, as in `PACKAGE::FUNCTION`. 
+To access a function within a package, 
+you can type `PACKAGE::FUNCTION`, such as `ggplot2::geom_point`.  
 For example, type `?ggplot2::geom_point` in the console 
 and read about the function `geom_point()`. 
 
@@ -664,9 +664,12 @@ I present the solution first and and then explain how it works.
 gg <- import::from(ggplot2, .all=T, .into={new.env()})
 ```
 
-In plain English, what the code above does is to  
-* place all functions from `ggplot2` in a self-contained box,  
-* assign a new, shorter name -- `gg` to this box.  
+In plain English, what the code above does is to 
+
+* place all functions from `ggplot2` in a self-contained box, 
+
+* assign a new, shorter name -- `gg` to this box. 
+
 Afterwards, we will be able to refer to any function from `ggplot2` 
 using the shorthand form `gg$FUNC`, 
 such as `gg$geom_point`. 
@@ -754,7 +757,7 @@ and something my students told me last year suddenly struck me.
   and I often have no clue [which packages] these functions belong to. 
 
 When I first heard this comment last winter, 
-I did not take it very seriously and just reassured the student that 
+I did not take it very seriously and reassured the student that 
 it was just part of the learning curve, that over time 
 they would learn the membership of most commonly used R functions. 
 However, when I started giving more thoughts to this anecdote, 
@@ -771,7 +774,7 @@ on several occasions I have had to look up a function
 mentioned in someone's code 
 because the function was used without its package explictly referenced. 
 If I am experiencing this problem and I am relatively familar with `R`, 
-how can I expect learners new to `R` not frustrated by it? 
+how can I expect learners new to `R` not stumped by it? 
 
 To conclude, I will avoid using `library()` throughout this course, 
 and explicitly reference each function in association with its package. 

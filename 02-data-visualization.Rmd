@@ -51,7 +51,7 @@ as well as the to some tools so we can interact with the data.
 
 ```{r load-package, eval=F}
 # Install xfun so that I can use xfun::pkg_load2
-if (find.package('xfun') == '') install.packages('xfun')
+if (!requireNamespace('xfun')) install.packages('xfun')
 xf <- loadNamespace('xfun')
 
 cran_primary <- c(
@@ -74,13 +74,13 @@ if (length(cran_secondary != 0) xf$pkg_load2(cran_secondary)
 
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
-import::from(magrittr, '%>%', '%in%')
+import::from(magrittr, '%>%')
 ```
 
 ```{r import-pkg, echo=F, message=FALSE, warning=FALSE}
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
-import::from(magrittr, '%>%', '%T>%')
+import::from(magrittr, '%>%')
 ```
 
 

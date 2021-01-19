@@ -836,7 +836,7 @@ Make sure that you run them before proceeding.
 
 ```{r install-package, eval=F}
 # Install xfun so that we can use xfun::pkg_load2
-if (find.package('xfun') == '') install.packages('xfun')
+if (!requireNamespace('xfun')) install.packages('xfun')
 xf <- loadNamespace('xfun')
 
 cran_primary <- c(
@@ -853,7 +853,7 @@ if (length(cran_secondary) != 0) xf$pkg_load2(cran_secondary)
 ```
 
 ```{r import, message=FALSE, warning=FALSE}
-import::from(magrittr, '%>%', '%T>%')
+import::from(magrittr, '%>%')
 import::from(nycflights13, df_flights = flights)
 ```
 

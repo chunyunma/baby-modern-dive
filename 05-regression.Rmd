@@ -135,7 +135,7 @@ Let's get ready all the packages we will need for this chapter.
 
 ```{r load-package, eval=F}
 # Install xfun so that I can use xfun::pkg_load2
-if (find.package('xfun') == '') install.packages('xfun')
+if (!requireNamespace('xfun')) install.packages('xfun')
 xf <- loadNamespace('xfun')
 
 cran_primary <- c(
@@ -445,12 +445,20 @@ and display the result in Figure \@ref(fig:numxplot1).
 
 
 ```{r numxplot1, echo=FALSE, fig.cap="Life Expectancy and Average Income", fig.height=4.5, purl=FALSE}
-(p1_gapminder2007 <- gg$ggplot(df_gapminder2007, 
+p1_gapminder2007 <- gg$ggplot(df_gapminder2007, 
                            mapping = gg$aes(y = life_exp, x = income)) + 
-    gg$geom_point() + 
+    gg$geom_point()
+
+african_list <- c(1454867L, 1639131L, 551201L, 43997828L, 12420476L, 1133066L)
+df_highlight <- df_gapminder2007[df_gapminder2007$pop %in% african_list, ]
+
+p1_gapminder2007 + 
+  gg$geom_point(data = df_highlight, 
+                mapping = gg$aes(y = life_exp, x = income), 
+                colour = 'red') + 
     gg$labs(x = "Income", y = "Life Expectancy", 
        title = "Relationship of wealth and health") + 
-    gg$scale_x_continuous(breaks=seq(20000,50000,4000)))
+    gg$scale_x_continuous(breaks=seq(20000,50000,4000))
 ```
 
 As the average income level increases, 
@@ -460,9 +468,7 @@ Instead of tightly hugging the imaginary line that goes from bottom left
 to upper right, 
 as should be in a strictly linear relationship, 
 some of the dots deviated, such as the ones highlighted in red 
-in figure xx. 
-<!-- [TODO] -->
-<!-- colour points with pop = 1454867, 1639131, 551201, 43997828, 12420476, 1133066 -->
+in figure \@ref(fig:numxplot1). 
 
 Such deviation have implications for the strength of correlation coefficient 
 between income and life expectancy. 

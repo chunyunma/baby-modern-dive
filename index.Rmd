@@ -20,7 +20,7 @@ url: 'https\://.chunyunma.me'
 # Install packages
 #
 # Install xfun so that I can use xfun::pkg_load2
-if (find.package('xfun') == '') install.packages('xfun')
+if (!requireNamespace('xfun')) install.packages('xfun')
 xf <- loadNamespace('xfun') # use function from base R before import is installed
 
 

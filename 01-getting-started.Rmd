@@ -785,7 +785,7 @@ There are two exceptions to this rule.
   These functions are often referred to as "base R functions". 
   When using them, no package reference is required. 
 
-* Other of the lecture notes, you will be assigned other reading material 
+* Apart from the lecture notes, you will be assigned other reading material 
   and exercises. 
   And most of them will use `library()` and non-explicit package reference, 
   over which I have very little control. 
@@ -1093,11 +1093,11 @@ instead favoring the `View()` and `glimpse()` functions.
 There is a subtle difference between the kinds of variables 
 that you will encounter in data frames. 
 There are *identification variables* and *measurement variables*. 
-For example, let's explore another data frame, `airports`,  
+For example, let's explore another data frame, `airports`, 
 using the function we have just used, `dplyr::glimpse`.
 
 ```{r}
-import::from(nycflights13, df_airports = flights)
+import::from(nycflights13, df_airports = airports)
 dplyr::glimpse(df_airports)
 ```
 

@@ -361,15 +361,23 @@ alaska_flights_rows <- df_flights %>%
 # flights_cols <- df_flights %>% ncol()
 ```
 
-for Alaska Airlines flights leaving NYC in 2013. 
-This requires paring down the data from all `r flights_rows` flights 
+As we did before in Chapter \@ref(nycflights13), 
+let's first import `flights` and save it as `df_flights`. 
+
+```{r eval=F}
+import::from(nycflights13, df_flights = flights)
+```
+
+Next, let's pare down the data from all `r flights_rows` flights 
 that left NYC in 2013, 
 to only the `r alaska_flights_rows` *Alaska Airlines* flights 
 that left NYC in 2013. 
 We do this so our scatterplot will involve 
 a manageable `r alaska_flights_rows` points, 
 and not an overwhelmingly large number like `r flights_rows`. 
-To achieve this, we'll take the `df_flights` data frame, 
+
+To achieve this, 
+we'll take the `df_flights` data frame, 
 filter the rows so that only the `r alaska_flights_rows` rows 
 corresponding to Alaska Airlines flights are kept, 
 and save this in a new data frame called `df_alaska_flights` 

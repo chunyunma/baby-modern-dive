@@ -4,7 +4,7 @@ subtitle: "A ModernDive into R and the Tidyverse"
 author: "Chester Ismay, Albert Y. Kim, Chunyun Ma"
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
-output: bookdown::gitbook
+output: bookdown::gitbook 
 documentclass: book
 bibliography: [bib/books.bib, bib/packages.bib]
 biblio-style: "apalike"
@@ -40,12 +40,13 @@ cran_packages = c(
                   "here", 
                   "import", 
                   "kableExtra", 
+                  "knitcitations", 
                   "magrittr", 
                   "mvtnorm", 
                   "patchwork", 
                   "readr", 
                   "remotes", 
-                  "rmarkdown", 
+                  # "rmarkdown", 
                   # "scales", 
                   "stringr", 
                   "tibble"
@@ -56,9 +57,18 @@ gh_repos = c(
              # Required by students:
              
              # Used internally: 
-             "cboettig/knitcitations", 
-             "ROpenSci/bibtex"
+             "rstudio/rmarkdown", 
+             "ROpenSci/bibtex" # required by knitcitations
              )
+
+# for xfun::session_info and knitr::write_bib
+gh_repos_bare = c(
+                  # Required by students:
+
+                  # Used internally: 
+                  "bibtex", 
+                  "rmarkdown"
+                  )
 
 if (length(cran_packages) != 0) xf$pkg_load2(cran_packages)
 if (length(gh_repos) != 0) xf$install_github(gh_repos)
@@ -72,7 +82,7 @@ kn <- import::from(knitr, .all=TRUE, .into={new.env()})
 #
 kn$write_bib(
                  c('xfun', 
-                   cran_packages, gh_repos
+                   cran_packages, gh_repos_bare
                    ), 
                  here::here('bib', 'packages.bib')
 )
@@ -94,6 +104,13 @@ The complete source of this website is available on
 [Github](https://github.com/chunyunma/baby-modern-dive). 
 You are encouraged to report any errors or to make suggestions 
 via the `issues` function on the github page. 
+
+This set of lecture notes was built with: 
+
+```{r session-info}
+xfun::session_info(c(cran_packages, gh_repos_bare), dependencies = FALSE)
+```
+
 
 </br>
 

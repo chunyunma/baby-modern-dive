@@ -1,5 +1,7 @@
 bookdown::gitbook:
-  css: "style.css"
+  includes:
+    in_header: header.html
+  css: style.css
   # split_by: "section+number"
   config:
     toc:

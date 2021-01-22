@@ -655,15 +655,16 @@
     },
     "rmarkdown": {
       "Package": "rmarkdown",
-      "Version": "2.6.5",
+      "Version": "2.6.6",
       "Source": "GitHub",
+      "Remotes": "rstudio/bslib, rstudio/shiny",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "rmarkdown",
       "RemoteUsername": "rstudio",
       "RemoteRef": "HEAD",
-      "RemoteSha": "0a73180d5628533bfe2a213f1af679f020e4196f",
-      "Hash": "67d6cdbf5aa37bd533e0520f2f89ec4f"
+      "RemoteSha": "f573088095f98b46330b719f86cb4743ba5de8d7",
+      "Hash": "665fc7f680464108b19ad034e211ca57"
     },
     "rprojroot": {
       "Package": "rprojroot",

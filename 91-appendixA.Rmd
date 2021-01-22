@@ -65,4 +65,8 @@ Recall from Chapter \@ref(viz) that we can visualize the distribution of a numer
 *Outliers* correspond to values in the dataset that fall far outside the range of "ordinary" values.  In the context of a boxplot, by default they correspond to values below $Q_1 - (1.5 \cdot IQR)$ or above $Q_3 + (1.5 \cdot IQR)$.
 
 
-
+<!-- ## Boxplots -->
+<!--  -->
+<!-- Boxplot on a Normal Distribution -->
+<!-- <https://miro.medium.com/max/2400/1*NRlqiZGQdsIyAu0KzP7LaQ.png> -->
+<!-- <https://towardsdatascience.com/understanding-boxplots-5e2df7bcbd51> -->

@@ -593,7 +593,7 @@ If you get a warning that starts with
 try execute an additional command `renv::hydrate()`, 
 followed by `renv::snapshot()`, to update the state of the project. 
 
-Confirm that `renv` is working properly by typing `.libPahts()` again 
+Confirm that `renv` is working properly by typing `.libPaths()` again 
 in the console and look for an output as described above. 
 
 At this point, you should find an additional file called `renv.lock` 

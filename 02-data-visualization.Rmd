@@ -38,7 +38,7 @@ that it overwhelms your audience.
 As we will see, plots \index{plots} also help us to identify patterns 
 and outliers in our data. 
 We'll see that a common extension of these ideas is 
-to compare the *distribution* \index{distribution} of one numerical variable, 
+to compare the *distribution* \index{distribution} of one continuous variable, 
 such as what are the center and spread of the values, 
 as we go across the levels of a different categorical variable. 
 
@@ -325,7 +325,7 @@ We'll also present some variations of these plots,
 but with this basic repertoire of five graphics in your toolbox, 
 you can visualize a wide array of different variable types. 
 Note that certain plots are only appropriate for categorical variables, 
-while others are only appropriate for numerical variables. 
+while others are only appropriate for continuous variables. 
 
 
 
@@ -333,12 +333,12 @@ while others are only appropriate for numerical variables.
 
 The simplest of the 5NG are *scatterplots*, \index{scatterplots} 
 also called *bivariate plots*. 
-They allow you to visualize the *relationship* between two numerical variables. 
+They allow you to visualize the *relationship* between two continuous variables. 
 While you may already be familiar with scatterplots, 
 let's view them through the lens of the grammar of graphics 
 we presented in Section \@ref(grammarofgraphics). 
 Specifically, we will visualize the relationship 
-between the following two numerical variables in the `flights` data frame 
+between the following two continuous variables in the `flights` data frame 
 included in the \index{R packages!nycflights13} `nycflights13` package:
 
 1. `dep_delay`: departure delay on the horizontal "x" axis and
@@ -377,7 +377,7 @@ a manageable `r alaska_flights_rows` points,
 and not an overwhelmingly large number like `r flights_rows`. 
 
 To achieve this, 
-we'll take the `df_flights` data frame, 
+we'll take the newly imported `df_flights` data frame, 
 filter the rows so that only the `r alaska_flights_rows` rows 
 corresponding to Alaska Airlines flights are kept, 
 and save this in a new data frame called `df_alaska_flights` 
@@ -385,12 +385,10 @@ using the `<-` *assignment* operator: \index{operators!assignment (<-)}
 
 ```{r}
 df_alaska_flights <- df_flights %>% 
-  dp$filter(carrier == "AS")
+  dplyr::filter(carrier == "AS")
 ```
 
-For now, we suggest you don't worry if you don't fully understand this code. 
-We'll see later in Chapter \@ref(wrangling) on data wrangling 
-that this code uses the `dplyr` package for data wrangling to achieve our goal: 
+This code above uses the `dplyr` package for data wrangling to achieve our goal: 
 it takes the `df_flights` data frame 
 and `filter`s it to only return the rows 
 where `carrier` is equal to `"AS"`, 
@@ -398,10 +396,15 @@ Alaska Airlines' carrier code.
 Recall from Section \@ref(code) that 
 testing for equality is specified with \index{using == instead of =} `==` 
 and not `=`. 
-Convince yourself that this code achieves what it is supposed to 
-by exploring the resulting data frame by running `View(df_alaska_flights)`. 
+This `filter`ing action is one type of **data wrangling**, 
+a topic we will discuss in detail in Chapter \@ref(wrangling). 
+
+Now try it yourself 
+and explore the resulting data frame by running `View(df_alaska_flights)`. 
 You'll see that it has `r alaska_flights_rows` rows, 
 consisting of only `r alaska_flights_rows` Alaska Airlines flights. 
+Now you should be convinced that the code above 
+achieved what it was supposed to. 
 
 ### Scatterplots via `geom_point` {#geompoint}
 
@@ -456,9 +459,30 @@ due to them being missing.
 For these 5 rows, either the value for `dep_delay` or `arr_delay` 
 or both were missing (recorded in R as `NA`), 
 and thus these rows were ignored in our plot.
+Let's confirm that there are indeed five rows 
+with missing data by identifying those rows. 
+
+```{r eval = F}
+dp$filter(df_alaska_flights, is.na(dep_delay) | is.na(arr_delay))
+```
+
+```{r missing-data, echo=F}
+dp$filter(df_alaska_flights, is.na(dep_delay) | is.na(arr_delay)) %>% 
+  knitr::kable(caption = "Five rows with missing data in `dep_delay` and/or `arr_delay`") %>% 
+	kableExtra::kable_styling(bootstrap_options = 
+                            c("striped", "hover", "condensed", "responsive"), 
+                          font_size = 14) %>% 
+  kableExtra::column_spec(c(6,9), bold=T, color="white", background="#D7261E") %>% 
+  kableExtra::scroll_box(width = "100%")
+```
+
+
+Sure enough, the five row all have missing data in one or the other columns. 
+(Place your mouse cursor inside the table and scroll right 
+to see more columns.) 
 
 Before we continue,
-let's make a few more observations about this code 
+let's make a few more observations about the code 
 that created the scatterplot. 
 Note that the `+` sign comes at the end of lines, and not at the beginning.
 You'll get an error in R if you put it at the beginning of a line. 
@@ -487,15 +511,15 @@ gg$ggplot(data = df_alaska_flights,
 \vspace{-0.1in}
 ```
 
-**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`**  
+**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
 What are some practical reasons why `dep_delay` and `arr_delay` 
 have a positive relationship?
 
-**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`**  
+**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
 What variables in the `nycflights13::weather` data frame would you expect 
 to have a negative correlation (i.e., a negative relationship) 
 with `dep_delay`? Why? 
-Remember that we are focusing on numerical variables here. 
+Remember that we are focusing on continuous variables here. 
 Hint: Explore the `nycflights13::weather` dataset by using the `View()` function. 
 
 **`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
@@ -559,7 +583,8 @@ the transparency \index{ggplot2!alpha} \index{adding transparency to plots}
 of the points is cumulative: 
 areas with a high-degree of overplotting are darker, 
 whereas areas with a lower degree are less dark. 
-Note furthermore that there is no `aes()` surrounding `alpha = 0.2`.  
+
+Note furthermore that there is no `aes()` surrounding `alpha = 0.2`. 
 This is because we are not mapping a variable to an aesthetic attribute, 
 but rather merely changing the default setting of `alpha`. 
 In fact, you'll receive an error if you try to change the second line 
@@ -577,7 +602,7 @@ In Figure \@ref(fig:jitter-example-plot-1),
 we present both the regular scatterplot of these 4 points (on the left) 
 and its jittered counterpart (on the right). 
 
-```{r jitter-example-plot-1, fig.cap="Regular and jittered scatterplot.", echo=FALSE, fig.height=5, purl=FALSE}
+```{r jitter-example-plot-1, fig.cap="Regular and jittered scatterplot.", out.width="80%", echo=FALSE, purl=FALSE}
 jitter_example <- tibble::tibble(
   x = rep(0, 4),
   y = rep(0, 4)
@@ -664,7 +689,7 @@ How has that region changed compared to
 when you observed the same plot without `alpha = 0.2` set 
 in Figure \@ref(fig:noalpha)?
 
-**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`**  
+**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
 What additional information does it give you 
 by setting the `alpha` argument that a regular scatterplot cannot?
 
@@ -676,12 +701,12 @@ by setting the `alpha` argument that a regular scatterplot cannot?
 
 ### Summary
 
-Scatterplots display the relationship between two numerical variables. 
+Scatterplots display the relationship between two continuous variables. 
 They are among the most commonly used plots 
 because they can provide an immediate way to see the trend 
-in one numerical variable versus another. 
+in one continuous variable versus another. 
 However, if you try to create a scatterplot 
-where either one of the two variables is not numerical, 
+where either one of the two variables is not continuous, 
 you might get strange results.  Be careful! 
 
 With medium to large datasets, 
@@ -696,7 +721,7 @@ emerge as you tinker with your plots.
 
 The next of the five named graphs are linegraphs. 
 Linegraphs \index{linegraphs} show the relationship 
-between two numerical variables when the variable on the x-axis, 
+between two continuous variables when the variable on the x-axis, 
 also called the *explanatory* variable\index{explanatory variable}, 
 is of a sequential nature. 
 In other words, there is an inherent ordering to the variable. 
@@ -712,12 +737,12 @@ Let's illustrate linegraphs using another dataset in the
 the `weather` data frame. 
 
 Let's explore the `weather` data frame 
-by running `View(nycflights13::weather)` and `glimpse(nycflights13::weather)` on it. 
+by running `View(nycflights13::weather)` or `glimpse(nycflights13::weather)`. 
 Furthermore let's read the associated help file 
 by running `?nycflights13::weather` to bring up the help file.
 
 Observe that there is a variable called `temp` 
-of hourly temperature recordings in Fahrenheit at weather stations 
+of hourly temperature recordings in *Fahrenheit* at weather stations 
 near all three major airports in New York City: 
 Newark (`origin` code `EWR`), 
 John F. Kennedy International (`JFK`), 
@@ -735,21 +760,23 @@ but by using the `&` operator
 we only choose the subset of rows of `weather` where the `origin` is `"EWR"`, 
 the `month` is January, **and** the `day` is between `1` and `15`. 
 Recall we performed a similar task in Section \@ref(scatterplots) 
-when creating the `alaska_flights` data frame of only Alaska Airlines flights, 
+when creating the `df_alaska_flights` data frame of only Alaska Airlines flights, 
 a topic we'll explore more in Chapter \@ref(wrangling) on data wrangling.
 
 Before applying `filter`, 
-let's `import` the `weather` dataset 
+let's `import` the `weather` dataset from package `nycflights13`, 
 so it can be referred to in the short form `df_weather`. 
 Furthermore, let's convert Fahrenheit to Celsius. 
 
 ```{r}
+# import the data "weather" and save it as "df_weather"
 import::from(nycflights13, df_weather = weather)
 # convert Fahrenheit to Celsius
 df_weather$temp_c = (df_weather$temp - 32) * (5 / 9)
 ```
 
 ```{r}
+# Reduce the data to the intended subset
 early_january_weather <- df_weather %>% 
   dp$filter(origin == "EWR" & month == 1 & day <= 15)
 ```
@@ -782,7 +809,7 @@ whereas the `hour` variable does not?
 Let's create a time series plot of the hourly temperatures 
 saved in the `early_january_weather` data frame 
 by using `geom_line()` to create a linegraph\index{ggplot2!geom\_line()}, 
-instead of using `geom_point()` like we used previously to create scatterplots:
+instead of `geom_point()` which we used previously to create scatterplots:
 
 ```{r hourlytemp, fig.cap="Hourly temperature in Newark for January 1-15, 2013."}
 gg$ggplot(data = early_january_weather, 
@@ -816,13 +843,13 @@ In this case, the geometric object is a `line` set by specifying `geom_line()`.
 \vspace{-0.1in}
 ```
 
-**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`**  
-Why should linegraphs be avoided 
-when there is not a clear ordering of the horizontal axis?
+**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
+Plot a time series of `temp_c` for Newark Airport 
+in the first 15 days of *June* 2013.
 
 **`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
-Plot a time series of a variable other than `temp_c` 
-for Newark Airport in the first 15 days of January 2013.
+Why should linegraphs be avoided 
+when there is not a clear ordering of the horizontal axis?
 
 ```{block, type="learncheck", purl=FALSE}
 \vspace{-0.25in}
@@ -833,7 +860,7 @@ for Newark Airport in the first 15 days of January 2013.
 ### Summary
 
 Linegraphs, just like scatterplots, 
-display the relationship between two numerical variables. 
+display the relationship between two continuous variables. 
 However, it is preferred to use linegraphs over scatterplots 
 when the variable on the x-axis (i.e., the explanatory variable) 
 has an inherent ordering, such as some notion of time.  
@@ -841,11 +868,12 @@ has an inherent ordering, such as some notion of time.
 
 ## 5NG#3: Histograms {#histograms}
 
-<!-- Let's consider the `temp` variable in the `nycflights13::weather` data frame  -->
-<!-- once again, but unlike with the linegraphs in Section \@ref(linegraphs), let's say we don't care about its relationship with time, but rather we only care about how the values of `temp` *distribute*. In other words: -->
 
-Let's consider the `temp` variable in the `nycflights13::weather` data frame. 
-In particular, how the values of `temp` *distribute*. In other words:
+Let's consider the `temp_c` variable in the `df_weather` data frame once again, 
+but unlike with the linegraphs in Section \@ref(linegraphs), 
+let's say we *don't* care about its relationship with time, 
+but rather we only care about how the values of `temp_c` **distribute**. 
+In other words:
 
 1. What are the smallest and largest values?
 1. What is the "center" or "most typical" value?
@@ -853,8 +881,7 @@ In particular, how the values of `temp` *distribute*. In other words:
 1. What are frequent and infrequent values?
 
 One way to visualize this *distribution* \index{distribution} 
-of this single variable `temp` is to plot them on a horizontal line 
-<!-- as we do in Figure \@ref(fig:temp-on-line): -->
+of this single variable `temp_c` is to plot them on a horizontal line: 
 
 ```{r temp-on-line, echo=F, warning=F, fig.height=0.8, fig.cap="Plot of hourly temperature recordings from NYC in 2013."}
 gg$ggplot(data = df_weather, 
@@ -869,10 +896,10 @@ gg$ggplot(data = df_weather,
 hist_title <- "Histogram of Hourly Temperature Recordings from NYC in 2013"
 ```
 
-This gives us a general idea of how the values of `temp` distribute: 
+This gives us a general idea of how the values of `temp_c` distribute: 
 observe that temperatures vary from around 
 `r round(min(df_weather$temp_c, na.rm = TRUE), 0)`&deg;C 
-up to `r round(max(df_weather$temp_c, na.rm = TRUE), 0)`&deg;C.  
+up to `r round(max(df_weather$temp_c, na.rm = TRUE), 0)`&deg;C. 
 Furthermore, there appear to be more recorded temperatures 
 between 5&deg;C and 15&deg;C than outside this range. 
 However, because of the high degree of overplotting in the points, 
@@ -882,7 +909,7 @@ are between say 5&deg;C and 10&deg;C.
 What is commonly produced instead of Figure \@ref(fig:temp-on-line) 
 is known as a \index{histograms} *histogram*.  
 A histogram is a plot that visualizes the *distribution* 
-of a numerical value as follows:
+of a continuous value as follows:
 
 1. We first cut up the x-axis into a series of \index{histograms!bins} *bins*, 
    where each bin represents a range of values. 
@@ -923,7 +950,7 @@ have this interpretation.
 Let's now present the `ggplot()` code to plot your first histogram! 
 Unlike with scatterplots and linegraphs, 
 there is now only one variable being mapped in `aes()`: 
-the single numerical variable `temp`. 
+the single continuous variable `temp_c`. 
 The y-aesthetic of a histogram, the count of the observations in each bin, 
 gets computed for you automatically. 
 Furthermore, the geometric object layer is now a `geom_histogram()`. 
@@ -932,31 +959,16 @@ After running the following code,
 you'll see the histogram in Figure \@ref(fig:weather-histogram) 
 as well as warning messages. We'll discuss the warning messages first. 
 
-```{r weather-histogram_demo, eval=F}
-import::from(nycflights13, df_weather = weather)
-# convert Fahrenheit to Celsius
-df_weather$temp_c = (df_weather$temp - 32) * (5 / 9)
-# plot histogram
-gg$ggplot(data = df_weather, 
-          mapping = gg$aes(x = temp_c)) +
-  gg$geom_histogram() + 
-  gg$labs(x = "Temperature (Celsius)")
-```
-
 ```{r weather-histogram, echo=F, warning=TRUE, fig.cap="Histogram of hourly temperatures at three NYC airports.", fig.height=2.3}
-import::from(nycflights13, df_weather = weather)
-# convert Fahrenheit to Celsius
-df_weather$temp_c = (df_weather$temp - 32) * (5 / 9)
 gg$ggplot(data = df_weather, 
           mapping = gg$aes(x = temp_c)) +
   gg$geom_histogram() + 
-  #   gg$geom_histogram(binwidth = 5, boundary = 15, color = "white") + 
   gg$labs(x = "Temperature (Celsius)")
 ```
 
-The first message is telling us that the histogram was constructed using `bins = 30` for 30 equally spaced bins. This is known in computer programming as a default value; unless you override this default number of bins with a number you specify, R will choose 30 by default. We'll see in the next section how to change the number of bins to another value than the default.
+The first warning message is telling us that the histogram was constructed using `bins = 30` for 30 equally spaced bins. This is known in computer programming as a default value; unless you override this default number of bins with a number you specify, R will choose 30 by default. We'll see in the next section how to change the number of bins to another value than the default.
 
-The second message is telling us something similar to the warning message we received when we ran the code to create a scatterplot of departure and arrival delays for Alaska Airlines flights in Figure \@ref(fig:noalpha): that because one row has a missing `NA` value for `temp`, it was omitted from the histogram. R is just giving us a friendly heads up that this was the case. 
+The second message is telling us something similar to the warning message we received when we ran the code to create a scatterplot of departure and arrival delays for Alaska Airlines flights in Figure \@ref(fig:noalpha): that because one row has a missing `NA` value for `temp_c`, it was omitted from the histogram. R is just giving us a friendly heads up that this was the case. 
 
 Now let's unpack the resulting histogram in Figure \@ref(fig:weather-histogram). 
 Observe that values less than -5&deg;C as well as values above 35&deg;C 
@@ -1081,9 +1093,9 @@ Is this data spread out greatly from the center or is it close?  Why?
 
 
 Histograms, unlike scatterplots and linegraphs, 
-present information on only a single numerical variable. 
+present information on only a single continuous variable. 
 Specifically, they are visualizations of the distribution 
-of the numerical variable in question. 
+of the continuous variable in question. 
 
 
 
@@ -1100,7 +1112,7 @@ with matching x and y axes, but whose content will differ.
 
 For example, suppose we were interested in looking at 
 how the histogram of hourly temperature recordings at the three NYC airports 
-we saw in Figure \@ref(fig:histogramexample) differed in each month. 
+we saw in Figure \@ref(fig:histogramexample) *differed in each month*. 
 We could "split" this histogram by the 12 possible months in a given year. 
 In other words, we would plot histograms of `temp_c` for each `month` separately. 
 We do this by adding `facet_wrap(~ month)` layer. 
@@ -1147,27 +1159,24 @@ while they tend to be lower in the winter.
 ```
 
 **`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
-What other things do you notice about this faceted plot?  
+What other things do you notice about this faceted plot? 
 How does a faceted plot help us see relationships between two variables?
 
 **`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
-What do the numbers 1-12 correspond to in the plot?  
+What do the numbers 1-12 correspond to in the plot? 
 What about 25, 50, 75, 100?
 
 **`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
 For which types of datasets would faceted plots 
-not work well in comparing relationships between variables? 
-Give an example describing the nature of these variables 
-and other important characteristics.
-
-**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
-Does the `temp_c` variable in the `weather` dataset have a lot of variability?  
-Why do you say that?
+not work well? 
+Give an example of such a dataset and 
+describe some of its important characteristics. 
 
 ```{block, type="learncheck", purl=FALSE}
 \vspace{-0.25in}
 \vspace{-0.25in}
 ```
+
 ## 5NG#4: Boxplots {#boxplots}
 
 ```{r echo=FALSE, purl=FALSE}
@@ -1194,13 +1203,13 @@ five_number_summary <- tibble::tibble(
 )
 ```
 
-While faceted histograms are one type of visualization 
-used to compare the distribution of a numerical variable 
-split by the values of another variable, 
-another type of visualization that achieves this same goal 
+Faceted histograms are one type of visualization 
+used to compare the distribution of a continuous variable 
+split by the values of another variable. 
+Another type of visualization that achieves this same goal 
 is a *side-by-side boxplot*. 
 A boxplot \index{boxplots} is constructed from the information 
-provided in the *five-number summary* of a numerical variable 
+provided in the *five-number summary* of a continuous variable 
 (see Appendix \@ref(appendix-stat-terms)).  
 
 To keep things simple for now, 
@@ -1296,7 +1305,7 @@ quartile_3 <- quartiles[3] %>% round(3)
    Thus, the IQR for this example is 
    `r quartile_3` - `r quartile_1` = 
    `r (quartiles[3] - quartiles[1]) %>% round(3)`&deg;C. 
-   The interquartile range is a measure of a numerical variable's *spread*.
+   The interquartile range is a measure of a continuous variable's *spread*.
 
 Furthermore, in the rightmost plot of Figure \@ref(fig:nov2), 
 we see the *whiskers* \index{boxplots!whiskers} of the boxplot. 
@@ -1323,45 +1332,19 @@ We do this by mapping the `month` variable to the x-position aesthetic,
 the `temp_c` variable to the y-position aesthetic, 
 and by adding a `geom_boxplot()` layer:
 
-```{r badbox, fig.cap="Invalid boxplot specification."}
-gg$ggplot(data = df_weather, 
-          mapping = gg$aes(x = month, y = temp_c)) +
-  gg$geom_boxplot() + 
-  gg$labs(y = "Temperature (Celsius)")
-```
-
-```
-Warning messages:
-1: Continuous x aesthetic -- did you forget aes(group=...)? 
-2: Removed 1 rows containing non-finite values (stat_boxplot). 
-```
-
-Observe in Figure \@ref(fig:badbox) that this plot 
-does not provide information about temperature separated by month. 
-The first warning message clues us in as to why. 
-It is telling us that we have a "continuous", or numerical variable, 
-on the x-position aesthetic. 
-Boxplots, however, require a categorical variable to be mapped 
-to the x-position aesthetic. 
-The second warning message is identical to the warning message 
-when plotting a histogram of hourly temperatures: 
-that one of the values was recorded as `NA` missing. 
-
-We can convert the numerical variable `month` 
-into a `factor` categorical variable 
-by using the `factor()` \index{factors} function. 
-So after applying `factor(month)`, 
-month goes from having numerical values just the 1, 2, ..., and 12 
-to having an associated ordering. 
-With this ordering, 
-`ggplot()` now knows how to work with this variable to produce the needed plot. 
 
 ```{r monthtempbox, fig.cap="Side-by-side boxplot of temperature split by month."}
 gg$ggplot(data = df_weather, 
-          mapping = gg$aes(x = factor(month), y = temp_c)) +
+          mapping = gg$aes(x = factor(month, ordered=T), y = temp_c)) +
   gg$geom_boxplot() + 
   gg$labs(y = "Temperature (Celsius)")
 ```
+
+The code above shares the same structure as what we have seen 
+with scatterplots and linegraphs, 
+with one distinguished feature: `x = factor(...)`. 
+We will discuss this distinction in section \@ref(boxplot-factor). 
+For now, let's focus on the main theme: boxplot. 
 
 The resulting Figure \@ref(fig:monthtempbox) 
 shows 12 separate "box and whiskers" plots 
@@ -1403,6 +1386,7 @@ by the interquartile ranges are informative too;
 they tell us about variability, or spread, 
 of temperatures recorded in a given month. 
 
+
 ```{block lc-boxplot, type="learncheck", purl=FALSE}
 \vspace{-0.15in}
 **_Learning check_**
@@ -1418,14 +1402,6 @@ Which months have the highest variability in temperature?
 What reasons can you give for this?
 
 **`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
-We looked at the distribution of the numerical variable `temp` 
-split by the numerical variable `month` that we converted 
-using the `factor()` function in order to make a side-by-side boxplot. 
-Why would a boxplot of `temp` split by the numerical variable `pressure` 
-similarly converted to a categorical variable 
-using the `factor()` not be informative?
-
-**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
 Boxplots provide a simple way to identify outliers.  
 Why may outliers be easier to identify 
 when looking at a boxplot instead of a faceted histogram?
@@ -1438,11 +1414,12 @@ when looking at a boxplot instead of a faceted histogram?
 ### Summary
 
 Side-by-side boxplots provide us with a way to compare the distribution 
-of a numerical variable across multiple values of another variable. 
+of a continuous variable, such as temperature, 
+across multiple values of another categorical variable. 
 One can see where the median falls across the different groups 
 by comparing the solid lines in the center of the boxes. 
 
-To study the spread of a numerical variable within one of the boxes, 
+To study the spread of a continuous variable within one of the boxes, 
 look at both the length of the box 
 and also how far the whiskers extend from either end of the box. 
 Outliers are even more easily identified when looking at a boxplot 
@@ -1450,17 +1427,19 @@ than when looking at a histogram as they are marked with distinct points.
 
 ## 5NG#5: Barplots {#geombar}
 
-Both histograms and boxplots are tools 
-to visualize the distribution of numerical variables. 
-Another commonly desired task is to visualize the distribution 
+A boxplot is often used to visualize the distribution of continuous variables. 
+whereas a **barplot** is used to visualize the distribution 
 of a categorical variable. 
-This is a simpler task, as we are simply counting different categories 
-within a categorical variable, 
-also known as the \index{levels} *levels* of the categorical variable. 
-Often the best way to visualize these different counts, 
-also known as \index{frequencies} *frequencies*, 
-is with barplots (also called barcharts).
+Take sex as a categorical variable for example. 
+We can visualize the number of male vs. female studuents in this class. 
+To do so, we begin by counting heads in each category of sex, 
+namely male and female. 
+These categories are also known as 
+the \index{levels} *levels* of the categorical variable. 
+And the counts of each level are known as \index{frequencies} *frequencies*. 
+A barplot is sometimes referred to as a barchart. 
 
+Barplots are easy to construct. 
 One complication, however, is how your data is represented. 
 Is the categorical variable of interest "pre-counted" or not? 
 For example, run the following code that manually creates two data frames 
@@ -1537,18 +1516,15 @@ and visualize the distribution of the categorical variable `carrier`.
 In other words, let's visualize the number of domestic flights 
 out of New York City each airline company flew in 2013. 
 Recall from Subsection \@ref(exploredataframes) 
-when you first explored the `flights` data frame, 
+when you first explored the `df_flights` data frame, 
 you saw that each row corresponds to a flight. 
-In other words, the `flights` data frame is more like the `fruits` data frame 
+In other words, the `df_flights` data frame is more like the `fruits` data frame 
 than the `fruits_counted` data frame 
 because the flights have not been pre-counted by `carrier`. 
 Thus we should use `geom_bar()` instead of `geom_col()` to create a barplot. 
 Much like a `geom_histogram()`, 
 there is only one variable in the `aes()` aesthetic mapping: 
 the variable `carrier` gets mapped to the `x`-position. 
-As a difference though, 
-histograms have bars that touch 
-whereas bar graphs have white space between the bars going from left to right.
 
 (ref:geombar) Number of flights departing NYC in 2013 by airline using geom_bar().
 
@@ -1598,7 +1574,8 @@ The resulting barplot would be identical to Figure \@ref(fig:flightsbar).
 ```
 
 **`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
-Why are histograms inappropriate for categorical variables?
+When would a barplot be more appropriate than a histogram? 
+Hint: consider which type of variables are being visulized. 
 
 **`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
 What is the difference between histograms and barplots?
@@ -1716,7 +1693,7 @@ gg$ggplot(data = df_flights,
 ```
 
 Figure \@ref(fig:flights-stacked-bar) is an example 
-of a \index{barplot!stacked} *stacked barplot*.  
+of a \index{barplot!stacked} *stacked barplot*. 
 While simple to make, in certain aspects it is not ideal. 
 For example, it is difficult to compare the heights 
 of the different colors between the bars, 
@@ -1881,6 +1858,11 @@ if (!file.exists(here::here(
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vRGaUW6EMIGPhg2V7CahoSdVi_JCcESFRYV5tov6bjcwOcn7DZDzfpZgrvjfFG6PV57gcJYIrwl_Q2c/pub?gid=0&single=true&output=csv" %>%
     readr::read_csv(na = "")
   summary_table_ch2$Notes[2] <- "Used when there is a sequential order to x-variable, e.g., time"
+  summary_table_ch2$Notes[3] <- "Facetted histograms show the distribution of 1 continuous variable split by the values of another variable"
+  summary_table_ch2$Shows[1] <- "Relationship between 2 continuous variables"
+  summary_table_ch2$Shows[2] <- "Relationship between 2 continuous variables"
+  summary_table_ch2$Shows[3] <- "Distribution of 1 continuous variable"
+  summary_table_ch2$Shows[4] <- "Distribution of 1 continuous variable split by the values of another variable"
   readr::write_rds(summary_table_ch2, here::here("rds", 
                                                  "summary_table_ch2.rds"))
 } else {
@@ -1938,6 +1920,180 @@ it's common to see this style when reviewing other R users' code.
 
 ## Additional resources
 
+### `factor()` in boxplot {#boxplot-factor}
+
+In section \@ref(geomboxplot), we learned how to make 
+side-by-side boxplots with the following code: 
+
+```{r eval=F}
+gg$ggplot(data = df_weather, 
+          mapping = gg$aes(x = factor(month, ordered=T), y = temp_c)) +
+  gg$geom_boxplot()
+```
+
+Structure-wise, 
+this code resembles what we used to create scatterplots and linegraphs, 
+which I reproduce below for you to compare:
+
+```{r eval=FALSE}
+# scatterplot
+gg$ggplot(data = df_alaska_flights, 
+          mapping = gg$aes(x = dep_delay, y = arr_delay)) + 
+  gg$geom_point() + 
+```
+
+```{r eval=F}
+# linegraph
+gg$ggplot(data = early_january_weather, 
+       mapping = gg$aes(x = time_hour, y = temp_c)) +
+  gg$geom_line()
+```
+
+There is one distinguished feature in the boxplot code though: 
+
+```
+mapping = gg$aes(x = factor(month, ordered=T)) ...
+```
+
+Instead of `x = month`, we used `x = factor(month, ordered=T)`. 
+Naturally, you will ask what we can achieve with `factor()`? 
+And why do we need to apply `factor()` on the `month` variable 
+for the boxplot? 
+
+
+`factor()` is a base R function. 
+It is typically applied to variables that are inherently categorical in nature, 
+such as employment status, or days of a week. 
+These variables share a common feature: 
+they all have a countable number of *possible* values, 
+rather than having a countless number of *possible* values. 
+Take days of a week versus the height of a person for example. 
+There are 7 possible values for the former: Monday, Tuesday, 
+Wednesday, Thursday, Friday, Saturday and Sunday. 
+In contrast, there is an infinite number of *possible* values 
+for a person's height: 
+1.6 m, 1.61 m, 1.611 m, 1.6111 m, ... You get the idea. 
+Variables that have a *finite* number of *possible* values are often called 
+**categorical** or **discrete** variables, 
+whereas those that have an *infinite* number of *possible* values 
+are called **continuous** variables. 
+
+Note the italicized word *possible* in the previous paragraph. 
+When judging whether a variable is categorical or continuous, 
+it is important to think what its *possible* values are, 
+rather than what its actual values are in a sample. 
+A `height` variable may only have a finite number of *actual* values 
+in a sample of 10 people: 1.58 m, 1.63 m, 1.79 m, 1.67 m, 1.72 m, 1.65 m, 
+1.74 m, 1.82 m, 1.79 m, 1.81 m. 
+However, as we have illustrated before, 
+the possibilities are infinite. 
+Therefore, height would be considered a continuous variable. 
+
+Let's bring our attention back to the boxplot. 
+
+`x = factor(month, ordered=T)`
+
+In this example, 
+`month` has exactly 12 possible values: "`1`" through "`12`". 
+By applying `factor()` to the variable `month`, 
+we are giving `R` explicit instruction to treat `month` as a categorical variable, 
+with 12 levels. 
+In addition, by setting `ordered` to `T` (short for `TRUE`), 
+you are practically telling `R` to sort the 12 levels of `month`, 
+with `1` being the first and `12` the last, 
+matching the natural order of twelve months in a calendar year. 
+
+What happens if you do not apply `factor()` to `month`, 
+and just use `month` as is for the boxplot? 
+Let's try it!
+
+```{r badbox, warning=T, fig.cap="Invalid boxplot specification."}
+gg$ggplot(data = df_weather, 
+          mapping = gg$aes(x = month, y = temp_c)) +
+  gg$geom_boxplot() + 
+  gg$labs(y = "Temperature (Celsius)")
+```
+
+Observe in Figure \@ref(fig:badbox) that this plot 
+does not look like Figure \@ref(fig:monthtempbox) at all. 
+Unlike Figure \@ref(fig:monthtempbox), 
+it does not provide information about temperature separated by month. 
+The first warning message clues us in as to why. 
+It is telling us that we have a "continuous" variable on the x-axis. 
+But you may protest: 
+is it not obvious that the `month` variable is a categorical one? 
+After all, there are only "`1`" through "`12`", tweleve actual values 
+in the data `df_weather`. 
+Yes, as an adult English speaker, 
+it is very obivous that `month` is a categorical variable, 
+evidenced by its values only spanning the twelve integers 1 to 12. 
+However, `R` is not an adult English speaker. 
+If anything, it is more like an utterly stubborn polylingual rule stickler. 
+It demands explicit instruction from us, the superior human users, 
+on how to interpret a variable. 
+Until we explicitly tell `R` that `month` is a categorical variable 
+with ordered levels 1 through 12, 
+it will treat `month` as a continuous one, 
+with *possible* values of 1, 2, 3, ..., 10, 11, 12, 13, 14, ...
+
+So we have seen what happens if we omit the `factor(..)` in the boxplot. 
+`ggplot`'s boxplots require a categorical variable to be mapped 
+to the x-position aesthetic. 
+When the requirement is not met, 
+`ggplot` throws out the unsatisfying `month`, 
+gives a warning, 
+and tries to only work with the y-axis, `temp_c`, 
+which results in Figure \@ref(fig:badbox). 
+
+The second warning message is equivalent to the warning message we have seen 
+when plotting a histogram of hourly temperatures 
+in Figure \@ref(fig:weather-histogram): 
+that one of the rows has missing value `NA` in `temp_c` and/or `month`. 
+To confirm: 
+
+```{r eval=F}
+dp$filter(df_weather, is.na(temp_c)|is.na(month))
+```
+
+```{r missing-data-2, echo=F}
+dp$filter(df_weather, is.na(temp_c)|is.na(month)) %>% 
+  knitr::kable(caption = "One row with missing data in `temp_c` and/or `month`") %>% 
+	kableExtra::kable_styling(bootstrap_options = 
+                            c("striped", "hover", "condensed", "responsive"), 
+                          font_size = 14) %>% 
+  kableExtra::column_spec(c(3,16), bold=T, color="white", background="#D7261E") %>% 
+  kableExtra::scroll_box(width = "100%")
+```
+
+Sure enough, this row has a missing value in `temp_c`. 
+(Place your mouse cursor inside the table and scroll right 
+to see more columns.) 
+
+
+```{block lc-factor, type="learncheck", purl=FALSE}
+\vspace{-0.15in}
+**_Learning check_**
+\vspace{-0.1in}
+```
+
+**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
+What happens when you completely drop the `x` axis in the boxplot? 
+
+**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
+We looked at the distribution of the continuous variable `temp_c` 
+split by the variable `month` that we converted 
+using the `factor()` function in order to make a side-by-side boxplot. 
+Why would a boxplot of `temp_c` split by the continuous variable `pressure` 
+similarly converted to a categorical variable 
+using the `factor()` not be informative?
+
+
+```{block, type="learncheck", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+
 ### Common problems {#common-problems}
 
 This section is from <https://r4ds.had.co.nz/data-visualisation.html#common-problems>
@@ -1965,6 +2121,7 @@ it has to come at the end of the line, not the start.
 In other words, make sure you haven't accidentally written code like this:
 
 ```{r eval=F, tidy=F}
+# Try by yourself, will encounter an error
 ggplot2::ggplot(data = mpg) 
 + ggplot::geom_point(
                      mapping = ggplot2::aes(x = displ, y = hwy))
@@ -2004,7 +2161,7 @@ gg$ggplot(data = alaska_flights,
 
 Furthermore recall in Figure \@ref(fig:hourlytemp) in Section \@ref(linegraphs) 
 we visualized hourly temperature recordings at Newark airport 
-only for the first 15 days of January 2013.  
+only for the first 15 days of January 2013. 
 This necessitated paring down the `df_weather` data frame 
 to a new data frame `early_january_weather` 
 consisting of hourly temperature recordings only for `origin == "EWR"`, 

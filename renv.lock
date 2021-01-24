@@ -663,8 +663,8 @@
       "RemoteRepo": "rmarkdown",
       "RemoteUsername": "rstudio",
       "RemoteRef": "HEAD",
-      "RemoteSha": "f573088095f98b46330b719f86cb4743ba5de8d7",
-      "Hash": "665fc7f680464108b19ad034e211ca57"
+      "RemoteSha": "41af04ad2886a5a5f9f8b5fa4b559b003ee93323",
+      "Hash": "fb7b5b04bff372a2cda43eb31b1f6273"
     },
     "rprojroot": {
       "Package": "rprojroot",
@@ -773,10 +773,10 @@
     },
     "tinytex": {
       "Package": "tinytex",
-      "Version": "0.28",
+      "Version": "0.29",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "ff73961a77fba606fbf944dc3468e5b9"
+      "Hash": "f0b0ba735febac9a8344253ae6fa93f5"
     },
     "utf8": {
       "Package": "utf8",

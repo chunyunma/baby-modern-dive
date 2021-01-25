@@ -58,18 +58,11 @@ cran_primary <- c(
                   "dplyr", 
                   "gapminder", 
                   "ggplot2", 
-                  "nycflights13"
-)
-cran_secondary <- c(
-                    "kableExtra", 
-                    "patchwork", 
-                    "readr", 
-                    "stringr", 
-                    "tibble"
+                  "nycflights13", 
+                  "tibble"
 )
 
 if (length(cran_primary) != 0) xf$pkg_load2(cran_primary)
-if (length(cran_secondary) != 0) xf$pkg_load2(cran_secondary)
 
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
@@ -77,6 +70,13 @@ import::from(magrittr, '%>%')
 ```
 
 ```{r import-pkg, echo=F, message=FALSE, warning=FALSE}
+cran_secondary <- c(
+                    "kableExtra", 
+                    "patchwork", 
+                    "readr", 
+                    "stringr"
+)
+
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
 import::from(magrittr, '%>%')
@@ -166,7 +166,7 @@ gapminder_2007 %>%
   head(3) %>%
   knitr::kable(
     digits = 2,
-    caption = "Gapminder 2007 Data: First 3 of 142 countries" # ,
+    caption = "Gapminder 2007 Data: First 3 of 142 countries"
   ) %>%
   kableExtra::kable_styling(
     font_size = ifelse(knitr::is_latex_output(), 10, 16),
@@ -205,11 +205,7 @@ gapminder_plot <- gg$ggplot(
   gg$geom_point() +
   gg$labs(x = "GDP per capita", y = "Life expectancy")
 
-if (knitr::is_html_output()) {
-  gapminder_plot
-} else {
-  gapminder_plot + gg$scale_color_grey()
-}
+gapminder_plot
 ```
 
 Let's view this plot through the grammar of graphics:
@@ -490,7 +486,7 @@ Note that the `+` sign comes at the end of lines, and not at the beginning.
 You'll get an error in R if you put it at the beginning of a line. 
 \index{ggplot2!+} 
 When adding layers to a plot, 
-you are encouraged to start a new line after the `+` 
+you are encouraged to start a new line *after* the `+` 
 (by pressing the Return/Enter button on your keyboard) 
 so that the code for each layer is on a new line. 
 As we add more and more layers to plots, 
@@ -1121,7 +1117,7 @@ The tilde is required and you'll receive the error
 `Error in as.quoted(facets) : object 'month' not found` 
 if you don't include it here. 
 
-```{r facethistogram, fig.cap="Faceted histogram of hourly temperatures by month.", echo=FALSE, purl=FALSE, fig.height=3.3}
+```{r facethistogram, fig.cap="Faceted histogram of hourly temperatures by month.", purl=FALSE, fig.height=3.3}
 gg$ggplot(data = df_weather, 
           mapping = gg$aes(x = temp_c)) +
   gg$geom_histogram(binwidth = 5, color = "white") +
@@ -1136,7 +1132,7 @@ For example, say we would like our faceted histogram
 to have 4 rows instead of 3. 
 We simply add an `nrow = 4` argument to `facet_wrap(~ month)`.
 
-```{r facethistogram2, fig.cap="Faceted histogram with 4 instead of 3 rows.", echo=FALSE, purl=FALSE, fig.height=3.3}
+```{r facethistogram2, fig.cap="Faceted histogram with 4 instead of 3 rows.", purl=FALSE, fig.height=3.3}
 gg$ggplot(data = df_weather, 
           mapping = gg$aes(x = temp_c)) +
   gg$geom_histogram(binwidth = 5, color = "white") +
@@ -1163,7 +1159,7 @@ How does a faceted plot help us see relationships between two variables?
 
 **`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
 What do the numbers 1-12 correspond to in the plot? 
-What about 25, 50, 75, 100?
+What about 0, 20, 40?
 
 **`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
 For which types of datasets would faceted plots 
@@ -1998,7 +1994,7 @@ By applying `factor()` to the variable `month`,
 we are giving `R` explicit instruction to treat `month` as a categorical variable, 
 with 12 levels. 
 In addition, by setting `ordered` to `T` (short for `TRUE`), 
-you are practically telling `R` to sort the 12 levels of `month`, 
+we are practically telling `R` to sort the 12 levels of `month`, 
 with `1` being the first and `12` the last, 
 matching the natural order of twelve months in a calendar year. 
 

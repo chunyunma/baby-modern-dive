@@ -26,6 +26,7 @@ xf <- loadNamespace('xfun') # use function from base R before import is installe
 
 cran_packages = c(
                   # Packages required by students: 
+                  "fivethirtyeight", 
                   "gapminder", 
                   "ggplot2", 
                   "knitr", 
@@ -45,11 +46,13 @@ cran_packages = c(
                   "mvtnorm", 
                   "patchwork", 
                   "readr", 
+                  "readxl", 
                   "remotes", 
                   # "rmarkdown", 
                   # "scales", 
                   "stringr", 
-                  "tibble"
+                  "tibble", 
+                  "tidyr"
 )
 
 # Need to cite these packages separately

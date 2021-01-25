@@ -460,7 +460,12 @@ Place it somewhere sensible, so that it will be easy to find in the future.
 
 ```{block name-files, type="btw", purl=F}
 \vspace{-0.15in}
-**_What is in a name?_**
+
+**_Good to know_**
+
+\vspace{-0.1in}
+```
+**What is in a name?**
 
 Do you often have trouble finding a file that you had in mind 
 and end up opening up a bunch of files to see if it is the right one? 
@@ -479,9 +484,11 @@ for some practical guidance on how to name files
 (scroll down to see the slides). 
 <https://github.com/jennybc/organization-and-naming/tree/master/naming-things>
 
-\vspace{-0.1in}
-```
 
+```{block, type="btw", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
 
 Once this folder has been created, 
 next is to let RStudio know that you want to associate this folder with 
@@ -810,24 +817,12 @@ these "spreadsheet"-type datasets are called
 _data frames_ in R. \index{data frame} 
 We'll focus on working with data saved as data frames throughout this book.
 
-<!-- Let's first load all the packages needed for this chapter,  -->
-<!-- assuming you've already installed them.  -->
-<!-- Read Section \@ref(packages) for information  -->
-<!-- on how to install and load R packages if you haven't already. -->
-
-<!-- Maybe a snapshot of the data in spreadsheet form  -->
-
 The first dataset that we are going to see 
 contains on-time data for all domestic flights 
 departing from one of New York City's three main airports in 2013: 
 Newark Liberty International (EWR), 
 John F. Kennedy International (JFK), 
 and LaGuardia Airport (LGA).
-
-<!-- Different ways to explore data,  -->
-<!-- including View(), glimpse, str, head, kable, `$`,  -->
-<!--  -->
-<!-- Type of variables (segue to theory) -->
 
 
 The following code gives us access to the data, 

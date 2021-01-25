@@ -102,10 +102,10 @@
     },
     "brio": {
       "Package": "brio",
-      "Version": "1.1.0",
+      "Version": "1.1.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "570a24963009b9cce0869a0463c83580"
+      "Hash": "36758510e65a457efeefa50e1e7f0576"
     },
     "broom": {
       "Package": "broom",
@@ -634,10 +634,10 @@
     },
     "repr": {
       "Package": "repr",
-      "Version": "1.1.0",
+      "Version": "1.1.3",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "466aee1b69232becb73769daa894c171"
+      "Hash": "4e614ef02b992c8f429a359dae976f93"
     },
     "reprex": {
       "Package": "reprex",

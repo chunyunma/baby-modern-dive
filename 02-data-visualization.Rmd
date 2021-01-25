@@ -958,7 +958,7 @@ After running the following code,
 you'll see the histogram in Figure \@ref(fig:weather-histogram) 
 as well as warning messages. We'll discuss the warning messages first. 
 
-```{r weather-histogram, echo=F, warning=TRUE, fig.cap="Histogram of hourly temperatures at three NYC airports.", fig.height=2.3}
+```{r weather-histogram, warning=TRUE, fig.cap="Histogram of hourly temperatures at three NYC airports.", fig.height=2.3}
 gg$ggplot(data = df_weather, 
           mapping = gg$aes(x = temp_c)) +
   gg$geom_histogram() + 

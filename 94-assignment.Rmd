@@ -1,0 +1,398 @@
+# Assignments {#assignments}
+
+```{r setup_appD, include=FALSE}
+chap <- "D"
+lc <- 0
+rq <- 0
+
+options(scipen = 99, digits = 3)
+
+# Set random number generator see value for replicable pseudorandomness.
+set.seed(76)
+```
+
+
+## Evaluation overview
+
+| Item                           | Weight (%)   | Due date                  | Notes                        |
+| ------------------------------ | ------------ | ------------------------  | ---------------------------: |
+| Set-up                         | 5            | Friday, Jan 22, 1400      | \@ref(appendix-assign-1)     |
+| Online Module + Cheat sheet    | 2 + 3        | Saturday, Jan 23, 1400    | \@ref(appendix-assign-1)     |
+| Online Module + Cheat sheet    | 2 + 3        | Saturday, Jan 30, 1400    | \@ref(appendix-assign-2)     |
+| Online Module + Cheat sheet    | 2 + 3        | **Saturday, Feb 6, 1400** | \@ref(appendix-assign-3)     |
+| Online Module + Cheat sheet    | 2 + 3        | Friday, Feb 12, 1900      | \@ref(appendix-assign-4)     |
+| Reading week, no class         | -            | -                         | -                            |
+| Data Challenge                 | 15           | Saturday, Feb 27, 1400    | \@ref(appendix-assign-5)     |
+| Online Module + Cheat sheet    | 2 + 3        | Saturday, Mar 6, 1400     | \@ref(appendix-assign-6)     |
+| Project seed                   | 5            | Saturday, Mar 13, 1400    | \@ref(appendix-assign-7)     |
+| Online Module + Cheat sheet    | 2 + 3        | Saturday, Mar 20, 1400    | \@ref(appendix-assign-8)     |
+| Project synopsis               | 5            | Saturday, Mar 27, 1400    | \@ref(appendix-assign-9)     |
+| Online Module + Cheat sheet    | 2 + 3        | Saturday, Apr 03, 1400    | \@ref(appendix-assign-10)    |
+| Descriptives                   | 5            | Saturday, Apr 10, 1400    | \@ref(appendix-assign-11)    |
+| Final project deliverable      | 30           | Monday, Apr 26, 1400      | \@ref(appendix-assign-12)    |
+
+
+
+## Week 1 {#appendix-assign-1}
+
+* Reading
+
+  Housekeeping and Chapter \@ref(getting-started). 
+
+There are two parts to this week's assignment. 
+
+* Set-up (5%) 
+  1. You will be setting up R & RStudio 
+     after reading Chapter \@ref(getting-started). 
+     Specifically, you will show me that you have properly customized 
+     the settings in RStudio regarding `.RData`. 
+  2. You will show me that you have adopted the workflow as instructed 
+     in Chapter \@ref(getting-started). 
+     Specifically, you will show me that you have successfully installed 
+     `renv` by running `.libPaths()` in the RStudio console, 
+     as well as set up the project folder. 
+  3. Book a session with me using <https://chunyun.youcanbook.me> 
+     and walk me through your set-up. 
+  4. Sign up for an account on [cocalc](https://cocalc.com) 
+  5. Sign up for an account on slack 
+     and join the workspace on slack for this course. 
+
+* Datacamp (5%)  
+  1. Sign up for Datacamp following the invitation link 
+  and complete the module assigned to you (2%).  
+  1. Write down R commands that you learned from the module (3%). 
+  See Appendix \@ref(appendix-cheat-sheet) for an example of the deliverable. 
+
+
+## Week 2 {#appendix-assign-2}
+
+* Reading
+
+  Chapter \@ref(viz)
+
+* Datacamp (5%)  
+  1. complete the module assigned to you (2%).  
+  1. Write down R commands that you learned from the module (3%). 
+
+
+
+## Week 3 {#appendix-assign-3}
+
+* Reading
+
+  This week, we change gears a bit and read the first two chapters from 
+  another book: 
+  Chapter 1 and 2 of "Introduction to Modern Statistics" 
+
+  <https://openintro-ims.netlify.app/getting-started-with-data.html>
+
+  <https://openintro-ims.netlify.app/summarizing-visualizing-data.html>
+
+* Challenge
+
+  If you find these two chapters very easy to read and have extra time, 
+  try to re-create some plots from the assigned reading 
+  using what you have learned from this course so far. 
+  For example, Figure 2.1, Figure 2.4, Figure 2.5. 
+  As you attempt to re-produce those figures, you may find yourself 
+  looking up various topics online such as "how to change colour in ggplot". 
+  Do take notes of what you learn and update your cheat sheet. 
+
+* Datacamp (5%)  
+  1. complete the module assigned to you (2%).  
+  1. Write down R commands that you learned from the module (3%). 
+
+
+## Week 4 {#appendix-assign-4}
+
+* Reading
+
+  Chapter \@ref(wrangling) and Chapter \@ref(tidy)
+
+* Datacamp (5%)  
+  1. complete the module assigned to you (2%).  
+  1. Write down R commands that you learned from the module (3%). 
+
+## Week 5 {#appendix-assign-5}
+
+* Reading
+
+  Chapter \@ref(simple-regression) 
+
+* Data challenge
+
+  You will work through a data wrangling problem 
+  using a real-life dataset. 
+  You will need to apply what you have learned in the previous four weeks 
+  to solve the problem. 
+  You will submit the work as a `.Rmd` file. 
+
+## Week 6 {#appendix-assign-6}
+
+* Reading
+
+  TBD
+
+* Datacamp (5%)  
+  1. complete the module assigned to you (2%).  
+  1. Write down R commands that you learned from the module (3%). 
+
+## Week 7 {#appendix-assign-7}
+
+* Reading
+
+  TBD
+
+* Project seed
+
+This is the first of the four deliverables for your course project. 
+For the first deliverable, 
+you will decide on a dataset to use for your final project. 
+This dataset could be from a published study, 
+or one that you / your supervisors have collected in the past. 
+There are several factors you need to consider when choosing the dataset: 
+
+  + Are you allowed to re-analyze (part of) the data? 
+
+    1) If the dataset exists as an appendix of a published article, 
+    you are most likely allowed to re-analyze the data. 
+    2) If you or your supervisor collected the data for a previous study, 
+    you might have to consult your supervisor and get permission. 
+    3) If the dataset is part of your ongoing research 
+    and you have passed the ethics, 
+    you should be able to use it for this course project as well. 
+    When in doubt, consult your supervisor. 
+
+  + Does the underlying research question interest you? 
+
+    I assume that if you choose to use a dataset from your own research 
+    or your supervisor's, 
+    the research question addressed by analyzing the data would be interesting to you. 
+    Below, I also provide a few sources to look for published studies 
+    with their datasets attached. 
+    You may choose one whose topic interests you. 
+  + Which statistical technique would be required to re-analyze the data? 
+
+    If you are going to select a dataset that came with a published study, 
+    you will likely use the same statistical technique 
+    employed by the original authors. 
+    You may choose a dataset that would allow you to practice 
+    a technique interesting to you, 
+    even if you are not yet familiar with the said technique. 
+
+Where to look for published studies that have their datasets attached?
+
+  + [Open Science Framework](https://osf.io) 
+  + [Europe PubMed Centrl](https://europepmc.org)
+  + [PLOS ONE](https://journals.plos.org/plosone/)
+
+Here are a few examples of published articles along with their open access datasets 
+from these three sources mentioned above: 
+
++ Math anxiety: [article + data](https://osf.io/xt52t/)
++ Numerical cognition: [article + data](https://europepmc.org/article/MED/31576378)
++ Self-deception: [article + data](https://osf.io/k6hy5/)
++ Moral machine: [article + data](https://osf.io/3hvt2/)
++ Neurodegeneration and identity: [data](https://osf.io/a5vsi/), 
+  [article](https://journals.sagepub.com/doi/10.1177/0956797615592381)
++ Cognitive modelling: [article + data](https://osf.io/6tfz3/)
+
+If you choose to use a published article --- either open access 
+or from your supervisor --- and the data used in that article, 
+you do not have to replicate all the analyses 
+reported in the original article. 
+In fact, in the second deliverable of this course project, 
+you will define the scope of your analyses. 
+
+To summarize, for this assignment, your deliverable will consist of: 
+
++ An url to a published study which includes its open access data, or 
+
++ An electronic copy of a published study (presumably from your supervisor) 
+  with its accompanying dataset
+
+
+## Week 8 {#appendix-assign-8}
+
+* Reading
+
+  TBD
+
+* Datacamp (5%)  
+  1. complete the module assigned to you (2%).  
+  1. Write down R commands that you learned from the module (3%). 
+
+## Week 9 {#appendix-assign-9}
+
+* Reading
+
+  TBD
+
+* Project synopsis
+
+This is the second of the four deliverables for your course project. 
+Consider this as the first draft of the introduction 
+to a paper you are writing. 
+In this synopsis, answer the following questions:
+
+  - What is the research question you (or the study you are replicating) 
+    are (is) trying to answer?
+  - In order to tackle the research question, 
+    what measurements were involved?
+  - What findings were reported in the original paper?
+
+Have an imaginary audience in front of you: 
+how would you describe the study to them? 
+Your audience knows very little beyond common sense about the field, 
+so be sure to provide some lay-person style explanations.
+
+Some questions you may have regarding this deliverable:
+
+- *Can I describe my project as a replication?*
+  Yes, you can refer to your project 
+  as "a replication of xx" If you are replicating an analysis.
+
+- *If I am replicating analyses from a paper, 
+  do I have to replicate every analysis reported in the paper?*
+  No, you do not need to replicate everything from the original paper. 
+  Sometimes a paper includes more than a dozen analyses. 
+  Select the ones that interest you 
+  (or pertinent to the research question you have chosen). 
+  If you are only replicating a part of the original analysis, 
+  you can also mention that in the synthesis 
+  (e.g., the current replication will not provide a comprehensive answer 
+  to the research question ...)
+
+- *Will I be graded for my writing?*
+  Not in this deliverable. 
+  But do pay attention to your writing style.  
+  Look out for non sequiturs, grammatical errors, etc. 
+  In the final deliverable, 
+  writing style will account for one third of the marks. 
+  Now is your opportunity to get feedback and improve if necessary.
+
+- *How long should the write-up be?* 
+  Depending on the complexity of your research question. 
+  Roughly one page long.
+
+- *What if I have more questions?* 
+  I'm sure there are questions I have not covered. 
+  Like any other writing tasks, 
+  you have to make some assumption about your audience 
+  when you commit ideas to the paper. 
+  Don't be afraid to make them, especially because this is just a draft.
+
+
+
+## Week 10 {#appendix-assign-10}
+
+* Reading
+
+  TBD
+
+* Datacamp (5%)  
+  1. complete the module assigned to you (2%).  
+  1. Write down R commands that you learned from the module (3%). 
+
+## Week 11 {#appendix-assign-11}
+
+* Reading
+
+  TBD
+
+* Descriptives
+
+This is the third deliverable of your course project. 
+I will provide a template (to be announced) for you as a starting point. 
+Examples of components in this deliverable include: 
+
+  + A description of each variable, in plain English. 
+    For example, 
+    "*lifeExp – Average life expectancy in each country, measured in years*." 
+    In the description, you may include information such as: 
+    What does this variable measure? 
+    If this is a numerical variable, what is the unit of the measurement? 
+    Is this a key variable, i.e., you plan to use it in the replication analyses?
+
+  +	Missing data analysis. 
+    For each key variable, 
+    investigate whether there is any missing value 
+    (empty cell, or NA, or any other types of illegitimate values). 
+    Report missingness on each variable; 
+    how many values are missing in each column
+
+  +	For numerical variables, examine: 
+    mean, standard deviation, minimum, maximum, histogram, boxplot
+
+  +	For categorical variables: frequency tables  
+
+If there are a large number variables in your dataset, 
+this task may become tedious. 
+Try grouping them, 
+especially if some variables are of the same type (e.g., 5 point likert scale). 
+
+Here, I have listed some typical analyses you may encounter in 
+data exploration, 
+as it is impossible to provide a one-size-fits-all template 
+of descriptives. 
+Other than answering the questions mentioned above, 
+you may want to take a look at the original paper, 
+and consider what descriptives have been reported there. 
+Not sure what counts as descriptives? 
+Look for these keywords: number of participants; mean / median age; 
+male vs. female ratio; percentages; demographics. 
+
+## Week 12 {#appendix-assign-12}
+
+* Reading
+
+  TBD
+
+* Final deliverable
+
+This is the fourth and last deliverable of your course project. 
+You will hand in both an `.Rmd` file and its knitted output. 
+The `.Rmd` file will consists of components typical of a published article, 
+albeit with less detailed introduction and discussion. 
+
+  + **Introduction**: 
+    You will use what you have written for the synopsis, 
+    with edits based on my feedback. 
+  + **Methods**: 
+    You will use what you have written for the descriptives, 
+    with edits based on my feedback. 
+  + **Results**: 
+    Report the results of your main analyses. 
+    What was reported in the original study? 
+    Consider replicating (some of) those components, 
+    including numbers, tables, figures.
+    The scope of your analyses should be tied to your synopsis. 
+    Which part of the original study did you decide to replicate 
+    when you were writing the synopsis? 
+    If you have changed your mind about the scope since then, 
+    update the introduction to reflect the new scope.
+
+  + **Conclusion**: 
+    Summarize your findings. Draw conclusions based on the findings.
+
+  + **Discussion**: 
+    Discuss any similarity and/or discrepancy between your results/conclusions 
+    and those reported in the original study. 
+    If there is any discrepancy, try to offer some reasonable explanations. 
+    If the scope of your analyses is so different from the original one 
+    that it is not feasible to compare the findings, 
+    try to compare the analytical process. For example, 
+
+    - During the analyses, 
+      did you make any decision different than what was reported 
+      in the original study? 
+      If so, what are they and why did you make them differently?
+
+    - Or did you have to make any decision 
+      because no information was mentioned in the original study? 
+      Would you recommend other authors report such information 
+      to ease future replications?
+
+    What lessons have you learned while working on this exercise 
+    that you wouuld share with your peers?
+

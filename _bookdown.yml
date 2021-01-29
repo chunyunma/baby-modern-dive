@@ -7,14 +7,11 @@ rmd_files: [
   "03-wrangling.Rmd", 
   "04-tidy.Rmd", 
   "05-regression.Rmd", 
-  # "content/03-method.Rmd", 
-  # "content/04-application.Rmd", 
-  # "content/05-summary.Rmd", 
-  # "content/06-references.Rmd", 
   # "anscombe.Rmd", 
-  "91-appendixA.Rmd", 
-  "94-appendixD.Rmd", 
-  "95-appendixE.Rmd", 
+  "91-basics.Rmd", 
+  # "93-tips.Rmd", 
+  "94-assignment.Rmd", 
+  "95-sample.Rmd", 
   "99-references.Rmd"
   ]
 before_chapter_script: ["rscript/setup.R"]

@@ -932,8 +932,8 @@ and another bin for the 10-15&deg;C range. Since:
 1. The bin for the 5-10&deg;C range has a height of around 4000. 
    In other words, around 4000 of the hourly temperature recordings 
    are between 5&deg;C and 10&deg;C.
-1. The bin for the 10-15&deg;C range has a height of around 4500. 
-   In other words, around 4500 of the hourly temperature recordings 
+1. The bin for the 10-15&deg;C range has a height of around 3500. 
+   In other words, around 3500 of the hourly temperature recordings 
    are between 10&deg;C and 15&deg;C.
 
 All nine bins spanning -10&deg;C to 35&deg;C on the x-axis 

@@ -15,54 +15,81 @@ options(scipen = 99, digits = 3)
 set.seed(76)
 ```
 
+```{r import-pkg, echo=F, message=FALSE, warning=FALSE}
+import::from(magrittr, '%>%')
+gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
+```
+
 ## Basic statistical terms {#appendix-stat-terms}
 
-Note that all the following statistical terms apply only to *numerical* variables, except the *distribution* which can exist for both numerical and categorical variables. 
+Note that all the following statistical terms 
+apply only to *numerical* variables, 
+except the *distribution* which can exist for both numerical 
+and categorical variables. 
 
 
 ### Mean
 
-The *mean* is the most commonly reported measure of center.  It is commonly called the *average* though this term can be a little ambiguous.  The mean is the sum of all of the data elements divided by how many elements there are. If we have $n$ data points, the mean is given by: 
+The *mean* is the most commonly reported measure of center.  
+It is commonly called the *average* though this term can be a little ambiguous. 
+The mean is the sum of all of the data elements 
+divided by how many elements there are. 
+If we have $n$ data points, the mean is given by: 
 
 $$Mean = \frac{x_1 + x_2 + \cdots + x_n}{n}$$
 
 
 ### Median
 
-The median is calculated by first sorting a variable's data from smallest to largest.  After sorting the data, the middle element in the list is the *median*.  If the middle falls between two values, then the median is the mean of those two middle values.
+The median is calculated by first sorting a variable's data 
+from smallest to largest. 
+After sorting the data, the middle element in the list is the *median*. 
+If the middle falls between two values, 
+then the median is the mean of those two middle values.
 
 
 ### Standard deviation
 
-We will next discuss the *standard deviation* ($sd$) of a variable.  The formula can be a little intimidating at first but it is important to remember that it is essentially a measure of how far we expect a given data value will be from its mean:
+We will next discuss the *standard deviation* ($sd$) of a variable.  
+The formula can be a little intimidating at first 
+but it is important to remember that it is essentially a measure 
+of how far we expect a given data value will be from its mean:
 
 $$sd = \sqrt{\frac{(x_1 - Mean)^2 + (x_2 - Mean)^2 + \cdots + (x_n - Mean)^2}{n - 1}}$$
 
 
 ### Five-number summary
 
-The *five-number summary* consists of five summary statistics: the minimum, the first quantile AKA 25th percentile, the second quantile AKA median or 50th percentile, the third quantile AKA 75th, and the maximum. The five-number summary of a variable is used when constructing boxplots, as seen in Section \@ref(boxplots).
+The *five-number summary* consists of five summary statistics: 
+the minimum, the first quantile AKA 25th percentile, 
+the second quantile AKA median or 50th percentile, 
+the third quantile AKA 75th, and the maximum. 
+The five-number summary of a variable is used when constructing boxplots, 
+as seen in Section \@ref(boxplots).
 
 The quantiles are calculated as
 
 - first quantile ($Q_1$): the median of the first half of the sorted data
 - third quantile ($Q_3$): the median of the second half of the sorted data
 
-The *interquartile range (IQR)*\index{interquartile range (IQR)} is defined as $Q_3 - Q_1$ and is a measure of how spread out the middle 50% of values are. The IQR corresponds to the length of the box in a boxplot.
+The *interquartile range (IQR)*\index{interquartile range (IQR)} 
+is defined as $Q_3 - Q_1$ and is a measure of how spread out 
+the middle 50% of values are. 
+The IQR corresponds to the length of the box in a boxplot.
 
-The median and the IQR are not influenced by the presence of outliers in the ways that the mean and standard deviation are. They are, thus, recommended for skewed datasets. We say in this case that the median and IQR are more *robust to outliers*.
+The median and the IQR are not influenced by the presence of outliers 
+in the ways that the mean and standard deviation are. 
+They are, thus, recommended for skewed datasets. 
+We say in this case that the median and IQR are more *robust to outliers*.
 
 
-### Distribution
-
-The *distribution* of a variable shows how frequently different values of a variable occur. Looking at the visualization of a distribution can show where the values are centered, show how the values vary, and give some information about where a typical value might fall.  It can also alert you to the presence of outliers. 
-
-Recall from Chapter \@ref(viz) that we can visualize the distribution of a numerical variable using binning in a histogram and that we can visualize the distribution of a categorical variable using a barplot.
-
-
-### Outliers
-
-*Outliers* correspond to values in the dataset that fall far outside the range of "ordinary" values.  In the context of a boxplot, by default they correspond to values below $Q_1 - (1.5 \cdot IQR)$ or above $Q_3 + (1.5 \cdot IQR)$.
+<!-- ### Outliers -->
+<!--  -->
+<!-- *Outliers* correspond to values in the dataset  -->
+<!-- that fall far outside the range of "ordinary" values.  -->
+<!-- In the context of a boxplot, by default they correspond to values  -->
+<!-- below $Q_1 - (1.5 \cdot IQR)$ or above $Q_3 + (1.5 \cdot IQR)$. -->
 
 
 <!-- ## Boxplots -->
@@ -70,3 +97,275 @@ Recall from Chapter \@ref(viz) that we can visualize the distribution of a numer
 <!-- Boxplot on a Normal Distribution -->
 <!-- <https://miro.medium.com/max/2400/1*NRlqiZGQdsIyAu0KzP7LaQ.png> -->
 <!-- <https://towardsdatascience.com/understanding-boxplots-5e2df7bcbd51> -->
+
+
+## Populations and samples
+
+You may have seen both concepts --- population and sample --- in various 
+contexts. 
+
+> 
+"*Scientists estimate the monarch population in the eastern U.S. 
+and southern Canada has fallen about 80 per cent since the mid-1990s*". 
+
+"*City starts collecting wastewater samples for COVID-19 testing*"
+
+In the world of statistics, these two concepts exist mostly 
+because we want to answer research questions like the following: 
+
++ Is Universal Health Care a protective factor against cancer mortality? 
+
+  <https://www.sciencedirect.com/science/article/abs/pii/S0140673616005778>
+
++ Is discrimination responsible for the gender wage gap? 
+
+  <https://www.nature.com/articles/d41586-021-00157-1>
+
++ Will the made-in-Canada covid vaccine be effective? 
+
+  <https://www.cbc.ca/news/health/covid-19-vaccine-providence-1.5887613>
+
++ What is the average time to complete a Master's degree at Carleton?
+
+Quite often, it is impractical to study every case in a population, 
+either bacause doing so would take too long, or cost too much. 
+Instead, a sample is collected. 
+<!-- Think about te last SONA study you or your friend participated/administered.  -->
+<!-- Why did we ask more than one person to complete the same questionnaire?  -->
+<!-- Why did not we ask every single person on campus to partake in the study?  -->
+
+Sample is both a noun --- *a sample*, and a verb --- *to sample*, *sampling*. 
+
+### Distribution
+
+Where there is sampling, there is a *distribution* that describes 
+how frequently different values of a variable in the sample occur. 
+Looking at the visualization of a distribution 
+can show where the values are centered, show how the values vary, 
+and give some information about where a typical value might fall.  
+<!-- It can also alert you to the presence of outliers.  -->
+
+Recall from Chapter \@ref(viz) that 
+we can visualize the distribution of a numerical variable 
+using binning in a histogram 
+and that we can visualize the distribution 
+of a categorical variable using a barplot.
+
+Consider the "average program length" example. 
+Instead of polling every student 
+who have ever graduated from a Master's program at Carleton, 
+which would be a huge undertaking, we sampled 100 alumni, 
+and obtained the following data. 
+<!-- Then we use the sample mean as an estimate of the population mean.  -->
+
+```{r dotplot-distribution, echo=F, fig.cap="100 alumni and length of their Master's program."}
+set.seed(789)
+df_grad <- data.frame("id" = seq(1:100), 
+											"length" = round(rnorm(100, 24, 6))
+											)
+
+dotp_grad <- gg$ggplot(df_grad, mapping = gg$aes(x = length)) + 
+	gg$geom_dotplot(binwidth = 6, dotsize=0.15, fill = "blue", color = "blue") + 
+	gg$scale_x_continuous(breaks = seq(0, 48, 6), limits=c(0, 48)) + 
+  gg$scale_y_continuous(NULL, breaks=NULL) + 
+  gg$labs(x = "Program Length", y = "Frequency")
+dotp_grad
+```
+
+This reminds us of ...
+
+```{r bell-curve, echo=F, fig.cap="A bell curve."}
+dotp_grad + 
+  gg$stat_function(fun = function(x) 
+                   dnorm(x, mean = mean(df_grad$length), 
+                         sd = sd(df_grad$length)) * 6 * 100)
+```
+
+
+
+### Normal distribution
+
+Normal distributions are a family of distributions with a symmetrical bell shape. 
+It was first described by De Moivre in 1733 and subsequently 
+by the German mathematician C. F. Gauss (1777 - 1885). 
+Informally called a bell curve, 
+although many other distributions are also bell-shaped, 
+including *t*-distirbutions. 
+
+All normal distributions are defined by two values: 
+(1) the *mean* $\mu$ ("mu") which locates the center of the distribution and 
+(2) the *standard deviation* $\sigma$ ("sigma") 
+which determines the variation of the distribution. 
+
+```{r normal-density, echo=F, fig.cap="The formula that defines normal distributions.", out.width="30%"}
+knitr::include_graphics(here::here(
+  "docs", 
+  "images", 
+  "q_and_a", 
+  "normal_density.svg"
+))
+```
+
+In Figure \@ref(fig:normal-curves), we plot three normal distributions where:
+
+1. The solid normal curve has mean $\mu = 5$ \& standard deviation $\sigma = 2$.
+1. The dotted normal curve has mean $\mu = 5$ \& standard deviation $\sigma = 5$.
+1. The dashed normal curve has mean $\mu = 15$ \& standard deviation $\sigma = 2$.
+
+
+Normal distribution is the umbrella term for a family of distributions, 
+all feature the same bell curve and the underlying density function. 
+
+
+```{r normal-curves, echo=F, fig.cap="Three nromal distributions.", message=F, warning=F}
+set.seed(789)
+# create data points for density plot, 
+# each column for one density
+# the `by` defines the resolution
+all_points <- tibble::tibble(
+  domain = seq(from = -10, to = 25, by = 0.01),
+  `mu = 5, sigma = 2` = dnorm(x = domain, mean = 5, sd = 2),
+  `mu = 5, sigma = 5` = dnorm(x = domain, mean = 5, sd = 5),
+  `mu = 15, sigma = 2` = dnorm(x = domain, mean = 15, sd = 2)
+)  %>% 
+  tidyr::pivot_longer(names_to = "distribution", 
+                      values_to = "value", 
+                      cols = -domain) %>% 
+  dplyr::mutate(
+    distribution = factor(
+      distribution, 
+      levels = c("mu = 5, sigma = 2", 
+                 "mu = 5, sigma = 5", 
+                 "mu = 15, sigma = 2")
+    )
+  )
+
+# get exactly one data point on each density plot 
+# for labelling. 
+
+for_labels <- all_points %>% 
+  dplyr::filter(
+                # I can use these ranges because the resolution `by` is 0.01
+               dplyr::between(domain, 3.795, 3.805) & distribution == "mu = 5, sigma = 2" |
+               dplyr::between(domain, 0.005, 0.0105) & distribution == "mu = 5, sigma = 5" |
+               dplyr::between(domain, 16.005, 16.015) & distribution == "mu = 15, sigma = 2") %>% 
+  dplyr::mutate(shape=
+                c(paste("list(mu == ", 5, ", sigma == 5)"), 
+                  paste("list(mu == ", 5, ", sigma == 2)"), 
+                  paste("list(mu == ", 15, ", sigma == 2)")
+                  )
+  ) %>% 
+  dplyr::mutate(shape = factor(shape, levels = 
+                c(paste("list(mu == ", 5, ", sigma == 2)"), 
+                  paste("list(mu == ", 5, ", sigma == 5)"), 
+                  paste("list(mu == ", 15, ", sigma == 2)")
+                  ), ordered=T
+                )
+  )
+
+# The next one would not work because of the comma
+#   dplyr::mutate(shape = c(paste("mu==", 0, "sigma==", 2), paste("mu==", 0, "sigma==", 5)))
+
+all_points %>% 
+  gg$ggplot(gg$aes(x = domain, y = value, linetype = distribution)) +
+  gg$geom_line() +
+  ggrepel::geom_label_repel(data = for_labels, gg$aes(label = shape), parse=T, 
+                            nudge_x = c(-1, -2.1, 1)) +
+  gg$theme_light() +
+  gg$scale_linetype_manual(values=c("solid", "dotted", "longdash")) + 
+  gg$theme(
+    axis.title.y = gg$element_blank(),
+    axis.title.x = gg$element_blank(),
+    axis.text.y = gg$element_blank(),
+    axis.ticks.y = gg$element_blank(),
+    legend.position = "none"
+  )
+
+```
+
+Notice how the solid and dotted line normal curves 
+have the same center due to their common mean $\mu$ = 5. 
+However, the dotted line normal curve is wider 
+due to its larger standard deviation of $\sigma$ = 5. 
+On the other hand, the solid and dashed line normal curves 
+have the same variation due to their common standard deviation $\sigma$ = 2. 
+However, they are centered at different locations. 
+**Area under every curve is invariably 1**. 
+
+
+The simplest case is known as the standard normal distirbution, 
+where $\mu$ is 0 and $\sigma$ is 1. 
+<!-- The segment and three-sigma rule. [] picture -->
+
+Furthermore, if a variable follows a normal curve, 
+there is a *rule of thumb* we can use:
+
+>
+  95% of values will lie within $\pm$ 1.96 $\approx$ 2 standard deviations of the mean.
+
+Let's illustrate this on a standard normal curve 
+in Figure \@ref(fig:normal-rule-of-thumb). 
+The dashed lines are at -1.96 and 1.96. 
+The areas under the normal curve add up to 100%. For example:
+
+1. The middle segment represent the interval $-1.96$ to $1.96$. 
+   The shaded area between this interval represents 95% of the area 
+   under the curve. 
+   In other words, 95% of values in this distirbution are between 
+   2 standard deviations below and above the mean, give or take. 
+1. The two tails represent the interval $-\infty$ to $-1.96$, and 
+   $1.96$ to $\infty$, respectively. 
+   Each tail represents 2.5% of the area under the curve, 
+   or two tails combined represent 5% of the area under the curve. 
+   In other words, a total of 5% of values in this distribution 
+   are either 2 standard deviations larger or smaller than the average. 
+
+```{r normal-rule-of-thumb, echo=FALSE, fig.cap="Rules of thumb about areas under normal curves.", purl=FALSE, out.width = "80%"}
+# shade_3_sd <- function(x) {
+#   y <- dnorm(x, mean = 0, sd = 1)
+#   y[x <= -3 | x >= 3] <- NA
+#   return(y)
+# }
+shade_2_sd <- function(x) {
+  y <- dnorm(x, mean = 0, sd = 1)
+  y[x <= -1.96 | x >= 1.96] <- NA
+  return(y)
+}
+# shade_1_sd <- function(x) {
+#   y <- dnorm(x, mean = 0, sd = 1)
+#   y[x <= -1 | x >= 1] <- NA
+#   return(y)
+# }
+
+labels <- tibble::tibble(
+  # x = c(-3.5, -2.5, -1.5, -0.5, 0.5, 1.5, 2.5, 3.5),
+  # label = c("0.15%", "2.35%", "13.5%", "34%", "34%", "13.5%", "2.35%", "0.15%")
+  x = c(-2.5, 0, 2.5),
+  label = c("2.5%", "95%", "2.5%")
+) %>% 
+  dp$mutate(y = rep(0.3, times = dp$n()))
+
+gg$ggplot(data = tibble::tibble(x = c(-4, 4)), gg$aes(x)) +
+  gg$geom_text(data = labels, gg$aes(y=y, label = label)) + 
+  # Trace normal curve
+  gg$stat_function(fun = dnorm, args = list(mean = 0, sd = 1), n = 1000) + 
+  # Shade and delineate +/- 3 SD
+  # gg$stat_function(fun = shade_3_sd, geom = "area", fill = "black", alpha = 0.25, n = 1000) +
+  # annotate(geom = "segment", x = c(3, -3), xend = c(3, -3), y = 0, yend = dnorm(3, mean = 0, sd = 1)) +
+  # Shade and delineate +/- 2 SD
+  gg$stat_function(fun = shade_2_sd, geom = "area", fill = "black", alpha = 0.25, n = 1000) +
+  # annotate(geom = "segment", x = c(1.96, -1.96), xend = c(1.96, -1.96), y = 0, yend = dnorm(1.96, mean = 0, sd = 1)) +
+  # Shade and delineate +/- 1 SD
+  # stat_function(fun = shade_1_sd, geom = "area", fill = "black", alpha = 0.25, n = 1000) +
+  # annotate(geom = "segment", x = c(1, -1), xend = c(1, -1), y = 0, yend = dnorm(1, mean = 0, sd = 1)) + 
+  gg$geom_vline(xintercept = c(-1.96, 1.96), linetype = "dashed", alpha = 0.5) +
+  # Axes
+  gg$scale_x_continuous(breaks = seq(from = -3, to = 3, by = 1)) +
+  gg$labs(x = "z", y = "") +
+  gg$theme(axis.title.y = gg$element_blank(), axis.text.y = gg$element_blank(), axis.ticks.y = gg$element_blank())
+```
+
+In statistics, the standard normal distribution 
+is the most important continuous probability distribution, 
+largely because of what's known as the *central limit theorem*. 
+

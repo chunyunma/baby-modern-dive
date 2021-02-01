@@ -1,0 +1,401 @@
+# Trouble shooting and tips {#trouble-shooting}
+
+```{r setup_appD, include=FALSE}
+chap <- "C"
+lc <- 0
+rq <- 0
+
+options(scipen = 99, digits = 3)
+
+# Set random number generator see value for replicable pseudorandomness.
+set.seed(76)
+```
+
+In this section, 
+I compiled a list of questions that I received from you, 
+as well as questions that I anticipate you may have at some point 
+regarding R & RStudio. 
+Each question is accompanied by an answer. 
+The list will be updated regularly. 
+
+```{r load-package, echo=F, message=F, warning=F}
+gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
+import::from(magrittr, '%>%')
+import::from(patchwork, .all=T)
+```
+
+
+## Questions and answers
+
+### When do I install?
+
+>
+  Do I need to install `dplyr` every time I re-open my RStudio 
+  or it is now available all the time in my current sandbox?
+
+**Response**: 
+
+Installing an R package is similar to installing an app on your phone. 
+You only need to install it once, and maybe reinstall it later 
+for update. 
+However, to be able to use an app on your phone, 
+not only do you have to have it installed (once), 
+you also need to open the app each time you turn on your phone. 
+The action of opening an app, for an R package, 
+is equivalent to importing the package. 
+
+### When do I import?
+
+> 
+  I believe I have run `import::from(magrittr, "%>%")` yesterday 
+  so I wasn’t aware that I should run again every time I reopen my Rstudio
+
+**Response**:
+
+Just as you need to open an app on your phone each time you want to use it, 
+you need to `import` each time you want to use a function. 
+You may `import` only the function you need from a package, such as `%>%`. 
+You may also import everything from a package, 
+such as `gg <- import::from(ggplot2, .all=T, .into={new.env()})`. 
+
+### Which one should I install first?
+
+> 
+  I am confused whether I should use `install.packages("ggplot2")` 
+  as a first line of my code or `install.packages("import")`. 
+
+**Response**:
+
+
+```{r install-import, echo=F, fig.cap="When do I need to install?"}
+knitr::include_graphics(here::here(
+                                   "docs", 
+                                   "images", 
+                                   "q_and_a", 
+                                   "install_import.png")
+)
+```
+
+
+### `library()` {#lilbrary}
+
+>
+  I'm confused with the `glimpse()` function: 
+  when I use it in the online module on Datacamp, 
+  the command `glimpse(any_data_frame)` works. 
+  But when I try it in R-studio with the available data set, it doesn't work, 
+  but it works when I use `glimpse` function with `$` sign (see the screenshot). 
+
+```{r library-load, echo=F, fig.cap="To load or not to load?"}
+knitr::include_graphics(here::here(
+                                   "docs", 
+                                   "images", 
+                                   "q_and_a", 
+                                   "glimpse.jpg")
+)
+```
+
+**Response**: 
+
+`glimpse()` is a function in the package `dplyr`. 
+As a general rule, R will complain if you call a function without 
+first specifying which package this function is from, 
+barring those functions that are part of base R. 
+Consider the example of sending a letter via Canada post. 
+Your letter will be rejected if you have written 
+"123 Hell Ave." on the evelope without the city name, 
+even though there might be only one "123 Hell Ave." in the entire world. 
+To the postman, 
+there could be hundreds of "123 Hell Ave." in the world, 
+and they will not do the guess work for you; 
+which one do you want to send the letter to? 
+
+Similarly, when you try to call a function without giving the package name, 
+R will stop you with an error message: 
+`could not find function xxx [because you did not provide the complete address]`. 
+
+One way to be specific is to always prepend the package name 
+when you try to call a function, such as `dplyr::glimpse()`. 
+However, typing the package name plus the double colon `::` 
+each time when we need to use a function can become cumbersome. 
+As a workaround, we use `import::from()` to create a shortcut. 
+For example, instead of having to type `dplyr::glimpse()` each time, 
+we just type `dp$glimpse()` for short. 
+Revisit section \@ref(package-use) if you want to brush up your memory 
+about this topic. 
+
+Another way, which is adopted by Datacamp, 
+is to execute `library(package)` before using any function from the package. 
+For example, once `library(dplyr)` has been executed, 
+you can call any function from `dplyr` directly, without having to 
+explicitly reference the package in the rest of a script. 
+On Datacamp, `library(dplyr)` has been executed behind the scene, 
+on your behalf. 
+
+<!-- Using `library()` has been discouraged in this course.  -->
+<!-- However, it is not forbidden.  -->
+<!-- What if I was wrong?  -->
+<!-- If I was right, then you would have learned something from your mistake.  -->
+
+
+
+### The pipe operator `%>%` 
+
+> 
+  I am receiving this error, and I don’t know what to do, or what does it means
+
+```{r pipe, echo=F, fig.cap="could not find function '%>%'"}
+knitr::include_graphics(here::here(
+                                   "docs", 
+                                   "images", 
+                                   "q_and_a", 
+                                   "pipe.jpg")
+)
+```
+
+**Response**: 
+
+`could not find function xxx` is a very common error. 
+It means that R does not know from which package to retrieve this function. 
+You need to first import this function from its package
+before you can use it.
+In this case, you need to first run `import::from(magrittr, "%>%")`. 
+
+It may not be immediately obvious that `%>%` is a function. 
+`filter()` is a function; `mean()` is a function. 
+But `%>%`? 
+Yes, `%>%` may look different than most other functions, 
+because it consists of symbols, not letters.
+Nevertheless, it is a function, and is often referred as the "pipe operator".
+Consider the plus sign `+`. It is made of a symbol, not letter. 
+It is an `operator` that *operates* on two numbers. 
+In other words, `+` is a function that lets us add two numbers together. 
+In essence, it is no different than `sum()`, 
+just in a different form. 
+In practice, we place two addends on both sides of `+,` as in 1 + 1.
+Similarly, a pipe operator connects two "operands", 
+such as `df_flights %>% glimpse()`. 
+
+> 
+  we need magrittr for `%>%` because ggplot doesn’t provide this function?
+
+**Response**:
+
+That's right. 
+Although it is common for two functions from different packages 
+to have the same name, 
+they rarely have identical funtionalities. 
+In the case of the pipe operator `%>%`, 
+it is only provided by the package `magrittr`. 
+
+### object 'xx' not found
+
+> 
+  I got this error. What should I do? 
+
+
+```{r object, fig.cap="object 'gg' not found", echo=F}
+knitr::include_graphics(here::here(
+                                   "docs", 
+                                   "images", 
+                                   "q_and_a", 
+                                   "gg_not_found.jpg")
+)
+```
+
+**Response**:
+
+This error happens when you are referring to an object that has not been defined; 
+in this case, the object 'gg'. 
+In this course, we have been using 'gg' as the object that 
+contains all the functions from package `ggplot2`, 
+as in `gg <- import::from(ggplot2, .all=T, .into={new.env()})`. 
+You may say "but I have executed / defined it yesterday". 
+However, R forgets what you have executed / defined yesterday 
+the moment you close it. 
+One may consider this as inconvenient. 
+However, this is the beauty of all script-based software. 
+As the user, you are forced to record in a script 
+(an `.R` file or an `.Rmd` file)
+what is required to reproduce your results, 
+be it a user-defined object or a to-be-imported package. 
+Only by doing so can you ensure that, when your colleague receives 
+your script, they can generate the same results as you did.   
+
+### `import::from()` 
+
+Why do we use `import::from` differently in the next three examples? 
+
+```{r echo=F}
+import::from(magrittr, '%>%')
+import::from(nycflights13, df_flights = flights)
+gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+```
+
+**Response**:
+
+In the first line, I only want to import one function, `%>%`, 
+from the package `magrittr`. 
+
+In the second one, I only want to import one dataset, `flights`, 
+from the package `nycflights13`. 
+I could have written 
+`import::from(nycflights13, flights)`, 
+which would also import the dataset. 
+However, by including `df_flights = `, 
+I accomplish two goals simultaneously: 
+import the data set, and rename it as `df_flights`. 
+
+In the third one, I want to import everything from the package `ggplot2`. 
+I could have written 
+`import::from(ggplot2, .all=TRUE)`. 
+However, but including `gg <- ` and `.into={new.env()}`, 
+I designate `gg`, an arbitrarily chosen name, as the name for a box (an object) 
+that would contain all the functions from `ggplot2`, 
+Doing so isolates functions from `ggplot2` from base R functions 
+as well as funtions from other packages I may also import. 
+
+### Unmatched parenthesis
+
+> 
+  I run the code below and I get an error: 
+  "*Error: Cannot add ggproto objects together. 
+  Did you forget to add this object to a ggplot object?*"
+  How can I solve this issue? 
+
+```{r parenthesis, echo=F, fig.show="hold", fig.align="default", fig.cap="Unmatched parenthesis"}
+knitr::include_graphics(c(
+                          here::here(
+                                   "docs", 
+                                   "images", 
+                                   "q_and_a", 
+                                   "parenthesis.png"), 
+                        here::here(
+                                   "docs", 
+                                   "images", 
+                                   "q_and_a", 
+                                   "parenthesis2.png")
+                        )
+)
+```
+
+**Response**: 
+
+There is an extra bracket after `y = temp_c`, 
+indicated by the red squiggle underneath. 
+
+A common error in R is forgetting or neglecting to finish a call 
+to a function with a closing `)`. 
+An example of this follows:
+
+```{r eval=F}
+mean(x = c(1, 5, 10, 52)
+```
+
+If you try to run the line above, `R` will complain: 
+
+```
+Error in parse(text = x, srcfile = src) :
+ <text>:2:0: unexpected end of input
+1: mean(x = c(1, 5, 10, 52)
+  ^
+Calls: <Anonymous> ... evaluate -> parse_all -> parse_all.character -> parse
+Execution halted
+
+Exited with status 1.
+```
+
+Closing the parenthesis at the end of your call to `mean` 
+will stop the complain: 
+
+```{r eval=F}
+mean(x = c(1, 5, 10, 52))
+```
+
+### less than or equal to
+
+> 
+  I noticed that the order of the operators 
+  for writing less than or equal to (`<=`) is important in R. 
+  The incorrect form (`=<`) is not recognized by R. 
+
+
+```{r less-equal, echo=F, fig.cap="less than or equal to"}
+knitr::include_graphics(here::here(
+  "docs", 
+  "images", 
+  "q_and_a", 
+  "larger_or_equal.png"
+))
+```
+
+**Response**:
+
+I suspect this is nothing more than a convention. 
+And the convention goes back several decades.  
+From wikipedia: 
+
+>
+  In BASIC, Lisp-family languages, and C-family languages (including Java and C++), 
+  operator <= means "less than or equal to".
+
+## Tips
+
+### Mis-spellings
+
+I can recall numerous occasions when I spent hours trying to trouble shoot 
+some code, 
+only to find out in the end that I had mis-spelled some words. 
+`R` can quite unforgiving for mis-spellings. 
+There is no auto-correct. 
+If you mis-spell the name of an object or a function, 
+`R` will complain `Error: object not found` 
+or `Error: could not find function`. 
+
+* Words I have mis-spelled more than once in the past: 
+
+| mis-spelling | correct spelling | context    |
+|--------------+------------------+------------|
+| lables       | labels           | `factor()` |
+| margrittr    | magrittr         | `%>%`      |
+| ...          |                  |            |
+
+
+
+### `renv`
+
+When updating `renv.lock` file using `renv::snapshot()`, 
+you may encounter messages like this: 
+
+```
+WARNING: One or more problems were discovered while enumerating dependencies.
+
+/xx/xx/xx.Rmd
+-----------------------------------------------------------------------------------
+
+ERROR 1: <text>:73:33: unexpected symbol
+72: if (length(cran_primary) != 0) xf$pkg_load2(cran_primary)
+73: if (length(cran_secondary != 0) xf
+                                    ^
+
+Please see `?renv::dependencies` for more information.
+Do you want to proceed? [y/N]:
+```
+
+You can safely ignore this error message and proceed with `y`. 
+
++ Why are you seeing this message?
+
+  `renv` crawls through all of your `.Rmd` and `.R` files 
+  to discover what packages you are using and versions of those packages. 
+  Very smart, eh? 
+  However, `renv`'s smartness comes at a cost of being less flexible. 
+  It anticipates users to install packages and load them with `library()` 
+  and alike. 
+  However, as I mentioned in Section \@ref(package-use), 
+  I am not using `library()` and explicitly reference all functions 
+  with their respective packages. 
+  `revn` does not expect this, or expressions like `package$function`, 
+  so will throw a warning whenever it finds such expressions. 
+

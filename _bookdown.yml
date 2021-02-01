@@ -9,7 +9,7 @@ rmd_files: [
   "05-regression.Rmd", 
   # "anscombe.Rmd", 
   "91-basics.Rmd", 
-  # "93-tips.Rmd", 
+  "93-tips.Rmd", 
   "94-assignment.Rmd", 
   "95-sample.Rmd", 
   "99-references.Rmd"

@@ -342,6 +342,21 @@ From wikipedia:
 
 ## Tips
 
+### How to name objects in R
+
+Recommended practice: 
+
++ all lower case letters.  
+  `R` is case sensitive. `var` is different from `Var`. (How do you test?)  
++ use letter and numbers.  
+  Special symbols are NOT allowed: `$`, `@`, `!`, `^`, `+`, `-`, `/`, `*`  
+  Try for your self  
++ start with letter, not number   
+  `modle1` is okay, `1modle` is not.  
++ choose meaningful names  
+  `df_flights`, not `data`, or `data1`, or `mydata`  
++ connect words with underscore  
+
 ### Mis-spellings
 
 I can recall numerous occasions when I spent hours trying to trouble shoot 

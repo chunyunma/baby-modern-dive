@@ -28,6 +28,7 @@ cran_packages = c(
                   # Packages required by students: 
                   "fivethirtyeight", 
                   "gapminder", 
+                  "ggrepel", 
                   "ggplot2", 
                   "knitr", 
                   "nycflights13", 

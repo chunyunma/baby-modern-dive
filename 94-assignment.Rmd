@@ -189,6 +189,7 @@ Where to look for published studies that have their datasets attached?
 Here are a few examples of published articles along with their open access datasets 
 from these three sources mentioned above: 
 
++ Musician productivity: [article + data](https://ocul-crl.primo.exlibrisgroup.com/permalink/01OCUL_CRL/1vru3a1/cdi_proquest_journals_753575680), [animation](https://youtu.be/fxbCHn6gE3U)
 + Math anxiety: [article + data](https://osf.io/xt52t/)
 + Numerical cognition: [article + data](https://europepmc.org/article/MED/31576378)
 + Self-deception: [article + data](https://osf.io/k6hy5/)
@@ -196,6 +197,8 @@ from these three sources mentioned above:
 + Neurodegeneration and identity: [data](https://osf.io/a5vsi/), 
   [article](https://journals.sagepub.com/doi/10.1177/0956797615592381)
 + Cognitive modelling: [article + data](https://osf.io/6tfz3/)
++ Password selection: [data](https://osf.io/uy7k4/), 
+  [article](https://onlinelibrary.wiley.com/doi/abs/10.1002/acp.3516)
 
 If you choose to use a published article --- either open access 
 or from your supervisor --- and the data used in that article, 

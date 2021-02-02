@@ -37,7 +37,10 @@ The mean is the sum of all of the data elements
 divided by how many elements there are. 
 If we have $n$ data points, the mean is given by: 
 
-$$Mean = \frac{x_1 + x_2 + \cdots + x_n}{n}$$
+$$
+Mean = \frac{x_1 + x_2 + \cdots + x_n}{n}
+(\#eq:mean)
+$$
 
 
 ### Median
@@ -56,7 +59,10 @@ The formula can be a little intimidating at first
 but it is important to remember that it is essentially a measure 
 of how far we expect a given data value will be from its mean:
 
-$$sd = \sqrt{\frac{(x_1 - Mean)^2 + (x_2 - Mean)^2 + \cdots + (x_n - Mean)^2}{n - 1}}$$
+$$
+sd = \sqrt{\frac{(x_1 - Mean)^2 + (x_2 - Mean)^2 + \cdots + (x_n - Mean)^2}{n - 1}}
+(\#eq:sd)
+$$
 
 
 ### Five-number summary
@@ -196,15 +202,19 @@ All normal distributions are defined by two values:
 (1) the *mean* $\mu$ ("mu") which locates the center of the distribution and 
 (2) the *standard deviation* $\sigma$ ("sigma") 
 which determines the variation of the distribution. 
+This is also evidenced in Equation \@ref(eq:normal). 
+Despite its sophisticated look, 
+it only contains two unknowns --- $\mu$ and $\sigma$, 
+with the rest all being constants (i.e., $e$, $\pi$). 
 
-```{r normal-density, echo=F, fig.cap="The formula that defines normal distributions.", out.width="30%"}
-knitr::include_graphics(here::here(
-  "docs", 
-  "images", 
-  "q_and_a", 
-  "normal_density.svg"
-))
-```
+
+$$
+f(x) = \frac{1}{{\sigma \sqrt {2\pi } }}e^{{
+- \frac{1}{2}
+{\left( \frac{x - \mu} {\sigma} \right)}^2
+}}
+(\#eq:normal)
+$$
 
 In Figure \@ref(fig:normal-curves), we plot three normal distributions where:
 

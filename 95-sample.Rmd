@@ -11,41 +11,99 @@ that you created in Chapter \@ref(getting-started).
 From now on, 
 whenever you encounter a new function or a new way of using a familiar function, 
 I suggest that you write them down in the cheat sheet. 
-I attach a snippet of a sample cheet sheet below for your reference. 
-By no means do you have to use the same style. 
+~~I attach a snippet of a sample cheat sheet below for your reference. 
+By no means do you have to use the same style.~~ 
+I will periodically select a few cheat sheets from the class, 
+take a snippet from each and post them here. 
+Each one has some merits that are worth learning from for all of us. 
 
-```
-# sample cheat sheet
+**TL;DR** 
 
-#
-# Logical Operations
-#
++ A good example is worth a thousand lines of comments.
++ Be generous with spaces and empty lines to visually separate 
+comments from code, and between code chunks.
++ Be stingy with special symbols such as `*`, `#`, `_`. 
+  Avoid littering them all over the file.
++ Having too much information is as useless as having too little. 
+  At some point, you have to be selective about what to include in your 
+  cheat sheet. 
++ Inject structures into the file with headings of different levels.
 
-# < for less than
-# > for greater than
-# <= for less than or equal to
-# >= for greater than or equal to
-
-#
-# Elements with data
-# 
-
-#	- Vectors (one dimensional array): can hold numeric, character or logical 
-values. The elements in a vector all have the same data type.
-
-#	- Matrices (two dimensional array): can hold numeric,
-
-
-#
-# Plotting
-#
-
-# Faceted histogram
-ggplot2::ggplot(cars, ggplot2::aes(x = city_mpg)) +
-  ggplot2::geom_histogram() +
-  ggplot2::facet_wrap(~ suv)
+```{r include=F}
+# a function to import example rmarkdown files verbatim
+# stole from Yihui's cookbook, `index.Rmd`
+import_example <- function(file, lang = xfun::file_ext(file)) {
+  x = xfun::read_utf8(file.path("examples", file))
+  lang = tolower(lang)
+  if (nchar(lang) > 1) {
+    lang = sub('^r', '', lang)
+    if (lang == 'nw') lang = 'tex'
+  }
+  knitr::asis_output(paste(c(sprintf("````%s", lang), x, "````"), collapse = '\n'))
+}
 ```
 
+## Sample cheat sheet 1
+
+*`cheatsheet.txt`*
+
+`r import_example('sample_cheatsheet.R')`
+
+**Comments**: 
+
+The author has excelled at both content and style of their cheat sheet. 
+The whole file consists of numerous identically structured pieces. 
+Each piece consists of the same components: purpose, commands, 
+and an accompanying example. 
+The comments are usually concise but with carefully chosen words. 
+The usage of `#` is not excessive --- it is used to indicate 
+non-code lines or the beginning of a piece. 
+The double blank lines are used to separate any two adjacent pieces. 
+
+Room for improvement: as the file length grows, some hierarchical structure 
+may be helpful. See the next example (\@ref(sample-2)). 
+
+
+## Sample cheat sheet 2 {#sample-2}
+
+*`cheatsheet.Rmd`*
+
+
+`r import_example('sample_cheatsheet.Rmd')`
+
+When you compile the `Rmd` file using the "knit" button in RStudio, 
+the output would look like this: 
+
+
+```{r echo=F}
+htmltools::tags$iframe(
+                       src = file.path("examples/sample_cheatsheet.html"), 
+                       width = "80%", 
+                       height = "500", 
+                       scrolling = "yes", 
+                       frameborder = "1"
+                       )
+```
+
+*Place your mouse cursor inside the box and try to scroll up and down 
+to see the full sample.*
+
+**Comments**:
+
+The author took advantage of some nice features of `rmarkdown` 
+and made their cheat sheet versatile. 
+By setting `eval=F` in the first chunk (named "setup"), 
+all the following `R` chunks would not be evaluated by default, 
+suiting the design of a cheatsheet. 
+However, whenever the author wants to show the output of a specific chunk, 
+perhaps to remind themselves what the code does, 
+they can turn on `eval=T` inside the header of a chunk, 
+such as in the `demo-alpha` chunk. 
+The author also structured the file with headings at different levels, 
+using `##`, `###`, etc. 
+
+
+## Feeling inspired?
 
 Keep in mind that you will be working on YOUR cheat sheet 
 and will refer to it from time to time 

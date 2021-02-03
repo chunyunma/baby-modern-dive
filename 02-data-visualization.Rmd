@@ -1218,7 +1218,7 @@ base_plot <- df_weather %>%
   gg$ggplot(mapping = gg$aes(x = factor(month), y = temp_c)) +
   gg$labs(x = "November", y = "Temperature (Celsius)") + 
   gg$theme(axis.ticks.x=gg$element_blank(),
-           axis.text.x=gg$element_blank(), 
+           axis.text.x=gg$element_blank()
   )
 base_plot +
   gg$geom_jitter(width = 0.075, height = 0.5, alpha = 0.3) + 

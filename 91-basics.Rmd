@@ -111,10 +111,11 @@ You may have seen both concepts --- population and sample --- in various
 contexts. 
 
 > 
-"*Scientists estimate the monarch population in the eastern U.S. 
-and southern Canada has fallen about 80 per cent since the mid-1990s*". 
+  "*Scientists estimate the monarch population in the eastern U.S. 
+  and southern Canada has fallen about 80 per cent since the mid-1990s*". 
 
-"*City starts collecting wastewater samples for COVID-19 testing*"
+>
+  "*City starts collecting wastewater samples for COVID-19 testing*"
 
 In the world of statistics, these two concepts exist mostly 
 because we want to answer research questions like the following: 

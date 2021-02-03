@@ -1,0 +1,67 @@
+---
+title: Cheat Sheet
+output: 
+  html_document: 
+    toc: true
+    toc_float: 
+        collapsed: false
+        smooth_scroll: false
+---
+
+```{r setup, include=F}
+knitr::opts_chunk$set(
+                      tidy=F, 
+                      eval=F
+)
+```
+
+```{r packages-and-data, echo=F, eval=T}
+gg <- import::from(ggplot2, .all=T, .into={new.env()})
+import::from(nycflights13, df_flights = flights)
+import::from(magrittr, "%>%")
+```
+
+
+## Visualization
+
+### Scatterplots
+
+AKA bivariate plots. 
+They allow you to visualize the *relationship* between two **continuous** variables. 
+
+```{r}
+# import the data frame and name it “flights”
+import::from(nycflights13, df_flights = flights)
+
+# choose all rows related to Alaska Airlaine carrier
+df_alaska_flights <- df_flights %>% 
+  dplyr::filter(carrier == "AS")
+
+# built a scatter plot
+gg$ggplot(data = df_alaska_flights, 
+          mapping = gg$aes(x = dep_delay, y = arr_delay)) +
+  gg$geom_point()
+```
+
+### Overplotting
+
+When points are being plotted on top of each other over and over again 
+and it is difficult to know the number of points being plotted.
+
+
++ Method 1: Changing the transparency of the points
+
+Setting the `alpha` argument in `geom_point` 
+(usually, `alpha` argument is set by default at 1 point – 100% opaque). 
+By specifying a value of `alpha` argument, 
+we can change the transparency of the points (to less than 1).
+
+```{r demo-alpha eval=T}
+df_alaska_flights <- df_flights %>% 
+  dplyr::filter(carrier == "AS")
+
+gg$ggplot(data = df_alaska_flights, 
+          mapping = gg$aes(x = dep_delay, y = arr_delay)) +
+  gg$geom_point(alpha = 0.2)
+```
+

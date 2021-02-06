@@ -586,7 +586,7 @@ Note furthermore that there is no `aes()` surrounding `alpha = 0.2`.
 This is because we are not mapping a variable to an aesthetic attribute, 
 but rather merely changing the default setting of `alpha`. 
 In fact, you'll receive an error if you try to change the second line 
-to read `geom_point(aes(alpha = 0.2))`.
+to read `ggplot2::geom_point(ggplot2::aes(alpha = 0.2))`.
 
 **Method 2: Jittering the points**
 
@@ -1332,7 +1332,7 @@ and by adding a `geom_boxplot()` layer:
 gg$ggplot(data = df_weather, 
           mapping = gg$aes(x = factor(month, ordered=T), y = temp_c)) +
   gg$geom_boxplot() + 
-  gg$labs(y = "Temperature (Celsius)")
+  gg$labs(x = "Month", y = "Temperature (Celsius)")
 ```
 
 The code above shares the same structure as what we have seen 

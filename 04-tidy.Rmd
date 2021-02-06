@@ -293,7 +293,7 @@ We could then map this `type` variable to the `fill` aesthetic of our plot.
 In other words, to recreate the barplot in Figure \@ref(fig:drinks-smaller), 
 our data frame would have to look like this:
 
-```{r echo=F, purl=FALSE}
+```{r echo=T, purl=FALSE}
 drinks_smaller_tidy
 ```
 

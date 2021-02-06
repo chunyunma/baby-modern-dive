@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r packages-and-data, echo=F, eval=T}
+```{r packages-and-data, include=F}
 gg <- import::from(ggplot2, .all=T, .into={new.env()})
 import::from(nycflights13, df_flights = flights)
 import::from(magrittr, "%>%")

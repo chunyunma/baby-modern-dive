@@ -1298,7 +1298,7 @@ from the package `nycflights13`. Let's import it and save it as `df_airlines`.
 
 ```{r eval=FALSE}
 import::from(nycflights13, df_airlines = airlines)
-head(airlines)
+head(df_airlines)
 ```
 
 We see that in `df_airlines`, `carrier` is the carrier code, 
@@ -1348,7 +1348,7 @@ and then compare the resulting data frames:
 
 ```{r eval=FALSE}
 flights_joined <- df_flights %>% 
-  dp$inner_join(airlines, by = "carrier")
+  dp$inner_join(df_airlines, by = "carrier")
 str(df_flights)
 str(flights_joined)
 ```

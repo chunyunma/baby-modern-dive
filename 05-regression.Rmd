@@ -23,7 +23,7 @@ Now that we are equipped with data visualization skills
 from Chapter \@ref(viz), data wrangling skills from Chapter \@ref(wrangling), 
 and an understanding of how to import data 
 and the concept of a "tidy" data format from Chapter \@ref(tidy), 
-let's now proceed with data modeling. 
+let's proceed with data modeling. 
 The fundamental premise of data modeling 
 is to make explicit the relationship between:
 
@@ -82,8 +82,7 @@ and hence refer to $x$ as *explanatory variables*.
 If you are interested in learning about modeling for prediction, 
 we suggest you check out books and courses on the field of 
 *machine learning* such as 
-[*An Introduction to Statistical Learning with Applications in R (ISLR)*]
-(http://www-bcf.usc.edu/~gareth/ISL/) 
+[*An Introduction to Statistical Learning with Applications in R (ISLR)*](http://www-bcf.usc.edu/~gareth/ISL/) 
 [@islr2017]. 
 
 In this chapter, we'll focus on one particular technique: 
@@ -98,7 +97,7 @@ is assumed to be linear, or in other words, a line.
 <!-- However, we'll see that what constitutes a "line"  -->
 <!-- will vary depending on the nature of your explanatory variables $x$. -->
 
-In Chapter \@ref(regression) on basic regression, 
+In Chapter \@ref(simple-regression) on basic regression, 
 we'll only consider models with one numerical explanatory variable $x$ 
 This scenario is known as *simple linear regression*. 
 <!-- In Section \@ref(model2), the explanatory variable will be categorical. -->
@@ -145,6 +144,17 @@ cran_primary <- c(
                   "moderndive", 
                   "skimr"
 )
+
+if (length(cran_primary) != 0) xf$pkg_load2(cran_primary)
+
+gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
+
+import::from(magrittr, '%>%')
+import::from(patchwork, .all=TRUE)
+```
+
+```{r import-pkg, echo=F, message=FALSE, warning=FALSE}
 cran_secondary <- c(
                     "broom", 
                     "janitor", 
@@ -156,18 +166,6 @@ cran_secondary <- c(
                     "stringr", 
                     "tibble"
 )
-
-if (length(cran_primary) != 0) xf$pkg_load2(cran_primary)
-if (length(cran_secondary != 0) xf$pkg_load2(cran_secondary)
-
-gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
-dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
-
-import::from(magrittr, '%>%')
-import::from(patchwork, .all=TRUE)
-```
-
-```{r import-pkg, echo=F, message=FALSE, warning=FALSE}
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
 

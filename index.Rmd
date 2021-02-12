@@ -4,7 +4,9 @@ subtitle: "A ModernDive into R and the Tidyverse"
 author: "Chester Ismay, Albert Y. Kim, Chunyun Ma"
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
-output: bookdown::gitbook 
+output: 
+  bookdown::gitbook: 
+    pandoc_args: ["--lua-filter=color-text.lua"]
 documentclass: book
 bibliography: [bib/books.bib, bib/packages.bib, bib/articles.bib]
 biblio-style: "apalike"
@@ -94,7 +96,42 @@ kn$write_bib(
 )
 ```
 
-
+```{cat, engine.opts = list(file = "color-text.lua")}
+-- recipe for changing font colour, based on 
+-- https://bookdown.org/yihui/rmarkdown-cookbook/font-color.html#lua-color
+Span = function(el)
+  color = el.attributes['color']
+  -- if no color attribute, return unchange
+  if color == nil then return el end
+  
+  -- tranform to <span style="color: red;"></span>
+  if FORMAT:match 'html' then
+    -- remove color attributes
+    el.attributes['color'] = nil
+    -- use style attribute instead
+    el.attributes['style'] = 'color: ' .. color .. ';'
+    -- return full span element
+    return el
+  elseif FORMAT:match 'latex' then
+    -- remove color attributes
+    el.attributes['color'] = nil
+    -- encapsulate in latex code
+    table.insert(
+      el.content, 1,
+      pandoc.RawInline('latex', '\\textcolor{'..color..'}{')
+    )
+    table.insert(
+      el.content,
+      pandoc.RawInline('latex', '}')
+    )
+    -- returns only span content
+    return el.content
+  else
+    -- for other format return unchanged
+    return el
+  end
+end
+```
 
 # Welcome {-#welcome}
 

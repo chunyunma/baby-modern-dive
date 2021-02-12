@@ -170,7 +170,7 @@ in a case study in the upcoming Section \@ref(case-study-tidy).
 Note that the `read_csv()` function included in the `readr` package 
 is different than the `read.csv()` function in base R, 
 which comes installed with R. 
-While the difference in the names might seem trivial (an `_` instead of a `.`), 
+While the difference in the names might seem trivial (a `_` instead of a `.`), 
 the `read_csv()` function is, in our opinion, easier to use 
 because it can more easily read data off the web 
 and generally imports data at a much faster speed. 
@@ -181,7 +181,7 @@ saves data frames as `tibbles` by default.
 
 Next, let's import an Excel file, `dem_score.xlsx`. 
 This file is identical to `dem_score.csv` we just imported, 
-except that it has a different extension. 
+except that it has a different file extension. 
 To read in an excel file, we need to use `read_excel()` from package`readxl`. 
 Unlike `read_csv()` from `readr`, 
 `read_excel()` cannot directly read in a file from the internet. 
@@ -744,7 +744,7 @@ Note that if we forgot to include the `names_transform` argument specifying that
 **`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`**  Convert the `dem_score` data frame into
 a "tidy" data frame and assign the name of `dem_score_tidy` to the resulting long-formatted data frame.
 
-**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`**  
+**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
 Read in the life expectancy data stored at 
 <https://moderndive.com/data/le_mess.csv> 
 and convert it to a "tidy" data frame. 

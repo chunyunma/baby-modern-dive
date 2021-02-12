@@ -666,7 +666,7 @@ in R is set to `FALSE` by default.
 When using R, we as researchers will be forced to make a conscious decision 
 about any missing values that may exist. 
 In other words, R does not ignore rows with missing values by default. 
-R will alert you to the presence of missing data 
+R will alert you to the presence of missing data. 
 You should be mindful of this missingness 
 and its potential causes throughout your analysis.
 

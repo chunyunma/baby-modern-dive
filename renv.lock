@@ -628,8 +628,8 @@
       "RemoteRepo": "rmarkdown",
       "RemoteUsername": "rstudio",
       "RemoteRef": "HEAD",
-      "RemoteSha": "65663662c6d160d1683d4a932aa5581c7d624702",
-      "Hash": "12842b732b33782e493b4dc2b9473b76"
+      "RemoteSha": "a62cb2029a7d5b7fef8f12a683c1896efa4e53e5",
+      "Hash": "cf02ed3138c7578d28b8a2bb20a0b70a"
     },
     "rprojroot": {
       "Package": "rprojroot",

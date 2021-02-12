@@ -1,0 +1,128 @@
+---
+title: "Data challenge"
+author: "First Last"
+date: "2021-02-12"
+output: 
+    html_document:
+        number_sections: true
+---
+
+
+# Problem statement [^1]
+
+At Shopify, there are 100 sneaker shops on line, 
+and each of these shops sells only one model of shoe. 
+We want to do some analysis of the average order value (AOV) [^2] 
+across all the 100 sneaker shops. 
+When we look at orders data over a 30 day window, 
+we naively calculate an AOV of $3145.13. 
+Given that we know these shops are selling sneakers, 
+a relatively affordable item, something seems wrong with our analysis.
+Use the following three questions to guide your investigation. 
+
+(a) Investigate what could have gone wrong with this data. 
+
+(b) What alternate statistics would you report for this dataset?
+
+(c) What is its value (their values)?
+
+
+# Import the data
+
+
+```{r packages, message = FALSE, echo=F}
+# Install xfun so that I can use xfun::pkg_load2
+if (!requireNamespace('xfun')) install.packages('xfun')
+xf <- loadNamespace('xfun')
+
+cran_packages = c(
+                  "dplyr", 
+                  "ggplot2", 
+                  "knitr", 
+                  "readr", 
+                  "tibble"
+                  )
+if (length(cran_packages) != 0) xf$pkg_load2(cran_packages)
+
+import::from(magrittr, '%>%')
+gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
+```
+
+
+```{r message=F}
+df_sales <- readr::read_csv("https://query.data.world/s/e76we3vpgut5cmydqgm2nb7e5xqx7i", 
+                            col_types = readr::cols(
+                                             order_id = readr::col_integer(), 
+                                             shop_id = readr::col_integer(), 
+                                             user_id = readr::col_integer(), 
+                                             order_amount = readr::col_double(), 
+                                             total_items = readr::col_integer(), 
+                                             payment_method = readr::col_factor(), 
+                                             created_at = readr::col_datetime(format = "%Y-%m-%d %H:%M:%z")
+                                             )
+)
+# df_sales # sanity check to make sure the data has been imported correctly
+```
+
+Most of the variables in the dataset are self-explanatory. 
+Nevertheless, here is a list of brief descriptions for each one. 
+
++ `order_id`: A unique identifier for each order placed by a customer online
++ `shop_id`: A unique identifier for the sneaker shop involved in 
+  an online order
++ `order_amount`: The amount of money each online order incurred
++ `total_items`: The number of sneakers purchased in each online order
++ `payment_method`: The type of payment method used in an online order, 
+  e.g., credit card, cash.
++ `created_at`: The time stamp when an online order was created
+
+
+# Eyeball the data
+
+```{r}
+tibble::glimpse(df_sales)
+```
+
+From the print out, can you tell how many rows and columns are in the data? 
+(5000 rows/transactions, and 7 columns)
+
+Print out the first three rows to get an idea of what the data actually look like. 
+
+```{r}
+head(df_sales, 3) %>% 
+  knitr::kable(
+               caption = "First three rows of the `df_sales` data frame"
+  )
+```
+
+Confirm where the value $3145.13 in the problem statement came from. 
+
+```{r}
+mean(df_sales$order_amount)
+```
+
+<!-- Complete the report with your response.
+Keep in mind that there are more than one way to solve the problem.
+The following two headings are just an example 
+of how to organize your final deliverable.
+You may change them to your liking. -->
+
+# Check for extreme values
+
+Now we examine the minimum and maximum of `order_amount` and `total_items.` 
+The dubious result is likely due to some extreme values 
+in either or both of the two varables.
+
+
+<!-- Your response below -->
+
+
+# Summary
+
+<!-- Your response below -->
+
+
+[^1]: This problem was based on the Shopify Data Science Challenge in 2019. 
+
+[^2]: Average Order Value (AOV) means average dollar spent per order. 

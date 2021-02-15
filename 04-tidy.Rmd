@@ -187,9 +187,18 @@ Unlike `read_csv()` from `readr`,
 `read_excel()` cannot directly read in a file from the internet. 
 Let's download the file first. 
 
+If you are windows user:
+
 ```{r eval=F}
 data_url <- "https://moderndive.com/data/dem_score.xlsx"
-xfun::download_file(data_url, output = here::here("data", "dem_score.xlsx"))
+download.file(url=data_url, destfile=here::here("data", "dem_score.xlsx"), mode="wb")
+```
+
+If you are mac or linux user:
+
+```{r eval=F}
+data_url <- "https://moderndive.com/data/dem_score.xlsx"
+xfun::download_file(url=data_url, output = here::here("data", "dem_score.xlsx"))
 ```
 
 Now `dem_score.xlsx` should be present in the "data" foler inside your project. 

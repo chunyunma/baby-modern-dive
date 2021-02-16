@@ -52,7 +52,7 @@ If the middle falls between two values,
 then the median is the mean of those two middle values.
 
 
-### Standard deviation
+### Standard deviation {#basics-sd}
 
 We will next discuss the *standard deviation* ($sd$) of a variable.  
 The formula can be a little intimidating at first 

@@ -1,0 +1,783 @@
+(ref:inferpart) Statistical Inference with `infer`
+
+```{r echo=FALSE, results="asis", purl=FALSE}
+cat("# (PART) Statistical Inference with infer {-} ")
+```
+
+# Central Limit Theorem {#clt}
+
+```{r setup_infer, include=FALSE, purl=FALSE}
+# Used to define Learning Check numbers:
+chap <- "5"
+lc <- 0
+rq <- 0
+
+
+# Set output digit precision
+options(scipen = 99, digits = 3)
+
+# Set random number generator see value for replicable pseudorandomness
+set.seed(6)
+```
+
+In this chapter, 
+we kick off the second portion of this book on statistical inference 
+by presenting the *Central Limit Theorem*. 
+Understanding this theorem is essential to 
+correctly interpreting a *p* value or a *confidence interval*. 
+Can you, with absolute confidence, explain the difference between 
+a *standard deviation* and a *standard error*? 
+If not, then you will want to ~~read this chapter~~ read this chapter twice. 
+
+
+```{block theorem-theory, type="btw", purl=FALSE}
+\vspace{-0.15in}
+**_Good to know_**
+
+\vspace{-0.1in}
+```
+
+**Theorem vs. Theory**
+
+From [Wikipedia](https://en.wikipedia.org/wiki/Theorem#Relation_with_scientific_theories): 
+
+> 
+  In mathematics, a theorem is a ... statement that has been proven to be true, 
+  either on the basis of generally accepted statements such as axioms 
+  or on the basis of previously established statements such as other theorems. 
+  A theorem is hence a logical consequence of the axioms, 
+  with a proof of the theorem being a logical argument 
+  which establishes its truth through the inference rules of a deductive system. 
+
+> 
+  Theorems in mathematics and theories in science are fundamentally different 
+  in their epistemology. 
+  A scientific theory cannot be proved; 
+  its key attribute is that it is falsifiable, that is, 
+  it makes predictions about the natural world that are testable by experiments. 
+  Any disagreement between prediction and experiment 
+  demonstrates the incorrectness of the scientific theory, 
+  or at least limits its accuracy or domain of validity. 
+  Mathematical theorems, on the other hand, are purely abstract formal statements: 
+  the proof of a theorem cannot involve experiments or other empirical evidence 
+  in the same way such evidence is used to support scientific theories.
+
+```{block, type="btw", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+
+<!-- ### Needed packages {-#sampling-packages} -->
+<!--  -->
+<!-- Let's get ready all the packages we will need for this chapter.  -->
+
+```{r load-package, echo=F, eval=F}
+# Install xfun so that I can use xfun::pkg_load2
+if (!requireNamespace('xfun')) install.packages('xfun')
+xf <- loadNamespace('xfun')
+
+cran_primary <- c(
+                  "dplyr", 
+                  "ggplot2", 
+)
+
+if (length(cran_primary) != 0) xf$pkg_load2(cran_primary)
+
+gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
+
+import::from(magrittr, '%>%')
+import::from(patchwork, .all=TRUE)
+```
+
+```{r import-pkg, echo=F, message=FALSE, warning=FALSE}
+cran_secondary <- c(
+                    "kableExtra", 
+                    "patchwork", 
+                    "tibble"
+)
+gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
+
+import::from(magrittr, '%>%')
+import::from(patchwork, .all=TRUE)
+```
+
+
+## Meet Central Limit Theorem {#meet-clt}
+
+Central Limit Theorem is ubiquitous in statistics textbooks, 
+because it is fundamental to inferential statistics. 
+Understanding the theorem requires a thought experiment 
+which, until very recently, is head-scratching, to put it mildly. 
+Thanks to the cheap computing power now at our disposal, 
+we do not have to rely solely on our imagination. 
+We can show and tell!
+
+Next, I present the theorem in steps. 
+At each step, I will illustrate the theorem with simulated data. 
+
+### Many samples
+
+> 
+  If you take a large number of samples from a population, 
+  compute the sample mean from each sample, 
+  then the distribution of the sample means 
+  will be approximately normally distributed.
+
+
+This part of Central Limit Theorem 
+involves two actions: 
+[*take*]{color="red"} ... samples, 
+and [*compute*]{color="red"} the sample mean .... 
+
+Most of you are likely already familiar 
+with the process of "taking *one* sample from a population". 
+Whether you recruit 30 people for a lab experiment 
+or survey 100 people for an online questionnaire, 
+in each case, you are taking one sample from a population. 
+To honour my "show-and-tell" promise, 
+let's now simulate the process of "taking one sample from a population". 
+
+[Cy was just named the chief statistician in The People's Republic of Banana. 
+And her country has recently gained independence after a long fought battle. 
+As a result of the new freedom, her country now owns all bananas 
+that exist or will exist in the world. 
+Feeling triumphant, she decided that her first mission 
+would be to study the weight of bananas.]{color="rosybrown"}
+
+[Based on instinct, she starts by taking one sample of 50 bananas, 
+measuring the weight of each, and plotting their weights.]{color="rosybrown"}
+
+
+```{r banana-pop, echo = FALSE}
+# generate a population of 10000 bananas, right-skewed
+# weight <- floor(rnorm(10000, mean = 175, sd = 30))
+
+banana_pop <- tibble::tibble(
+                             weight = floor(
+                                            sn::rsn(
+                                                    n=10000, 
+                                                    xi = 175, 
+                                                    omega = 20, 
+                                                    alpha = 5
+                                                    )
+                             )
+)
+
+
+# take a sample
+banana_sample <- banana_pop %>%
+  #   infer::rep_sample_n(size = 50)
+  dplyr::slice_sample(n = 50) %>% 
+  dplyr::select(weight)
+# Note: can also use sample_n(size = 50, replace = TRUE) to draw a sample. 
+# dplyr::slice_sample() is appropriate for dataframes; 
+# sample(){base} only works for one-dimensional data, i.e., vectors.
+# banana_sample
+```
+
+
+```{r dist-one-sample, echo=F, fig.cap="Distribution of 50 bananas' weight"}
+# A density plot imposed on a histogram
+hist_onesample <- gg$ggplot(banana_sample, gg$aes(x = weight)) + 
+ gg$geom_histogram(gg$aes(y = ..density..), binwidth=5, boundary=175, 
+                   colour="black", fill = "white") + 
+ gg$geom_density(alpha = 0.2, fill = "#FF6666") + 
+  gg$labs(x = "Weight of 50 bananas (gram)", y = "") + 
+  #   gg$scale_x_continuous(limits = c(75, 275)) + 
+  gg$scale_y_continuous(NULL, breaks=NULL)
+hist_onesample
+```
+
+[Eyeballing the distribution of these 50 bananas' weight, 
+Cy learned the following:]{color="rosybrown"}
+
+[1. Not all bananas in her sample weigh the same; 
+   some are heavier than others.]{color="rosybrown"}
+
+[2. Despite their weight difference, they don't differ wildly; 
+   most bananas in Cy's sample weigh between 150 to 250 grams.]{color="rosybrown"}
+
+[3. The distribution of weights is right-skewed.]{color="rosybrown"}
+
+
+[With a little more effort, 
+Cy also calculated the average weight of the 50-banana sample:]{color="rosybrown"}
+
+```{r echo = FALSE}
+m_onesample <- banana_sample %>% 
+  dp$summarize(avrg_weight = mean(weight)) %>% 
+  dp$pull(avrg_weight)
+```
+
+
+[4. In her sample, the bananas weigh `r m_onesample %>% round(0)` 
+grams on average.]{color="rosybrown"} 
+
+
+We have simulated the process of "taking *one* sample". 
+The premise of Central Limit Theorem is to 
+"take a large number of samples". 
+This is equivalent to repeating the aforementioned banana experiment 
+many times. Let's continue our show-and-tell. 
+
+
+[Cy is not convienced that she has thoroughly studied the banana weight. 
+Next, she is going to repeat the previous process 1,000 times: 
+randomly choose a sample of 50 bananas, 
+weigh them, calculate the average weight, choose another sample, 
+so on and so forth. 
+Each repeat, Cy will use randomly chosen bananas, 
+rather than weighing the same 50 bananas over and over. 
+Of course, it will likely take her a long time to complete these repetitions, 
+but as the new nation's chief statistician, 
+she feels obligated to give her best effort to this important matter. ]{color="rosybrown"}
+
+[After days' hardwork, 
+Cy completed measuring and plotting 1,000 banana samples. ]{color="rosybrown"}
+
+```{r echo = FALSE}
+banana_samples <- banana_pop %>% 
+  infer::rep_sample_n(size = 50, reps = 1000, replace = TRUE)
+```
+
+```{r dist-thousand, message = FALSE, echo=F, fig.cap="Distribution of 50 bananas' weight in the first 20 samples out of 1,000"}
+banana_samples %>% 
+  dp$filter(replicate < 21) %>% 
+  gg$ggplot(gg$aes(x = weight)) + 
+  gg$geom_density(alpha=.3, fill="#FF6666") + 
+  gg$facet_wrap(~ replicate, ncol = 5) + 
+  gg$labs(x = "Weight of 50 bananas (gram)", y = "") + 
+  #   gg$scale_x_continuous(limits = c(75, 275)) + 
+  gg$scale_y_continuous(NULL, breaks=NULL)
+```
+
+```{r average-thousand, echo=F}
+df_weight_avrg <- banana_samples %>% 
+  dp$group_by(replicate) %>% 
+  dp$summarize(weight_avrg = mean(weight))
+df_weight_avrg %>% 
+  dp$slice_head(n = 20) %>% 
+  knitr::kable(
+               caption = "Average weight of 50 bananas in the first 5 samples 
+               out of 1,000"
+               ) %>% 
+  kableExtra::scroll_box(height = "300px")
+```
+
+[In total, Cy drew 1,000 samples of bananas, 
+each containing 50 randomly chosen bananas. 
+With each sample, Cy was able to plot the weight distribution 
+and calculate the sample average. 
+Figure \@ref(fig:dist-thousand) visualizes the first 20 of those 1,000 samples. 
+Table \@ref(tab:average-thousand) lists the corresponding sample average 
+for those 20 sample. 
+Eyeballing these distributions and the sample averages, 
+Cy learned the following:]{color="rosybrown"}
+
+
+[1. The distributions look similar to each other, 
+   and yet are distinguishable from one another, 
+   confirming that 1,000 unique samples were taken from a population.]{color="rosybrown"}
+
+[2. The sample averages calculated for each sample are close to each other, 
+   but are not all the same.]{color="rosybrown"}
+
+Having completed both "take a large number of samples" 
+and "compute the sample mean from each sample", 
+it is time to revisit the Central Limit Theorem. 
+
+> 
+  If you take a large number of samples from a population, 
+  compute the sample mean from each sample, 
+  then the distribution of the sample means 
+  will be approximately normally distributed.
+
+It seems that the next step would be plotting the sample means 
+from those 1,000 samples. 
+
+[It is hard to discern any pattern 
+by looking at individual numbers in Table \@ref(tab:average-thousand). 
+Cy's statistical intuition tells her that 
+she should visualize them using a histogram.]{color="rosybrown"}
+
+```{r dist-thousand-sample, echo=F, fig.cap="Distribution of 1,000 sample averages"}
+hist_thousandsample <- gg$ggplot(df_weight_avrg, 
+                                 gg$aes(x = weight_avrg)) + 
+gg$geom_histogram(gg$aes(y = ..density..), boundary = 175, binwidth=1, 
+                  colour="black", fill="white") + 
+  gg$geom_density(alpha=.2, fill="#FF6666") + 
+  # scale_x_continuous(limits = c(75, 275)) + 
+  gg$labs(x = "Average weight from 1,000 samples (gram)", y = "") + 
+  gg$scale_y_continuous(NULL, breaks=NULL)
+hist_thousandsample
+```
+
+[As a comparison, Cy also decided to place side by side 
+a histogram based on *50 individual bananas* 
+and the new histogram based on *1,000 samples means*.]{color="rosybrown"}
+
+<!-- Someone may fixate on the size 50 vs. 1000.  -->
+<!-- Plot a histogram with 1000 individual bananas for a demostration.  -->
+
+```{r one-versus-thousand, echo=F, fig.cap="A sample distribution and a sampling distribution", echo = FALSE}
+# facet_compare <- dp$bind_rows(
+#   banana_sample %>% 
+#     dp$mutate(sample_size = "one"), 
+#   df_weight_avrg %>% 
+#     dp$rename(weight = weight_avrg) %>% 
+#     dp$mutate(sample_size = "one-thousand")
+# ) %>% 
+#   dp$mutate(sample_size = factor(sample_size, 
+#                               levels = c("one", "one-thousand"))) %>% 
+#   gg$ggplot(gg$aes(x = weight)) +
+#   # geom_histogram(aes(y = ..density..), position="identity", 
+#   #                alpha=0.5, binwidth = 2, boundary = 180, 
+#   #                color = "white") + 
+#   gg$geom_density(alpha = .2, fill = "#FF6666") + 
+#   gg$facet_wrap(~ sample_size, ncol = 1) +
+#   gg$labs(x = "(Average) banana weight")
+# facet_compare
+
+hist_onesample + hist_thousandsample + 
+  patchwork::plot_annotation(tag_levels = 'A', 
+title = 'Banana weights in ONE sample (A) \n and average weights from ONE-THOUSAND samples (B)'
+  )
+# maybe just use patchwork and scale_x_continuous, 
+# combine hist_onesample and hist_thousandsample
+```
+
+Once panel A and B in Figure \@ref(fig:one-versus-thousand) are juxtaposed, 
+the contrast is very telling:
+
++ The distribution of the weight for a single sample is skewed. 
++ The distribution of the average weight from one-thousand samples 
+  is symmetric and resembles that of a normal bell curve.
+
+Just as predicted by the Central Limit Theorem, 
+
+> 
+  If you take a large number of samples from a population, 
+  compute the sample mean from each sample, 
+  then the distribution of the sample means 
+  will be approximately normally distributed.
+
+
+### Sample size
+
+
+The Central Limit Theorem continues:
+
+> 
+  This will hold true regardless of whether the source population is normal 
+  or skewed, provided the sample size is sufficiently large (usually n > 30). 
+  If the population is normal, 
+  then the theorem holds true even for samples smaller than 30. 
+
+In the simulated banana example we have seen so far, 
+each individual sample shows some skewness (Figure \@ref(fig:dist-one-sample), 
+Figure \@ref(fig:dist-thousand)), 
+indicating that the population of banana weight is likely skewed as well. 
+And yet, when the 1,000 sample averages were plotted, 
+they conform to a symmetric, bell-like distribution 
+(Figure \@ref(fig:dist-thousand-sample). 
+This is not a coincidence or a miracle. 
+It is simply the result of meeting the condition of the Central Limit Theorem, 
+that each sample we drew had a sufficiently large size --- 50. 
+
+In reality, one can rarely be certain that the population is normally 
+distributed. 
+As a result, we deny ourselves the benefit of doubt, 
+and abide by the rule of thumb that the sample size be larger than 30. 
+
+
+
+
+### Inference
+
+The Central Limit Theorem continues:
+
+> 
+  We can make inferences about a population mean 
+  and quantify the uncertainty of such inferences 
+  based on the sample mean and sample standard deviation. 
+
+If you have been wondering why we should bother 
+studying the Central Limit Theorem, 
+this last part of the theorem reveals the reason. 
+The Central Limit Theorem prescribes one way to make *inferences*. 
+The act of "inferring" in this context means to generalize 
+what we have learned from specific cases to more general cases, 
+guided by laws of statistics. 
+From [wikipedia](https://en.wikipedia.org/wiki/Statistical_inference): 
+
+> 
+  [*Statistical inference*] is the "process of using data analysis to ... 
+  infer properties of a population, 
+  for example by testing hypotheses and deriving estimates. 
+  Inferential statistics can be contrasted with descriptive statistics. 
+  Descriptive statistics is solely concerned with properties of the observed data, 
+  and it does not rest on the assumption that the 
+  data come from a larger population.
+
+Research is almost never about a sample, 
+but the population that the sample represents. 
+Whether the target of a research is a correlation, a regression coefficient, 
+or a group difference, it is the correlation, the regression coefficient, 
+or the group difference in the population that we are interested in. 
+What researchers learn from the sample 
+can only be generalized to the population using *inferences*. 
+
+Next, I will demonstrate how to make inferences 
+using the Central Limit Theorem for 
+one particular type of question: estimating the *population mean*. 
+
+
+```{r sampling-stats, echo = FALSE}
+# one-thousand samples
+sd_thousandsample <- df_weight_avrg %>% 
+  dp$summarize(sd = sd(weight_avrg)) %>% 
+  dp$pull(sd)
+
+m_thousandsample <- df_weight_avrg %>% 
+  dp$summarize(mean = mean(weight_avrg)) %>% 
+  dp$pull(mean)
+```
+
+
+[After thoroughly examining the average weight from 1,000 samples, 
+Cy estimates that a typical banana weighs `r m_thousandsample %>% round(0)` grams, 
+and that this estimate has a margin of error 
+of `r round(sd_thousandsample, 2)` grams.]{color="rosybrown"}
+
+In reality, most of us can only afford the time and resources 
+to study one sample, instead of one-thousand samples. 
+The last part of the Central Limit Theorem assures us that, 
+taking a single sample, and using sample statistics derived from the said sample, 
+allows us to *infer* the same population mean obtained by Cy, 
+who took a thousand samples.
+
+The Central Limit Theorem further dictates that: 
+
+> 
+  $$
+  \mu = \overline{x}
+  (\#eq:mean)
+  $$
+
+The Greek letter $\mu$ is pronounced *mu*, sometimes writen as $\mu_{x}$, 
+and represents the population mean. 
+$\overline{x}$ is called *x bar*, 
+and represents the sample mean. 
+Loosely translated to plain English, 
+Equation \@ref(eq:mean) tells us that the average calculated from one sample 
+is as good as the average calculated from a thousand samples, 
+provided that the first said sample is randomly chosen and 
+is sufficiently large (n > 30). 
+Or in technical terms, 
+*sample mean is an unbiased point estimate of population mean.*
+
+Finally, the Central Limit Theorem states that: 
+
+> 
+  $$
+  \sigma_\overline{x} = \frac{sd}{\sqrt{n}}
+  (\#eq:sd)
+  $$
+  where $sd$ is the sample standard deviation
+
+The Greek leter $\sigma$ is pronounced *sigma*. 
+$\sigma_\overline{x}$ is pronounced *sigma eks bar*, 
+and represents the standard deviation of $\overline{x}$. 
+Equation \@ref(eq:sd) tells us that we can quantify 
+the uncertainty of our estimate in Equation \@ref(eq:mean), 
+by taking the sample standard deviation 
+and dividing it by the square root of sample size. 
+
+To understand Equation \@ref(eq:sd), consider its context. 
+As previously mentioned, Equation \@ref(eq:mean) assures that 
+a sample mean is an unbiased point estimate 
+of the population mean. 
+An estimate is not bad, but still is an estimate, an educated guess. 
+To ameliorate the lack of accuracy, 
+statisticians often provide a range that quantifies the uncertainty. 
+For instance, Cy could say that 
+[*by estimate, a typical banana weighs `r round(m_thousandsample, 0)` grams, 
+and I am 70% confident that the average weight of bananas 
+is within `r round(m_thousandsample, 0)` 
+$\pm$ `r round(sd_thousandsample, 2)`*.]{color="rosybrown"}
+Naturally, the wider the range, the higher uncertainty. 
+To say that tomorrow's high temperature is within the range of -10 to +10&deg;C 
+sounds much more undercertain than to say it is between 0 to 5&deg;C.  
+
+Given that a sample mean is merely an estimate of the population mean, 
+how do we dertermine the degree of uncertainty for this estimate? 
+Or what is the size of the range that quantifies the uncertainty? 
+According to Equation \@ref(eq:sd), 
+we could *infer* the quantity based on the sample standard deviation. 
+In plain English, 
+Equation \@ref(eq:sd) tells us that 
+the uncertainty of our estimated average is proportional 
+to how much values vary within one sample, 
+captured by the sample standard deviation $sd$, 
+and inversely proportional to the size of each sample, 
+hence $\sqrt{n}$ in the denominator. 
+We can expect that the sample mean to vary 
+from one sample to another much less compared to 
+how individual values vary within one sample, 
+roughly by a ratio of $\sqrt{n}$. 
+
+
+Thus far, we have unpacked the entire Central Limit Theorem. 
+Let's wrap up by revisiting the theorem 
+and elaborating on key concepts involved in the theorem. 
+
+## Revisit the Central Limit Theorem
+
+> 
+  If you take a large number of samples from a population, 
+  compute the sample mean from each sample, 
+  then the distribution of the sample means 
+  will be approximately normally distributed.
+  This will hold true regardless of whether the source population is normal 
+  or skewed, provided the sample size is sufficiently large (usually n > 30). 
+  If the population is normal, 
+  then the theorem holds true even for samples smaller than 30. 
+  We can make inferences about a population mean 
+  and quantify the uncertainty of such inferences 
+  based on the sample mean and sample standard deviation. 
+
+>
+  $$
+  \mu = \overline{x}
+  $$
+
+>
+  $$
+  \sigma_\overline{x} = \frac{sd}{\sqrt{n}}
+  $$
+
+> 
+  where $sd$ is the sample standard deviation
+
+
+### Sample vs. sampling distribution
+
+Figure \@ref(fig:one-versus-thousand) showed two distributions: 
+a distribution of banana weights in ONE sample, 
+and a distribution of average weights from ONE-THOUSAND samples. 
+Aside from the fact that the two distributions differ in shape, 
+they also differ in the extent of dispersion, 
+AKA *standard deviation* (see \@ref(basics-sd) for a refresher of the concept). 
+
+In Figure \@ref(fig:sd-vs-se), I have reproduced Figure \@ref(fig:one-versus-thousand). 
+In addition, I also marked the one standard deviation above / below 
+the sample average on each distribution. 
+
+```{r echo = FALSE}
+sd_onesample <- banana_sample %>% 
+  dp$summarize(sd = sd(weight)) %>% 
+  dp$pull(sd)
+
+se <- sd_onesample / sqrt(50) %>% round(2)
+```
+
+```{r sd-vs-se, echo=F, fig.cap="Sample and sampling distribution"}
+hist_sd_onesample <- hist_onesample + 
+  gg$geom_vline(xintercept = c(m_onesample, 
+                               m_onesample + sd_onesample, 
+                               m_onesample - sd_onesample), color = "purple", 
+             linetype = c("solid", "longdash", "longdash"), 
+             size = 1)
+hist_sd_thousandsample <- hist_thousandsample + 
+  gg$geom_vline(xintercept = 
+               c(m_thousandsample, 
+                 m_thousandsample + sd_thousandsample, 
+                 m_thousandsample - sd_thousandsample), 
+               color = "purple", 
+               linetype = c("solid", "longdash", "longdash"), 
+               size = 1)
+
+hist_sd_onesample + hist_sd_thousandsample + 
+  patchwork::plot_annotation(tag_levels = 'A', 
+title = 'Banana weights in ONE sample (A) \n and average weights from ONE-THOUSAND samples (B)'
+  )
+```
+
+Can you visually estimate the standard deviation in both distributions, 
+i.e., the distance between a dashed line and the solid line? 
+Notice the scales of the x-axis are different in A and B. 
+In A, either dashed line is about 10 grams apart from the center solid line; 
+in B they are about 1.5 grams apart. 
+Obviously, the distribution in Panel A has a bigger standard deviation than 
+that in Panel B. 
+Their size difference is not a coincidence, 
+but rather prescribed by the Central Limit Theorem. 
+Recall equation \@ref(eq:sd), which states 
+$\sigma_\overline{x} = \frac{sd}{\sqrt{n}}$
+$sd$ is the symbol of sample standard deviation, 
+which is represented by the distance between a dashed line and the solid line 
+in Panel A. 
+$\sigma_\overline{x}$ is represented by the distance between a dashed line and the solid line 
+in Panel B. 
+Equation \@ref(eq:sd) prescribes that 
+$\sigma_\overline{x}$ is equal to $sd$ divided by $\sqrt{n}$. 
+Substituting n with 50 from the banana study, 
+$\sqrt{n}$ \approx 7$. 
+so $\sigma_\overline{x}$ is about one seventh of $sd$, 
+matching our visual observation ($1.5 \times 7 \approx 10$). 
+
+
+Panel A of Figure \@ref(fig:sd-vs-se) is called a **sample distribution** 
+whereas Panel B is called a **sampling distribution**. 
+The word *sampling* is used to emphasize how a sampling distributioon typically arises: 
+via the repeated action of sampling, 
+computing the average of each resulting sample, 
+and plotting the averages. 
+As was mentioned earlier, the metric of dispersion is generally known as 
+standard deviation. 
+For a sample distribution, the name remains standard deviation, 
+or sample standard deviation, to be precise. 
+For a *sampling distribution*, however, 
+a special name, **standard error of the mean**, 
+is often used in place of a generic "standard deviation". 
+
+The word *error* in standard error of mean, 
+is used to conjure up the image of margin of error 
+when approximating the population mean with a sample mean. 
+
+
+According to Equation \@ref(eq:sd) of the Central Limit Theorem, 
+a standard error of the mean, $\sigma_\overline{x}$, 
+is always a fraction of the sample standard deviation, $sd$. 
+Note that standard error of mean is often shortened as Standard Error, or SE. 
+Therefore, Equation \@ref(eq:sd) could also be expressed as: 
+
+$$
+SE = \frac{sd}{\sqrt{n}}
+(#eq:se)
+$$
+
+### More terminology and notations
+
+Here is a list of concepts instrumental to understanding the xxx. 
+It is okay if you are not familiar with them yet. 
+We will repeat, clarify these definitions as we move along the course. 
+
+
+- A **population** is a collection of individuals or observations 
+  we are interested in. 
+  This is also commonly denoted as a **study population**. 
+  We mathematically denote the population's size using upper-case $N$. 
+  Strictly speaking, the (study) population in Cy's banana study 
+  is the measurable banana weights from all bananas that exist, 
+  not the bananas. 
+  However, in practice, we often use them interchangeably. 
+  We can consider the population's size $N$ infinitely large, or unknown, 
+  as in many other cases, 
+  although there are cases where you could find out the population's size, 
+  such as the (quite literally) population size of a country. 
+
+
+- A **sample** is a subset of a target population, 
+  selected via a defined procedure from the population. 
+  A sample is said to be a *representative sample* 
+  if it roughly *looks like* the population.  
+  An **unbiased sample** is where every observation in a population 
+  had an equal chance of being sampled. 
+  An unbiased sample is sometimes called a **random sample**, 
+  in that we sample randomly from the population in an *unbiased* fashion.
+
+- **Sampling** is the act of collecting a sample 
+  from the population when we don't have the means to 
+  examine every entity in the population, also known as a *census*. 
+  We mathematically denote the sample's size using lower case $n$, 
+  as opposed to upper case $N$ which denotes the population's size. 
+  Typically the sample size $n$ is much smaller than the population size $N$. 
+  Thus sampling is often a cheaper alternative than performing a census. 
+
+- A **population parameter** is a numerical summary quantity 
+  about the population that is unknown, but you wish you knew. 
+  For example, when this quantity is a mean, 
+  the population parameter of interest is the *population mean*. 
+  This is mathematically denoted with the Greek letter $\mu$ pronounced "mu". 
+  The most common types of population parameters include mean, 
+  difference between two means, 
+  polled difference among multiple means, and slope of a regression line.
+
+- A **point estimate (AKA sample statistic)** 
+  is a summary statistic computed from a sample 
+  that *estimates* an unknown population parameter. 
+  We mathematically denote the point estimate based on a sample 
+  by placing a "hat" on top of the population parameter. 
+  For example, $b$ and $\widehat{b}$, $\mu$ and $\widehat{\mu}$. 
+  However, sometimes people also use $\bar{x}$ (pronounced "x-bar") 
+  instead of $\widehat{\mu}$, to represent the sample mean.
+
+- We say a sample is **generalizable** if any results based on the sample 
+  can generalize to the population. 
+  In other words, does the value of the point estimate *generalize* 
+  to the population? 
+  Using our mathematical notation, this is akin to asking 
+  if $m$ is a "good guess" of $\mu$?
+
+
+To summarize:
+
+- If **sampling** a sample of size $n$ is done at **random**, then
+
+- the sample is **unbiased** and **representative** of the population 
+  of size $N$ (which may be unknown), thus
+
+- any result based on the sample can **generalize** to the population, thus
+
+- the point estimate is a **good guess** of the unknown population parameter, 
+  thus
+
+- instead of performing a census, 
+  we can **infer** about the population using sampling.
+
+Specific to Cy's banana study:
+
+- She weighed a sample of $n=50$ bananas chosen at **random**, then
+
+- the banana weights in her sample are an **unbiased representation** 
+  of the weights of all bananas, thus
+
+- any result based on her banana sample can **generalize** to all bananas, thus
+
+- the mean weight $\widehat{\mu}$ of the $n=50$ bananas in her sample 
+  is a **good guess** of the population weight $\mu$ of all banans ($N = +\infty$), 
+  thus
+
+- instead of weighing all bananas (unfeasible in reality), 
+  we can **infer** about the weight of a banana using a **sample statistic**. 
+
+## Conclusion
+
+Thus far, I have walked you through the Central Limit Theorem 
+by applying it to the problem of banana weight. 
+Understanding the logic of the theorem requires a thought experiment, 
+which was acted out by our protagonist [Cy]{color="rosybrown"}. 
+The theorem prescribes how to infer the weight of a typical banana 
+in the population 
+from a sample of bananas. 
+With a randomly chosen sample of bananas, 
+its average weight, `r m_onesample %>% round(0)` grams, 
+is an unbiased estimate of the weight of a typical banana in the population. 
+The uncertainty of this estimate is quantified by 
+the standard error of mean, `r round(se, 2)` grams, 
+derived from dividing the sample standard deviation by square root of sample size. 
+
+The concepts of sampling and standard error that we have seen in this chapter 
+form the basis of confidence intervals and hypothesis testing, 
+which we'll cover in Chapters \@ref(confidence-intervals) 
+and \@ref(hypothesis-testing). 
+We will see that the tools that you learned in the first portion of this book, 
+in particular data visualization and data wrangling, 
+will also play an important role in the development of your understanding.  
+As mentioned before, the concepts throughout this text 
+all build into a culmination allowing you to untangle the narrative behind the data. 
+

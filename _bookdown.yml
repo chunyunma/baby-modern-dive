@@ -7,7 +7,7 @@ rmd_files: [
   "03-wrangling.Rmd", 
   "04-tidy.Rmd", 
   # "05-regression.Rmd", 
-  # "06-sampling.Rmd", 
+  "06-sampling.Rmd", 
   # "anscombe.Rmd", 
   "91-basics.Rmd", 
   "93-tips.Rmd", 

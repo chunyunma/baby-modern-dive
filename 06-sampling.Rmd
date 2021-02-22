@@ -668,13 +668,21 @@ whereas Cy's method, i.e., panel B of Figure \@ref(fig:sd-vs-se),
 is considered empirical, 
 because it involves repeated sampling (1,000 times in this case). 
 
+```{block, type="learncheck", purl=FALSE}
+\vspace{-0.15in}
+**_Learning check_**
+\vspace{-0.1in}
+```
+
+**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
 Calculate $SE_{\bar{x}}$ using both methods by following the code below 
 and compare the results. 
 
 ```{r eval=F}
 # retrieve a single sample of bananas
-banana_sample <- dget()
-banana_sample
+banana_sample <- dget("https://raw.githubusercontent.com/chunyunma/baby-modern-dive/master/data/banana_sample_ch5.txt")
+# take a look at the sample
+head(banana_sample)
 ```
 
 ```{r eval=F}
@@ -683,7 +691,7 @@ n <- 50
 # compute standard deviation for the single sample
 banana_sample %>% 
   dplyr::summarize(sd_onesample = sd(weight))
-# estimate standard error using Equation \@ref(eq:se)
+# estimate standard error using Equation (5.3)
 se_theory <- sd_onesample / sqrt(n) %>% round(2)
 se_theory
 ```
@@ -691,17 +699,25 @@ se_theory
 
 ```{r eval=F}
 # retrieve the 1,000 sample means
-banana_sample_means <- dget()
-banana_sample_means
+banana_sample_means <- dget("https://raw.githubusercontent.com/chunyunma/baby-modern-dive/master/data/banana_sampling_ch5.txt")
+# take a look at the sample means
+head(banana_sample_means)
 ```
 
 ```{r eval=F}
-# compute standard deviation for the sampling distribution
+# compute standard deviation for the sampling distribution, 
+# aka, the standard error
 se_empirical <- dplyr::summarize(banana_sample_means, sd(weight_avrg)) %>% 
   round(2)
 se_empirical
 ```
 
+How does `se_theory` compare to `se_empirical`? 
+
+```{block, type="learncheck", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
 
 
 ### More terminology and notations

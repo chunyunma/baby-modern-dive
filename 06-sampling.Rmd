@@ -16,7 +16,7 @@ rq <- 0
 # Set output digit precision
 options(scipen = 99, digits = 3)
 
-# Set random number generator see value for replicable pseudorandomness
+# Set random number generator for replicable pseudorandomness
 set.seed(6)
 ```
 
@@ -93,6 +93,8 @@ import::from(patchwork, .all=TRUE)
 
 ```{r import-pkg, echo=F, message=FALSE, warning=FALSE}
 cran_secondary <- c(
+                    "dplyr", 
+                    "ggplot2", 
                     "kableExtra", 
                     "patchwork", 
                     "tibble"
@@ -130,7 +132,7 @@ At each step, I will illustrate the theorem with simulated data.
 This part of Central Limit Theorem 
 involves two actions: 
 [*take*]{color="red"} ... samples, 
-and [*compute*]{color="red"} the sample mean .... 
+and [*compute*]{color="red"} the sample mean from each sample. 
 
 Most of you are likely already familiar 
 with the process of "taking *one* sample from a population". 
@@ -147,13 +149,12 @@ that exist or will exist in the world.
 Feeling triumphant, she decided that her first mission 
 would be to study the weight of bananas.]{color="rosybrown"}
 
-[Based on instinct, she starts by taking one sample of 50 bananas, 
+[She starts by taking one sample of 50 bananas, 
 measuring the weight of each, and plotting their weights.]{color="rosybrown"}
 
 
 ```{r banana-pop, echo = FALSE}
 # generate a population of 10000 bananas, right-skewed
-# weight <- floor(rnorm(10000, mean = 175, sd = 30))
 
 banana_pop <- tibble::tibble(
                              weight = floor(
@@ -169,15 +170,9 @@ banana_pop <- tibble::tibble(
 
 # take a sample
 banana_sample <- banana_pop %>%
-  #   infer::rep_sample_n(size = 50)
-  dplyr::slice_sample(n = 50) %>% 
-  dplyr::select(weight)
-# Note: can also use sample_n(size = 50, replace = TRUE) to draw a sample. 
-# dplyr::slice_sample() is appropriate for dataframes; 
-# sample(){base} only works for one-dimensional data, i.e., vectors.
-# banana_sample
+  dplyr::slice_sample(n = 50)
+dput(banana_sample, "data/banana_sample_ch5.txt")
 ```
-
 
 ```{r dist-one-sample, echo=F, fig.cap="Distribution of 50 bananas' weight"}
 # A density plot imposed on a histogram
@@ -185,8 +180,7 @@ hist_onesample <- gg$ggplot(banana_sample, gg$aes(x = weight)) +
  gg$geom_histogram(gg$aes(y = ..density..), binwidth=5, boundary=175, 
                    colour="black", fill = "white") + 
  gg$geom_density(alpha = 0.2, fill = "#FF6666") + 
-  gg$labs(x = "Weight of 50 bananas (gram)", y = "") + 
-  #   gg$scale_x_continuous(limits = c(75, 275)) + 
+  gg$labs(x = "Banana weight (gram)", y = "") + 
   gg$scale_y_continuous(NULL, breaks=NULL)
 hist_onesample
 ```
@@ -226,8 +220,8 @@ many times. Let's continue our show-and-tell.
 
 [Cy is not convienced that she has thoroughly studied the banana weight. 
 Next, she is going to repeat the previous process 1,000 times: 
-randomly choose a sample of 50 bananas, 
-weigh them, calculate the average weight, choose another sample, 
+randomly sample 50 bananas, 
+weigh them, calculate the mean weight, randomly sample another 50 bananas, 
 so on and so forth. 
 Each repeat, Cy will use randomly chosen bananas, 
 rather than weighing the same 50 bananas over and over. 
@@ -236,7 +230,7 @@ but as the new nation's chief statistician,
 she feels obligated to give her best effort to this important matter. ]{color="rosybrown"}
 
 [After days' hardwork, 
-Cy completed measuring and plotting 1,000 banana samples. ]{color="rosybrown"}
+Cy completed weighing and plotting 1,000 banana samples. ]{color="rosybrown"}
 
 ```{r echo = FALSE}
 banana_samples <- banana_pop %>% 
@@ -249,7 +243,7 @@ banana_samples %>%
   gg$ggplot(gg$aes(x = weight)) + 
   gg$geom_density(alpha=.3, fill="#FF6666") + 
   gg$facet_wrap(~ replicate, ncol = 5) + 
-  gg$labs(x = "Weight of 50 bananas (gram)", y = "") + 
+  gg$labs(x = "Banana weight (gram)", y = "") + 
   #   gg$scale_x_continuous(limits = c(75, 275)) + 
   gg$scale_y_continuous(NULL, breaks=NULL)
 ```
@@ -258,7 +252,9 @@ banana_samples %>%
 df_weight_avrg <- banana_samples %>% 
   dp$group_by(replicate) %>% 
   dp$summarize(weight_avrg = mean(weight))
+dput(df_weight_avrg, "data/banana_sampling_ch5.txt")
 df_weight_avrg %>% 
+  dp$rename(`Average Weight` = weight_avrg) %>% 
   dp$slice_head(n = 20) %>% 
   knitr::kable(
                caption = "Average weight of 50 bananas in the first 5 samples 
@@ -269,21 +265,22 @@ df_weight_avrg %>%
 
 [In total, Cy drew 1,000 samples of bananas, 
 each containing 50 randomly chosen bananas. 
-With each sample, Cy was able to plot the weight distribution 
-and calculate the sample average. 
+With each sample, Cy was able to plot the distribution of their weights 
+and calculate the sample mean. 
 Figure \@ref(fig:dist-thousand) visualizes the first 20 of those 1,000 samples. 
-Table \@ref(tab:average-thousand) lists the corresponding sample average 
+Table \@ref(tab:average-thousand) lists the corresponding sample means 
 for those 20 sample. 
-Eyeballing these distributions and the sample averages, 
+Eyeballing these distributions and the sample means, 
 Cy learned the following:]{color="rosybrown"}
 
 
-[1. The distributions look similar to each other, 
+[1. The distributions in Figure \@ref(fig:dist-thousand) look similar to each other, 
    and yet are distinguishable from one another, 
-   confirming that 1,000 unique samples were taken from a population.]{color="rosybrown"}
+   confirming that 1,000 unique samples were taken from the population.]{color="rosybrown"}
 
-[2. The sample averages calculated for each sample are close to each other, 
-   but are not all the same.]{color="rosybrown"}
+[2. The sample means in Table \@ref(tab:average-thousand) 
+  are close to each other in magnitude, 
+  but are not all the same.]{color="rosybrown"}
 
 Having completed both "take a large number of samples" 
 and "compute the sample mean from each sample", 
@@ -303,14 +300,14 @@ by looking at individual numbers in Table \@ref(tab:average-thousand).
 Cy's statistical intuition tells her that 
 she should visualize them using a histogram.]{color="rosybrown"}
 
-```{r dist-thousand-sample, echo=F, fig.cap="Distribution of 1,000 sample averages"}
+```{r dist-thousand-sample, echo=F, fig.cap="Distribution of 1,000 sample means"}
 hist_thousandsample <- gg$ggplot(df_weight_avrg, 
                                  gg$aes(x = weight_avrg)) + 
-gg$geom_histogram(gg$aes(y = ..density..), boundary = 175, binwidth=1, 
+gg$geom_histogram(gg$aes(y = ..density..), boundary = 190, binwidth=1, 
                   colour="black", fill="white") + 
   gg$geom_density(alpha=.2, fill="#FF6666") + 
   # scale_x_continuous(limits = c(75, 275)) + 
-  gg$labs(x = "Average weight from 1,000 samples (gram)", y = "") + 
+  gg$labs(x = "Sample mean weight of 50 bananas (gram)", y = "") + 
   gg$scale_y_continuous(NULL, breaks=NULL)
 hist_thousandsample
 ```
@@ -380,7 +377,7 @@ In the simulated banana example we have seen so far,
 each individual sample shows some skewness (Figure \@ref(fig:dist-one-sample), 
 Figure \@ref(fig:dist-thousand)), 
 indicating that the population of banana weight is likely skewed as well. 
-And yet, when the 1,000 sample averages were plotted, 
+And yet, when the 1,000 sample means were plotted, 
 they conform to a symmetric, bell-like distribution 
 (Figure \@ref(fig:dist-thousand-sample). 
 This is not a coincidence or a miracle. 
@@ -426,7 +423,7 @@ Research is almost never about a sample,
 but the population that the sample represents. 
 Whether the target of a research is a correlation, a regression coefficient, 
 or a group difference, it is the correlation, the regression coefficient, 
-or the group difference in the population that we are interested in. 
+or the group difference *in the population* that we are interested in. 
 What researchers learn from the sample 
 can only be generalized to the population using *inferences*. 
 
@@ -447,10 +444,10 @@ m_thousandsample <- df_weight_avrg %>%
 ```
 
 
-[After thoroughly examining the average weight from 1,000 samples, 
+[After thoroughly examining 1,000 samples and their average weights, 
 Cy estimates that a typical banana weighs `r m_thousandsample %>% round(0)` grams, 
 and that this estimate has a margin of error 
-of `r round(sd_thousandsample, 2)` grams.]{color="rosybrown"}
+of `r round(sd_thousandsample*2, 2)` grams.]{color="rosybrown"}
 
 In reality, most of us can only afford the time and resources 
 to study one sample, instead of one-thousand samples. 
@@ -463,13 +460,13 @@ The Central Limit Theorem further dictates that:
 
 > 
   $$
-  \mu = \overline{x}
+  \mu \approx \bar{x}
   (\#eq:mean)
   $$
 
 The Greek letter $\mu$ is pronounced *mu*, sometimes writen as $\mu_{x}$, 
 and represents the population mean. 
-$\overline{x}$ is called *x bar*, 
+$\bar{x}$ is pronounced *eks bar*, 
 and represents the sample mean. 
 Loosely translated to plain English, 
 Equation \@ref(eq:mean) tells us that the average calculated from one sample 
@@ -483,14 +480,14 @@ Finally, the Central Limit Theorem states that:
 
 > 
   $$
-  \sigma_\overline{x} = \frac{sd}{\sqrt{n}}
+  \sigma_\bar{x} \approx \frac{sd}{\sqrt{n}}
   (\#eq:sd)
   $$
   where $sd$ is the sample standard deviation
 
 The Greek leter $\sigma$ is pronounced *sigma*. 
-$\sigma_\overline{x}$ is pronounced *sigma eks bar*, 
-and represents the standard deviation of $\overline{x}$. 
+$\sigma_\bar{x}$ is pronounced *sigma eks bar*, 
+and represents the standard deviation of $\bar{x}$. 
 Equation \@ref(eq:sd) tells us that we can quantify 
 the uncertainty of our estimate in Equation \@ref(eq:mean), 
 by taking the sample standard deviation 
@@ -505,12 +502,14 @@ To ameliorate the lack of accuracy,
 statisticians often provide a range that quantifies the uncertainty. 
 For instance, Cy could say that 
 [*by estimate, a typical banana weighs `r round(m_thousandsample, 0)` grams, 
-and I am 70% confident that the average weight of bananas 
+and I am 95% confident that the average weight of bananas 
 is within `r round(m_thousandsample, 0)` 
-$\pm$ `r round(sd_thousandsample, 2)`*.]{color="rosybrown"}
+$\pm$ `r round(sd_thousandsample*2, 2)` grams, 
+or within [`r round(m_thousandsample - sd_thousandsample*2, 2)`, 
+`r round(m_thousandsample + sd_thousandsample*2, 2)`] grams*.]{color="rosybrown"}
 Naturally, the wider the range, the higher uncertainty. 
 To say that tomorrow's high temperature is within the range of -10 to +10&deg;C 
-sounds much more undercertain than to say it is between 0 to 5&deg;C.  
+sounds much more uncertain than to say it is between 0 to 5&deg;C.  
 
 Given that a sample mean is merely an estimate of the population mean, 
 how do we dertermine the degree of uncertainty for this estimate? 
@@ -524,8 +523,8 @@ to how much values vary within one sample,
 captured by the sample standard deviation $sd$, 
 and inversely proportional to the size of each sample, 
 hence $\sqrt{n}$ in the denominator. 
-We can expect that the sample mean to vary 
-from one sample to another much less compared to 
+We can expect that the *sample mean* to vary 
+from one sample to the next much less compared to 
 how individual values vary within one sample, 
 roughly by a ratio of $\sqrt{n}$. 
 
@@ -551,12 +550,12 @@ and elaborating on key concepts involved in the theorem.
 
 >
   $$
-  \mu = \overline{x}
+  \mu \approx \bar{x}
   $$
 
 >
   $$
-  \sigma_\overline{x} = \frac{sd}{\sqrt{n}}
+  \sigma_\bar{x} \approx \frac{sd}{\sqrt{n}}
   $$
 
 > 
@@ -567,7 +566,7 @@ and elaborating on key concepts involved in the theorem.
 
 Figure \@ref(fig:one-versus-thousand) showed two distributions: 
 a distribution of banana weights in ONE sample, 
-and a distribution of average weights from ONE-THOUSAND samples. 
+and a distribution of 1,000 means weights from ONE-THOUSAND samples. 
 Aside from the fact that the two distributions differ in shape, 
 they also differ in the extent of dispersion, 
 AKA *standard deviation* (see \@ref(basics-sd) for a refresher of the concept). 
@@ -608,7 +607,7 @@ title = 'Banana weights in ONE sample (A) \n and average weights from ONE-THOUSA
 
 Can you visually estimate the standard deviation in both distributions, 
 i.e., the distance between a dashed line and the solid line? 
-Notice the scales of the x-axis are different in A and B. 
+Note that the scales of the x-axis are different in A and B. 
 In A, either dashed line is about 10 grams apart from the center solid line; 
 in B they are about 1.5 grams apart. 
 Obviously, the distribution in Panel A has a bigger standard deviation than 
@@ -616,53 +615,98 @@ that in Panel B.
 Their size difference is not a coincidence, 
 but rather prescribed by the Central Limit Theorem. 
 Recall equation \@ref(eq:sd), which states 
-$\sigma_\overline{x} = \frac{sd}{\sqrt{n}}$
+$\sigma_\bar{x} \approx \frac{sd}{\sqrt{n}}$. 
 $sd$ is the symbol of sample standard deviation, 
 which is represented by the distance between a dashed line and the solid line 
 in Panel A. 
-$\sigma_\overline{x}$ is represented by the distance between a dashed line and the solid line 
+$\sigma_\bar{x}$ is represented by the distance between a dashed line and the solid line 
 in Panel B. 
-Equation \@ref(eq:sd) prescribes that 
-$\sigma_\overline{x}$ is equal to $sd$ divided by $\sqrt{n}$. 
-Substituting n with 50 from the banana study, 
-$\sqrt{n}$ \approx 7$. 
-so $\sigma_\overline{x}$ is about one seventh of $sd$, 
+Equation \@ref(eq:sd) tells us that 
+$\sigma_\bar{x}$ is approximately equal to $sd$ divided by $\sqrt{n}$. 
+Substitute n with 50, the number of bananas in a sample, which gives us 
+$\sqrt{n} \approx 7$. 
+In another word, $\sigma_\bar{x}$ is about one seventh of $sd$, 
 matching our visual observation ($1.5 \times 7 \approx 10$). 
 
-
 Panel A of Figure \@ref(fig:sd-vs-se) is called a **sample distribution** 
-whereas Panel B is called a **sampling distribution**. 
-The word *sampling* is used to emphasize how a sampling distributioon typically arises: 
+whereas Panel B a **sampling distribution**. 
+The word *sampling* is used to emphasize 
+how a sampling distribution typically arises: 
 via the repeated action of sampling, 
 computing the average of each resulting sample, 
 and plotting the averages. 
 As was mentioned earlier, the metric of dispersion is generally known as 
 standard deviation. 
 For a sample distribution, the name remains standard deviation, 
-or sample standard deviation, to be precise. 
+or *sample* standard deviation, to be precise. 
 For a *sampling distribution*, however, 
 a special name, **standard error of the mean**, 
 is often used in place of a generic "standard deviation". 
 
-The word *error* in standard error of mean, 
-is used to conjure up the image of margin of error 
+The word *error* in standard error of mean 
+is used to conjure up the image of *margin of error* 
 when approximating the population mean with a sample mean. 
-
+Such an approximation has its margin of error, 
+the range of which can be quantified with **standard error of the mean**. 
+We will discuss the concept of *margin of error* in the following chapter. 
 
 According to Equation \@ref(eq:sd) of the Central Limit Theorem, 
-a standard error of the mean, $\sigma_\overline{x}$, 
+a standard error of the mean, $\sigma_\bar{x}$, 
 is always a fraction of the sample standard deviation, $sd$. 
-Note that standard error of mean is often shortened as Standard Error, or SE. 
+Note that standard error of mean is often shortened as *Standard Error*, 
+or $SE_{\bar{x}}$. 
 Therefore, Equation \@ref(eq:sd) could also be expressed as: 
 
-$$
-SE = \frac{sd}{\sqrt{n}}
-(#eq:se)
-$$
+  $$
+  SE_{\bar{x}} \approx \frac{sd}{\sqrt{n}}
+  (#eq:se)
+  $$
+
+Using Equation \@ref(eq:se) from the Central Limit Theorem to approximate 
+$SE_{\bar{x}}$ is considered a theoretical approach, 
+whereas Cy's method, i.e., panel B of Figure \@ref(fig:sd-vs-se), 
+is considered empirical, 
+because it involves repeated sampling (1,000 times in this case). 
+
+Calculate $SE_{\bar{x}}$ using both methods by following the code below 
+and compare the results. 
+
+```{r eval=F}
+# retrieve a single sample of bananas
+banana_sample <- dget()
+banana_sample
+```
+
+```{r eval=F}
+# sample size is 50
+n <- 50
+# compute standard deviation for the single sample
+banana_sample %>% 
+  dplyr::summarize(sd_onesample = sd(weight))
+# estimate standard error using Equation \@ref(eq:se)
+se_theory <- sd_onesample / sqrt(n) %>% round(2)
+se_theory
+```
+
+
+```{r eval=F}
+# retrieve the 1,000 sample means
+banana_sample_means <- dget()
+banana_sample_means
+```
+
+```{r eval=F}
+# compute standard deviation for the sampling distribution
+se_empirical <- dplyr::summarize(banana_sample_means, sd(weight_avrg)) %>% 
+  round(2)
+se_empirical
+```
+
+
 
 ### More terminology and notations
 
-Here is a list of concepts instrumental to understanding the xxx. 
+Here is a list of concepts instrumental to understanding the Central Limit Theorem.  
 It is okay if you are not familiar with them yet. 
 We will repeat, clarify these definitions as we move along the course. 
 
@@ -721,7 +765,7 @@ We will repeat, clarify these definitions as we move along the course.
   In other words, does the value of the point estimate *generalize* 
   to the population? 
   Using our mathematical notation, this is akin to asking 
-  if $m$ is a "good guess" of $\mu$?
+  if $\bar{x}$ is a "good guess" of $\mu$?
 
 
 To summarize:
@@ -767,9 +811,11 @@ from a sample of bananas.
 With a randomly chosen sample of bananas, 
 its average weight, `r m_onesample %>% round(0)` grams, 
 is an unbiased estimate of the weight of a typical banana in the population. 
-The uncertainty of this estimate is quantified by 
-the standard error of mean, `r round(se, 2)` grams, 
-derived from dividing the sample standard deviation by square root of sample size. 
+The uncertainty of this estimate, $\pm `r round(se, 2)`$ grams, 
+is quantified by the standard deviation of the sampling distribution, 
+commonly known as the standard error of mean. 
+In practice, standard error of mean can be approximated using 
+the sample standard deviation divided by square root of sample size. 
 
 The concepts of sampling and standard error that we have seen in this chapter 
 form the basis of confidence intervals and hypothesis testing, 
@@ -780,4 +826,33 @@ in particular data visualization and data wrangling,
 will also play an important role in the development of your understanding.  
 As mentioned before, the concepts throughout this text 
 all build into a culmination allowing you to untangle the narrative behind the data. 
+
+## P.S.
+
+What inspired my creation of Cy the protagonist in this chapter?
+
+One christmas, we embarked on an endeavour: 
+
+```{r banana-before, echo=F, fig.cap="We bought bananas in bulk", out.width="50%"}
+knitr::include_graphics(here::here("docs", 
+                            "images", 
+                            "sampling", 
+                            "bananas", 
+                            "before.JPG")
+)
+```
+
+After hours of peeling and slicing: 
+
+```{r banana-after, echo=F, fig.cap="We peeled all the bananas", out.width="50%"}
+knitr::include_graphics(here::here("docs", 
+                            "images", 
+                            "sampling", 
+                            "bananas", 
+                            "after.JPG")
+)
+```
+
+Long story short, we snacked on home-made dehydrated banana chips 
+for the next 12 months after this grand experiment. 
 

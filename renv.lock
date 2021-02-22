@@ -30,6 +30,13 @@
       "Repository": "CRAN",
       "Hash": "ff280503079ad8623d3c4b1519b24ea2"
     },
+    "MatrixModels": {
+      "Package": "MatrixModels",
+      "Version": "0.4-1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "d57ac35220b39c591388ab3a080f9cbe"
+    },
     "R6": {
       "Package": "R6",
       "Version": "2.5.0",
@@ -50,6 +57,20 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "dbb5e436998a7eba5a9d682060533338"
+    },
+    "RcppArmadillo": {
+      "Package": "RcppArmadillo",
+      "Version": "0.10.1.2.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "c66578fcae4cd6f42bddffee8a67f19b"
+    },
+    "SparseM": {
+      "Package": "SparseM",
+      "Version": "1.78",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "fbe4ac267bf42a91e495cc68ad3f8b63"
     },
     "askpass": {
       "Package": "askpass",
@@ -134,6 +155,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "abea3384649ef37f60ef51ce002f3547"
+    },
+    "conquer": {
+      "Package": "conquer",
+      "Version": "1.0.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "a31720f692920e635ecef0481d478247"
     },
     "cpp11": {
       "Package": "cpp11",
@@ -422,6 +450,13 @@
       "Repository": "CRAN",
       "Hash": "61e4a10781dd00d7d81dd06ca9b94e95"
     },
+    "matrixStats": {
+      "Package": "matrixStats",
+      "Version": "0.58.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "c318d148056e5bb8d7de79b0876f9ae6"
+    },
     "mgcv": {
       "Package": "mgcv",
       "Version": "1.8-33",
@@ -431,10 +466,17 @@
     },
     "mime": {
       "Package": "mime",
-      "Version": "0.9",
+      "Version": "0.10",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "e87a35ec73b157552814869f45a63aa3"
+      "Hash": "26fa77e707223e1ce042b2b5d09993dc"
+    },
+    "mnormt": {
+      "Package": "mnormt",
+      "Version": "2.0.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "7e6ee68a01d6c87c69087d4a250ee763"
     },
     "moderndive": {
       "Package": "moderndive",
@@ -463,6 +505,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "42c8ba2b6a32a6bf0874e93e3bd86a43"
+    },
+    "numDeriv": {
+      "Package": "numDeriv",
+      "Version": "2016.8-1.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "df58958f293b166e4ab885ebcad90e02"
     },
     "nycflights13": {
       "Package": "nycflights13",
@@ -562,6 +611,13 @@
       "Repository": "CRAN",
       "Hash": "97def703420c8ab10d8f0e6c72101e02"
     },
+    "quantreg": {
+      "Package": "quantreg",
+      "Version": "5.83",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "baacfbdc051b7da7519055191e505091"
+    },
     "readr": {
       "Package": "readr",
       "Version": "1.4.0",
@@ -628,8 +684,8 @@
       "RemoteRepo": "rmarkdown",
       "RemoteUsername": "rstudio",
       "RemoteRef": "HEAD",
-      "RemoteSha": "a62cb2029a7d5b7fef8f12a683c1896efa4e53e5",
-      "Hash": "cf02ed3138c7578d28b8a2bb20a0b70a"
+      "RemoteSha": "229cc61aa30f7c759b0899a2fcaf5446ac546023",
+      "Hash": "8a0d6031783bfe0d313ac4bc4be1c970"
     },
     "rprojroot": {
       "Package": "rprojroot",
@@ -672,6 +728,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "1771d7c2061c3608c9d149cd36024eb5"
+    },
+    "sn": {
+      "Package": "sn",
+      "Version": "1.6-2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "b4683ffd6b32860bb08d452cdb3345bc"
     },
     "snakecase": {
       "Package": "snakecase",
@@ -736,6 +799,13 @@
       "Repository": "CRAN",
       "Hash": "f0b0ba735febac9a8344253ae6fa93f5"
     },
+    "tmvnsim": {
+      "Package": "tmvnsim",
+      "Version": "1.0-2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "50470c7ed0cc8099cbc17b38f0ef621f"
+    },
     "utf8": {
       "Package": "utf8",
       "Version": "1.1.4",
@@ -787,10 +857,10 @@
     },
     "xfun": {
       "Package": "xfun",
-      "Version": "0.20",
+      "Version": "0.21",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "d7222684dc02327871e3b1da0aba7089"
+      "Hash": "f3ddcca198959a42e8cb6b06c30d4f1e"
     },
     "xml2": {
       "Package": "xml2",

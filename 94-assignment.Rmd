@@ -117,7 +117,7 @@ There are two parts to this week's assignment.
 
 * Reading
 
-  Chapter \@ref(simple-regression) 
+  Chapter \@ref(clt) 
 
 * Data challenge
 
@@ -138,7 +138,8 @@ There are two parts to this week's assignment.
 
 * Reading
 
-  TBD
+  Chapter \@ref(confidence-intervals)
+
 
 * Datacamp (5%)  
   1. complete the module assigned to you (2%).  

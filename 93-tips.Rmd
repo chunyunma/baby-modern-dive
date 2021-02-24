@@ -340,6 +340,39 @@ From wikipedia:
   In BASIC, Lisp-family languages, and C-family languages (including Java and C++), 
   operator <= means "less than or equal to".
 
+### `filter()` and `dplyr::filter()`
+
+> 
+  I am trying to calculate the average of my new data set 
+  after excluding outliers using the `filter` function. 
+>
+  ```{r eval=F}
+  df_sales_no_out <- df_sales %>%
+    filter(df_sales$order_amount > 340.5)
+  # 340.5 is 1.5 times IQR
+  ```
+>
+  I get the following message: 
+>
+  ```
+  Error in df_sales_no_out$order_amount :
+    $ operator is invalid for atomic vectors
+  ```
+>
+  Am I approaching this the wrong way?
+
+
+**Response**: 
+
+`filter()` and `dplyr::filter()` are two different functions.
+It appears that you wanted to use the second.
+However, without referencing its package --- `dplyr`, 
+`R` thinks that you are asking for the first one.
+Here is the [documentation](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/filter.html) 
+of `filter()` from the `stats` package.
+You can see that it is far from what you'd want to use.
+
+
 ## Tips
 
 ### How to name objects in R

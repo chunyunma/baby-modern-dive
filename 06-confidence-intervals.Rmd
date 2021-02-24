@@ -1,0 +1,2114 @@
+# Bootstrapping and Confidence Intervals {#confidence-intervals}
+
+```{r setup_infer, include=FALSE, purl=FALSE}
+# Used to define Learning Check numbers:
+chap <- 6
+lc <- 0
+
+
+# Set output digit precision
+options(scipen = 99) #, digits = 3)
+options(pillar.sigfig = 6)
+
+# Set random number generator see value for replicable pseudorandomness
+set.seed(6)
+```
+
+Let's start this chapter with an analogy involving fishing. 
+Say you are trying to catch a fish. 
+On the one hand, you could use a spear, while on the other you could use a net. 
+
+Recall in Chapter \@ref(clt) where Cy was trying to 
+estimate the population mean weight $\mu$ of *all* bananas. 
+Think of the value of $\mu$ as a fish.
+
+```{r import-pkg, echo=F, message=FALSE, warning=FALSE}
+cran_internal <- c(
+                    "dplyr", 
+                    "ggplot2", 
+                    "infer", 
+                    "kableExtra", 
+                    "patchwork", 
+                    "purrr",
+                    "readr", 
+                    "sn", 
+                    "tibble", 
+                    "tidyr"
+)
+gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
+
+import::from(magrittr, '%>%')
+import::from(patchwork, .all=TRUE)
+```
+
+```{r echo=F}
+# generate a population of 10000 bananas, right-skewed
+n_pop <- 100000
+if (!file.exists(here::here("rds", "banana_pop.rds"))) {
+  set.seed(6)
+  banana_pop <- tibble::tibble(
+                               weight = floor(
+                                              sn::rsn(
+                                                      n=n_pop, 
+                                                      xi = 175, 
+                                                      omega = 20, 
+                                                      alpha = 5
+                                                      )
+                               )
+  )
+  saveRDS(object = banana_pop, here::here("rds", "banana_pop.rds"))
+} else {
+  banana_pop <- readRDS(here::here("rds", "banana_pop.rds"))
+}
+
+if (!file.exists(here::here("data", "banana_pop.txt"))) {
+  dput(banana_pop, here::here("data", "banana_pop.txt"))
+}
+
+
+# take a sample
+if (!file.exists(here::here("rds", "banana_sample.rds"))) {
+  banana_sample <- banana_pop %>%
+    dplyr::slice_sample(n = 50)
+  saveRDS(banana_sample, here::here("data", "banana_sample.rds"))
+} else {
+  banana_sample <- readRDS(here::here("data", "banana_sample.rds"))
+}
+```
+
+```{r echo = FALSE}
+m_onesample <- banana_sample %>% 
+  dp$summarize(mean_weight = mean(weight)) %>% 
+  dp$pull(mean_weight) %>% 
+  # maybe not round here
+  round(2)
+```
+
+On the one hand, 
+she could use the appropriate *point estimate/sample statistic* 
+to estimate $\mu$, which is the sample mean $\bar{x}$. 
+Based on a sample of 50 bananas, 
+the sample mean was `r m_onesample %>% round(0)`. 
+Think of using this value as "fishing with a spear."
+
+What would "fishing with a net" correspond to? 
+Look at the sampling distribution in Figure \@ref(fig:sampling-dist). 
+Between which two values would you say that "most" sample means lie? 
+While this question is somewhat subjective, 
+saying that most sample means lie between 186 and 195 grams 
+would not be unreasonable. Think of this interval as the "net."
+
+```{r sampling-dist, echo=F, fig.cap="Sampling distribution of the mean weight"}
+if(!file.exists("rds/banana_samples.rds")){
+  set.seed(6)
+  # one-thousand samples
+  banana_samples <- banana_pop %>% 
+    infer::rep_sample_n(size = 50, reps = 1000, replace = FALSE)
+  saveRDS(object = banana_samples, "rds/banana_samples.rds")
+} else {
+  banana_samples <- readRDS("rds/banana_samples.rds")
+}
+
+# mean of each sample
+df_weight_avrg <- banana_samples %>% 
+  dp$group_by(replicate) %>% 
+  dp$summarize(mean_weight = mean(weight))
+
+# sampling dist
+hist_sampling <- gg$ggplot(df_weight_avrg, 
+                                 gg$aes(x = mean_weight)) + 
+gg$geom_histogram(gg$aes(y = ..density..), boundary = 190, binwidth=1, 
+                  colour="black", fill="white") + 
+  gg$geom_density(alpha=.2, fill="#FF6666") + 
+  gg$labs(x = "Average weight from 1,000 samples (gram)", y = "") + 
+  gg$scale_y_continuous(NULL, breaks=NULL)
+hist_sampling
+```
+
+What we have just illustrated is the concept of a *confidence interval*. 
+As opposed to a *point estimate/sample statistic* 
+that estimates the value of an unknown population parameter 
+with a *single* value, 
+a *confidence interval* \index{confidence interval} gives 
+what can be interpreted as a range of plausible values. 
+Going back to our analogy, 
+point estimates/sample statistics can be thought of as spears, 
+whereas confidence intervals can be thought of as nets. 
+
+```{r point-estimate-vs-conf-int, echo=FALSE, fig.cap="Analogy of difference between point estimates and confidence intervals.", out.width="100%", purl=FALSE}
+knitr::include_graphics(here::here(
+                            "docs", 
+                            "images", 
+                            "shutterstock", 
+                            "point_estimate_vs_conf_int.png")
+)
+```
+
+In this chapter, you will learn: 
+
++ How to construct confidence intervals 
+  for a specific type of population parameter --- mean
++ How to interprete a confidence interval
+
+Once mastered, you will be able to transfer these skills to 
+using confidence intervals for other types of population paramters. 
+
+<!-- Previously, Cy could calculate the standard error of mean  -->
+<!-- estimate population paramters such as mean and standard error,  -->
+<!-- empirically, via sampling 1,000 times, because of her unique endowment.  -->
+<!-- As envious as it may be, we ordinary folks are not able or interested  -->
+<!-- in sampling 1,000 times.  -->
+<!-- Thanks to the clt, we could sample only once and approximate the population parameters  -->
+<!-- using the sample statistics.  -->
+<!-- In this chapter, we will introduce another method to estimate population parameters.  -->
+<!-- For continuity, we will set the scene in the People's Republic of Banana again,  -->
+<!-- and study the weight of bananas.  -->
+<!-- Instead of Cy, you are the main character,  -->
+<!-- and you are enpowered with a computer that runs R.  -->
+<!-- You are going to study the problem with one sample, a computer that uses -->
+<!-- Bootstrapping.  -->
+<!--  -->
+<!-- The problem in itself may not be very important,  -->
+<!-- but the process we learn will be very useful.  -->
+<!--  -->
+<!-- Suspend your disbelief -->
+<!--  -->
+
+
+<!-- The average annual temprature of xx and xx are very similar, xx.  -->
+<!-- However, a xxian and a xxian would protest  -->
+<!-- if you conclude that xx and xx have similar weather.  -->
+<!-- In xx, it is spring all year around.  -->
+<!-- However, xx has very distinct seasons.  -->
+<!-- It is insufficient to use the average temprature to describe weather.  -->
+<!-- A better approach is to use a range,  -->
+<!-- to describe how must the day-to-day temp fluctuates from the yearly average.  -->
+<!-- Intuitively, xx would have a relatively small fluctuation range  -->
+<!-- than xx.  -->
+<!-- This fluctuation range manifects in several different statistics,  -->
+<!-- one of most common types is a confidence interval.  -->
+<!--  -->
+<!-- As the name suggests,  -->
+<!-- a confidence interval allows you to  -->
+<!-- slap a number on your confidence level.  -->
+<!-- 80%? 90%? -->
+
+
+
+### Needed packages {-#CI-packages}
+
+Let's get ready all the packages we will need for this chapter. 
+
+```{r load-package, eval=F}
+# Install xfun so that I can use xfun::pkg_load2
+if (!requireNamespace('xfun')) install.packages('xfun')
+xf <- loadNamespace('xfun')
+
+cran_packages <- c(
+                  "dplyr", 
+                  "ggplot2", 
+                  "infer"
+)
+
+if (length(cran_packages) != 0) xf$pkg_load2(cran_packages)
+
+gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
+
+import::from(magrittr, '%>%')
+import::from(patchwork, .all=TRUE)
+```
+
+
+## Constructing a confidence interval
+
+Previously, Cy sampled 1,000 times and plotted the distribution of 1,000 *means* 
+calculated from those samples. 
+As can be seen from Figure \@ref(fig:construct-ci), 
+a large portion of those means are between the two dashed lines. 
+Recall from Appendix \@ref(fig:normal-rule-of-thumb), 
+for a variable that approximates normal distribution, 
+95% of its values lie within 2 standard deviations [^1] above and below the mean. 
+
+[^1]: `1.96` standard deviations to be exact. 
+For simplicity, I rounded it up to `2` here. 
+
+
+```{r construct-ci, echo=FALSE, fig.cap="Confidence interval based on sampling distributions.", purl=FALSE}
+mean_of_means <- mean(df_weight_avrg$mean_weight)
+se <- sd(df_weight_avrg$mean_weight)
+shade_2_se <- function(x) {
+  y <- dnorm(x, mean = mean_of_means, sd = se) * se/2 * 1000
+  y[x <= -1.96*se+mean_of_means | x >= 1.96*se+mean_of_means] <- NA
+  return(y)
+}
+
+hist_sampling_shade <- gg$ggplot(df_weight_avrg, 
+                                 gg$aes(x = mean_weight)) + 
+  gg$geom_histogram(boundary = 190, binwidth=1, 
+                  colour="black", fill="white") + 
+  # trace normal curve
+  gg$stat_function(fun = function(x) 
+                dnorm(x, mean = mean_of_means, 
+                      sd = se) * se/2 * 1000
+                   ) + 
+  # Shade and delineate +/- 2 SD
+  gg$stat_function(fun = shade_2_se, 
+                   geom = "area", 
+                   fill = "#FF6666", 
+                   alpha = 0.6, 
+                   n = 1000
+                   ) +
+  gg$geom_vline(xintercept = c(-1.96*se+mean_of_means, 1.96*se+mean_of_means), 
+                linetype = "dashed", 
+                alpha = 0.5) +
+  gg$labs(x = "Sample mean weight of 50 bananas (gram)", y = "") + 
+  gg$scale_y_continuous(NULL, breaks=NULL)
+
+
+shade_2_sd <- function(x) {
+  y <- dnorm(x, mean = 0, sd = 1)
+  y[x <= -1.96 | x >= 1.96] <- NA
+  return(y)
+}
+labels <- tibble::tibble(
+  x = c(-2.5, 0, 2.5),
+  label = c("2.5%", "95%", "2.5%")
+) %>% 
+  dp$mutate(y = rep(0.3, times = dp$n()))
+
+std_curve <- gg$ggplot(data = tibble::tibble(x = c(-4, 4)), gg$aes(x)) +
+  gg$geom_text(data = labels, gg$aes(y=y, label = label)) + 
+  # Trace normal curve
+  gg$stat_function(fun = dnorm, args = list(mean = 0, sd = 1), n = 1000) + 
+  # Shade and delineate +/- 2 SD
+  gg$stat_function(fun = shade_2_sd, geom = "area", fill = "black", alpha = 0.25, n = 1000) +
+  gg$geom_vline(xintercept = c(-1.96, 1.96), linetype = "dashed", alpha = 0.5) +
+  # Axes
+  gg$scale_x_continuous(breaks = seq(from = -3, to = 3, by = 1)) +
+  gg$labs(x = "z", y = "") +
+  gg$theme(axis.title.y = gg$element_blank(), axis.text.y = gg$element_blank(), axis.ticks.y = gg$element_blank())
+
+hist_sampling_shade + std_curve + 
+  patchwork::plot_annotation(tag_levels = 'A', 
+title = 'Sampling distribution of mean banana weight (A) \n and a standard normal curve (B)')
+```
+
+It just so happens that `r round(mean_of_means - 1.96*se, 2)`, 
+the lower bound marked by the dashed line 
+on Figure \@ref(fig:construct-ci) Panel A 
+is two $sd$ below the centre of the distribution, 
+and the upper bound, `r round(mean_of_means + 1.96*se, 2)`, 
+is two $sd$ above the centre. 
+What can you deduce from these pieces of information? 
+
+Of the 1,000 means, roughly 95% of them lie between 
+`r round(mean_of_means - 1.96*se, 2)` and `r round(mean_of_means + 1.96*se, 2)` grams. 
+This range is commonly knowns as the **95% confidence interval**, 
+or CI for short. 
+As statisticians often put it, 
+a banana weighs `r round(mean_of_means, 0)` on average, 
+($CI$ = [`r round(mean_of_means + 1.96*se, 2)`, 
+`r round(mean_of_means + 1.96*se, 2)`]). 
+
+Next, we learn three different methods 
+of constructing a 95% confidence interval 
+for the estimated mean weight of bananas in the population. 
+Spoiler alert. All three methods lead to similar results. 
+
+## Theory-based approach {#theory-ci}
+
+Figure \@ref(fig:construct-ci) Panel A is the result of a thought experiment, 
+acted out by our protagonist Cy. 
+In reality, one would rarely collect more than one sample, 
+let alone 1,000 samples! 
+In practice, 
+how do we approximate the sampling distribution in Figure \@ref(fig:construct-ci) 
+without having to go through the trouble of sampling multiple times? 
+Thanks to the Central Limit Theorem, 
+all we need is a sufficiently large sample (n > 30, see Chapter \@ref(revisit-clt)), 
+at least in the case of estimating populating means. 
+
+Using a sample of 50 randomly chosen bananas, 
+we can estimate the centre / peak of the sampling distribution, 
+or the population mean weight of all bananas, 
+a value denoted mathematically by the Greek letter $\mu$.
+In order to estimate $\mu$, 
+we use the sample mean weight of these 50 bananas as a point estimate, 
+denoted mathematically by $\bar{x}$. 
+
+
+```{r eval=F}
+# retrieve a sample of 50 banana weights
+banana_sample <- dget("https://raw.githubusercontent.com/chunyunma/baby-modern-dive/master/data/banana_sample.txt")
+# compute the sample mean and sample standard deviation
+banana_sample %>% 
+  dp$summarize(mean = mean(weight), sd = sd(weight))
+```
+
+```{r echo=F}
+banana_sample %>% 
+  dp$summarize(mean = mean(weight), sd = sd(weight))
+```
+
+
+  $$
+  \mu \approx \bar{x} = `r m_onesample`
+  (\#eq:mean-banana)
+  $$
+
+In addition, we can estimate the spread of the sampling distribution, 
+commonly denoted by $SE$, 
+using Equation \@ref(eq:se-theory), 
+which involves the sample standard deviation and sample size. 
+
+
+```{r echo=F}
+sd_onesample <- banana_sample %>% 
+  dp$summarize(sd = sd(weight)) %>% 
+  dp$pull(sd)
+
+se <- sd_onesample / sqrt(50)
+```
+
+
+  $$
+  SE \approx \frac{sd}{\sqrt{n}} = \frac{`r sd_onesample %>% round(2)`}{\sqrt{50}}
+  \approx `r se %>% round(2)`
+  (#eq:se-theory)
+  $$
+
+Thus, the 95% confidence interval for mean weight of banana is: 
+
+
+  $$
+  \begin{aligned}
+  \bar{x} \pm (1.96 \cdot SE_\bar{x}) &= \bar{x} \pm (1.96 \cdot \frac{sd}{\sqrt{n}}) \\
+  &= `r m_onesample` \pm 1.96 \cdot `r round(se, 2)` \\
+  &= `r m_onesample` \pm `r round(1.96 * se, 2)` \\
+  &= [`r m_onesample` - `r round(1.96 * se, 2)`, `r m_onesample` + `r round(1.96 * se, 2)`] \\
+  &= [`r round(m_onesample - 1.96 * se, 2)`, `r round(m_onesample + 1.96 * se, 2)`]
+  \end{aligned}
+  (#eq:ci-theory)
+  $$
+
+The range is formally called a **95% confidence interval**. 
+And the `95%` is referred to as the **confidence level**.  
+We can say that based on our sample, 
+the estimated banana weight is `r m_onesample %>% round(2)`, 
+with a 95% confidence intevel 
+[`r (m_onesample - 1.96*se) %>% round(2)`, `r (m_onesample + 1.96*se) %>% round(2)`]
+(reads "between `r (m_onesample - 1.96*se) %>% round(2)` and `r (m_onesample + 1.96*se) %>% round(2)`")
+
+
+This interval centers on the point estimate, $\bar{x} = `r m_onesample`$. 
+And it extends to the left and to the right the same magnitude, 
+$1.96 \cdot SE_{\bar{x}}$ . 
+This magtitude is also called the *margin of error*. 
+The 1.96 multiplier is directly tied to the confidence level, 95%, 
+as explained in Appendix \@ref(fig:normal-rule-of-thumb). 
+
+The theory-based method only holds 
+if the sampling distribution is normally shaped, 
+so that we can use the 95% rule of thumb 
+about normal distribution discussed in Appendix \@ref(fig:normal-rule-of-thumb). 
+When the population parameter in question is a mean, 
+a sufficiently large sample size (n > 30) is all that needed 
+to fulfill the normality requirement, 
+thanks for the Central Limit Theorem. 
+Under the right conditions, the theory-based approach is easy to implement, 
+and requires very little computing power, 
+which is why it has been favoured by researchers in the past. 
+This approach is still widely used today, 
+largely because it is convenient and, above all, familiar to generations 
+of researchers. 
+
+In this chapter, we introduce another method for constructing confidence intervals. 
+<!-- xxxx  something about opening another door, gaining a different perspective,  -->
+<!-- provide an alternative solution where theory-based approach falls short.  -->
+
+
+## Bootstrapping-based approach {#resampling}
+
+To understand this method, 
+we need to introduce a concept: resampling with replacement. 
+
+### Resampling once {#resample-once}
+
+**Step 1**: Print out identically sized slips of paper 
+representing the weights of 50 randomly sampled banana
+
+**Step 2**: Put the 50 slips of paper into a tuque
+
+**Step 3**: Mix the tuque's contents and draw one slip of paper at random. 
+Record the weight
+
+**Step 4**: Place the slip of paper back in the tuque! 
+In another word, *RE*-place it.
+
+**Step 5**: Repeat Steps 3 and 4 a total of 49 more times, 
+resulting in 50 recorded weights.
+
+
+What we just performed was a *resampling* 
+of the original sample of 50 bananas. 
+Unlike Cy, who sampled repeatedly from the population of all bananas, 
+we are mimicking her action by 
+*re*sampling from a single sample of 50 bananas.  
+
+Now ask youreself, why did we place our resampled slip of paper 
+back into the tuque in Step 4? 
+Because if we left the slip of paper out of the tuque 
+each time we performed Step 4, 
+we would end up with the same 50 original banana weights! 
+That would make this exercise pointless.
+
+<!--In other words, replacing the slips of paper induces *sampling variation*.-->
+
+Being more precise with our terminology, 
+we just performed a *resampling __with__ replacement*
+from the original sample of 50 bananas. 
+Had we left the paper slip out of the tuque 
+each time we performed Step 4, it would be *resampling __without__ replacement*.
+
+Let's compare the weight distribution of the original 50 bananas 
+to that of the re-sampled 50 bananas. 
+
+
+```{r banana-resample, echo=F}
+# bootstrap once from banana_sample
+if (!file.exists(here::here("rds", "banana_resample.rds"))) {
+  banana_resample <- banana_sample %>% 
+    infer::rep_sample_n(size = 50, replace = TRUE, reps = 1) %>% 
+    dp$ungroup() %>% 
+    dp$select(-replicate)
+  saveRDS(banana_resample, here::here("rds", "banana_resample.rds"))
+} else {
+  banana_resample <- readRDS(here::here("rds", "banana_resample.rds"))
+}
+
+if(!file.exists(here::here("data", "banana_resample_ch6.txt"))) {
+  dput(banana_resample, here::here("data", "banana_resample_ch6.txt"))
+}
+```
+
+```{r orig-and-resample, echo=FALSE, fig.cap="Resample and the original sample"}
+p1 <- gg$ggplot(banana_sample, 
+                gg$aes(x = weight)) +
+gg$geom_histogram(gg$aes(y = ..density..), boundary=190, binwidth=5, 
+                  colour="black", fill="white") + 
+  gg$geom_density(alpha = 0.2, fill="#FF6666") +
+  gg$labs(x = "Banana weight (gram)", y = "", title = "Sample of 50 bananas") + 
+  gg$scale_y_continuous(NULL, breaks=NULL)
+
+p2 <- gg$ggplot(banana_resample, 
+                gg$aes(x = weight)) +
+gg$geom_histogram(gg$aes(y = ..density..), boundary=190, binwidth=5, 
+                  colour="black", fill="white") + 
+  gg$geom_density(alpha = 0.2, fill="#FF6666") +
+  gg$labs(x = "Banana weight (gram)", y = "", title = "REsample of 50 bananas") + 
+  gg$scale_y_continuous(NULL, breaks=NULL)
+p1 + p2
+```
+
+
+Observe in Figure \@ref(fig:orig-and-resample) that 
+while the general shapes of both distributions of `weight` are roughly similar, 
+they are not identical. 
+Nor are the mean weights calculated from two distributions. 
+
+```{r eval=F}
+# retrieve a RE-sample of the original sample
+banana_resample <- dget("https://raw.githubusercontent.com/chunyunma/baby-modern-dive/master/data/banana_resample_ch6.txt")
+# take a look at the RE-sample
+head(banana_resample)
+```
+
+```{r}
+# compute mean of the original sample
+banana_sample %>% 
+  dp$summarize(sample_mean = mean(weight))
+# compute mean of the RE-sample and compare to that of the original sample
+banana_resample %>% 
+  dp$summarize(resample_mean = mean(weight))
+```
+
+Resampling from a *single* sample introduced variation, 
+similar to what Cy has observed by sampling repeatedly from the population 
+(Figure \@ref(fig:dist-thousand)). 
+
+
+
+### Resampling a thousand times {#resample-thousand}
+
+```{r echo=F}
+n_resample = 1000
+```
+
+
+Resampling from a single sample by following step 1-5 
+described in Section \@ref(resample-once) 
+does not have obvious advantages over sampling from the population. 
+To repeat step 1-5 a thousand times, thereby re-sampling 1,000 times 
+sounds as daunting as what Cy did with the 1,000 samples she collected 
+and measured in Chapter \@ref(clt). 
+However, although there is no computer algorithm that could 
+sample bananas from the population for Cy, 
+there are reliable algorithms that could *re*sample bananas from a single sample, 
+which makes resampling 1,000 times as trivial as computing a sample mean. 
+
+Let's take one sample and re-sample 1,000 times from it: 
+
+```{r eval=F}
+# retrieve a sample of 50 banana weights
+banana_sample <- dget("https://raw.githubusercontent.com/chunyunma/baby-modern-dive/master/data/banana_sample.txt")
+# take a look at the data frame
+banana_sample
+```
+
+```{r echo=F}
+banana_sample
+```
+
+
+```{r eval=F}
+# conduct "sample with replacement" 1,000 times from the original sample
+# to produce 1,000 RE-samples 
+# Your numbers will be slightly different from mine due to sampling variation
+banana_resamples <- banana_sample %>% 
+  infer::rep_sample_n(size = 50, replace = T, reps = 1000)
+banana_resamples
+```
+
+```{r echo=F}
+if(!file.exists(here::here("rds", "banana_resamples.rds"))) {
+  set.seed(76)
+  banana_resamples <- banana_sample %>% 
+    infer::rep_sample_n(size = 50, replace = T, reps = 1000)
+  saveRDS(banana_resamples, here::here("rds", "banana_resamples.rds"))
+} else {
+  banana_resamples <- readRDS(here::here("rds", "banana_resamples.rds"))
+}
+```
+
+
+```{r echo=F}
+banana_resamples
+```
+
+
+```{r dist-resamples, message=F, echo=F, fig.cap="Distribution of 50 bananas' weights in the first 20 REsamples out of 1,000"}
+banana_resamples %>% 
+  dp$filter(replicate < 21) %>% 
+  gg$ggplot(gg$aes(x = weight)) + 
+  gg$geom_density(alpha=.3, fill="#FF6666") + 
+  gg$facet_wrap(~ replicate, ncol = 5) + 
+  gg$labs(x = "Banana weight (gram)", y = "") + 
+  gg$scale_y_continuous(NULL, breaks=NULL)
+```
+
+
+The resulting `banana_resamples` data frame has $50 \cdot 1000 = 50,000$ rows 
+corresponding to 1,000 resamples of 50 banana weights. 
+Let's now compute the resulting 1,000 sample means using the same 
+`dplyr::summarize()` code as we did in the previous section, 
+but this time adding a `group_by(replicate)`: 
+
+```{r}
+resampled_means <- banana_resamples %>% 
+  dp$group_by(replicate) %>% 
+  dp$summarize(mean_weight = mean(weight))
+resampled_means
+```
+
+Observe that `resampled_means` has 1,000 rows, 
+corresponding to the 1,000 resamples. 
+Furthermore, obverse that the values of `mean_weight` vary. 
+Let's visualize this variation in Figure \@ref(fig:bootstrap-dist). 
+
+```{r bootstrap-dist, echo=F, fig.cap="Distribution of 1,000 REsample means"}
+hist_bootstrap <- gg$ggplot(resampled_means, 
+                                 gg$aes(x = mean_weight)) + 
+gg$geom_histogram(gg$aes(y = ..density..), boundary = 190, binwidth=1, 
+                  colour="black", fill="white") + 
+  gg$geom_density(alpha=.2, fill="#FF6666") + 
+  gg$labs(x = "Mean weight of a REsample (gram)", y = "") + 
+  gg$scale_y_continuous(NULL, breaks=NULL)
+hist_bootstrap
+```
+
+
+What we just demonstrated is the statistical procedure 
+known as *bootstrap resampling with replacement*. 
+The histrogram in Figure \@ref(fig:bootstrap-dist) 
+is called the *bootstrap distribution* of the sample mean, 
+constructed by taking 1,000 resamples from a single sample. 
+The **bootstrap distribution** of the sample mean 
+is an approximation to the *sampling distribution*, 
+a concept we have discussed in Chapter \@ref(clt). 
+Like a sampling distribution, 
+a bootstrap distribution allow us to study the effect of sampling variation 
+on our estimates of the population parameter, 
+in this case the mean weight for *all* bananas. 
+However, unlike Cy in Chapter \@ref(clt) where she sampled 1,000 times, 
+(something one would never do in practice), 
+bootstrap distributions are constructed by *re*sampling multiple times 
+using **a computer algorithm**
+from a *single* sample: in this case, the 50 original weights of bananas. 
+
+The term bootstrapping originates in the expression of 
+"pulling oneself up by their bootstraps," 
+meaning to ["succeed only by one's own efforts or abilities."](https://en.wiktionary.org/wiki/pull_oneself_up_by_one%27s_bootstraps) [^2] 
+From a statistical perspective, 
+bootstrapping alludes to succeeding in being able to study the effects 
+of sampling variation on estimates from the "effort" of a single sample. 
+Or more precisely, it refers to constructing an approximation 
+to the sampling distribution using only one sample.
+
+[^2]: [Bootstrap is a misnomer?](https://youtu.be/nHOBjsRrLZY)
+
+
+Note in Figure \@ref(fig:bootstrap-dist) that 
+the bell shape is starting to become much more apparent. 
+We now have a general sense for the range of values that the sample mean 
+may take on. 
+Consider: where is this histogram centered? 
+Let's compute the mean of the 1000 resample means:
+
+```{r}
+resampled_means %>% 
+  dp$summarize(mean_of_means = mean(mean_weight))
+```
+
+```{r echo=F}
+mean_of_means <- resampled_means %>% 
+  dp$summarize(mean(mean_weight)) %>% 
+  dp$pull()
+```
+
+The mean of these 1000 means is `r mean_of_means` grams, 
+which is quite close to the mean of our original sample of 50 banana weights 
+of `r m_onesample` grams. 
+This is the case since each of the 1,000 resamples 
+is based on the original sample of 50 banana weights.
+
+Congratulations! You've just constructed your first bootstrap distribution! 
+In the next section, 
+you'll see how to use this bootstrap distribution 
+to construct *confidence intervals*.
+
+<!-- learning check -->
+
+## Bootstrapping-based confidence interval {#bootstrap-ci}
+
+Just as Figure \@ref(fig:construct-ci) provided the information needed 
+to construct a confidence interval --- point estimate of mean 
+and standard error of mean, 
+so does Figure \@ref(fig:bootstrap-dist). 
+A 95% confidence interval of sample mean 
+is quite literally locating the lower and upper boundaries on the x-axis 
+of Figure \@ref(fig:bootstrap-dist), such that the values 
+between the said boundaries consists 95% of the whole. 
+We can find the boundaries using either the percentile method, 
+or the standard error method. 
+
+### Percentile method {#percentile-method}
+
+```{r echo=F}
+percentile_lower <- quantile(resampled_means$mean_weight, 2.5/100) %>% round(2)
+percentile_upper <- quantile(resampled_means$mean_weight, 97.5/100) %>% round(2)
+```
+
+To find the middle 95% of values of the bootstrap distribution, 
+we can compute the 2.5th and 97.5th percentiles, 
+which are `r percentile_lower` and `r percentile_upper`, 
+respectively. This is known as the *percentile method* for constructing 
+confidence intervals. 
+
+```{r}
+resampled_means %>% 
+  dp$summarize(
+               ci_lower = quantile(mean_weight, 2.5/100), 
+               ci_upper = quantile(mean_weight, 97.5/100)
+  )
+```
+
+
+Let's mark both percentitles on the bootstrap distribution 
+in Figure \@ref(fig:percentile-method). 
+About 95% of the `mean_weight` variable values in `resampled_means` 
+fall between `r percentile_lower` and `r percentile_upper`, 
+with the remaining 5% of the values 
+fall on either side outside of the boundaries.
+
+(ref:perc-method) Percentile method 95% confidence interval. Interval endpoints marked by vertical lines.
+
+```{r percentile-method, echo=FALSE, message=FALSE, fig.cap="(ref:perc-method)", fig.height=3.4}
+gg$ggplot(resampled_means, gg$aes(x = mean_weight)) +
+  gg$geom_histogram(gg$aes(y = ..density..), 
+                    binwidth = 1, 
+                    color = "black", 
+                    fill="white", 
+                    boundary = 190) +
+  gg$geom_density(alpha=.2, fill="#FF6666") + 
+  gg$labs(x = "Resample sample mean") +
+  gg$scale_y_continuous(NULL, breaks=NULL) + 
+  #   gg$scale_x_continuous(breaks = seq(180, 200, 1)) +
+  gg$geom_vline(xintercept = percentile_lower, 
+                size = 1, 
+                linetype="solid") +
+  gg$geom_vline(xintercept = percentile_upper, 
+                size = 1, 
+                linetype="solid")
+```
+
+
+
+### Standard error method {#se-method}
+
+```{r echo=F}
+bootstrap_se <- resampled_means %>% 
+  dp$summarize(se = sd(mean_weight)) %>% 
+  dp$pull(se)
+
+se_lower <- (mean_of_means - 1.96*bootstrap_se) %>% round(2)
+se_upper <- (mean_of_means + 1.96*bootstrap_se) %>% round(2)
+```
+
+Recall in Appendix \@ref(fig:normal-rule-of-thumb), 
+we saw that if a numerical variable follows a normal distribution, 
+or, in other words, the histogram of this variable is bell-shaped, 
+then roughly 95% of values fall between $\pm$ `r qnorm(0.975) %>% round(2)` 
+standard deviations of the mean. 
+Given that our bootstrap distribution based on `r n_resample` resamples 
+with replacement in Figure \@ref(fig:bootstrap-dist) is normally shaped, 
+let's use this fact about normal distributions 
+to construct a confidence interval in a different way.
+
+First, recall the bootstrap distribution has a mean equal to 
+`mean_of_means` = `r mean_of_means` grams. 
+<!-- This value almost coincides exactly with the value 
+of the sample mean $\bar{x}$ of our original 50 bananas of 
+`r m_onesample %>% round(2)`.  -->
+Second, let's compute the standard deviation of the bootstrap distribution 
+using the values of `mean_weight` in the `resampled_means` data frame:
+
+```{r}
+resampled_means %>% 
+  dp$summarize(SE = sd(mean_weight))
+```
+
+What is this value? 
+Recall that the bootstrap distribution is an approximation 
+to the sampling distribution. 
+Recall also that the standard deviation of a sampling distribution 
+has a special name: the *standard error*. 
+Putting these two facts together, we can say that 
+`r bootstrap_se` is an approximation 
+of $SE_{\bar{x}}$, i.e., the standard error of $\bar{x}$.  
+
+Thus, using our 95% rule of thumb about normal distributions 
+from Appendix \@ref(fig:normal-rule-of-thumb), 
+we can use the following formula to determine the lower and upper endpoints 
+of a 95% confidence interval for $\mu$:
+
+  $$
+  \begin{aligned}
+  \bar{x} \pm (1.96 \cdot SE) &= (\bar{x} - 1.96 \cdot SE, \bar{x} + 1.96 \cdot SE) \\
+  &= [`r round(mean_of_means, 2)` - 1.96 \cdot `r round(bootstrap_se, 2)`, 
+  `r round(mean_of_means, 2)` + 1.96 \cdot `r round(bootstrap_se, 2)`] \\
+  &= [`r round(mean_of_means - 1.96 * bootstrap_se, 2)`, 
+  `r round(mean_of_means + 1.96 * bootstrap_se, 2)`]
+  \end{aligned}
+  (#eq:ci-bootstrap)
+  $$
+
+Let's now add the SE method confidence interval with dashed lines 
+in Figure \@ref(fig:percentile-and-se-method).
+
+(ref:both-methods) Comparing two 95% confidence interval methods.
+
+```{r percentile-and-se-method, echo=FALSE, message=FALSE, fig.cap="(ref:both-methods)", fig.height=5.2, purl=FALSE}
+gg$ggplot(resampled_means, gg$aes(x = mean_weight)) +
+  gg$geom_histogram(gg$aes(y = ..density..), 
+                    binwidth = 1, 
+                    color = "black", 
+                    fill="white", 
+                    boundary = 190) +
+  gg$geom_density(alpha=.2, fill="#FF6666") + 
+  gg$labs(x = "Resample sample mean", 
+          title = "Percentile method CI (solid lines), 
+          SE method CI (dashed lines)") +
+  #   gg$scale_x_continuous(breaks = seq(180, 200, 1)) +
+  gg$geom_vline(xintercept = percentile_lower, 
+                size = 1, 
+                linetype="solid") + 
+  gg$geom_vline(xintercept = percentile_upper, 
+                size = 1, 
+                linetype="solid") + 
+  gg$geom_vline(xintercept = se_lower, 
+                size = 1, 
+                linetype="dashed") + 
+  gg$geom_vline(xintercept = se_upper, 
+                size = 1, 
+                linetype="dashed")
+```
+
+We see that both methods produce nearly identical 95% confidence intervals 
+for $\mu$ with the percentile method yielding 
+$[`r percentile_lower`, `r percentile_upper`]$ 
+while the standard error method produces $[`r se_lower`, `r se_upper`]$. 
+
+
+## Recap {#compare-three-methods}
+
+So far, we have introduced three methods of constructing confidence intervals 
+for the same population parameter. 
+How do they compare to each other?
+
+```{r three-cis-compare, echo=F}
+percentile_ci <- tibble::tibble(
+                                lower = percentile_lower, 
+                                upper = percentile_upper
+                                )
+
+se_ci <- tibble::tibble(
+                        lower = se_lower, 
+                        upper = se_upper)
+
+
+theory_ci <- tibble::tibble(
+                            lower = m_onesample - se*1.96, 
+                            upper = m_onesample + se*1.96
+                            )
+
+cis_three_types <- dp$bind_rows(theory_ci, 
+                                se_ci, 
+                                percentile_ci) %>% 
+  dp$mutate(Type = factor(c(
+                            'Theroy', 
+                            'SE', 
+                            'Percentile'
+                            )
+                          )) %>% 
+  dp$mutate(Width = upper - lower) %>% 
+  dp$mutate(Formula = c(
+                        '$\\bar{x}\\pm\\frac{sd}{\\sqrt{n}}$', 
+                        'mean(means) $\\pm$ sd(means)', 
+                        '[quantile(means, 2.5/100), quantile(means, 97.5/100]'
+  )
+  ) %>% 
+  dp$mutate(Note = c(
+                     'Requires sampling distribution normality', 
+                     'Requires computing power & \n bootstrap distribution normality', 
+                     'Requires computing power, \n '
+  )
+  )
+
+cis_three_types %>% 
+  dp$select(Type, everything()) %>% 
+  knitr::kable(
+    digits = 3, 
+    booktabs = TRUE,
+    escape = FALSE,
+    linesep = "", 
+    caption = "Confidence intervals constructed using three methods"
+  ) %>% 
+  kableExtra::kable_styling(font_size = 14)
+```
+
+Theory-based methods have been used in the past because 
+we did not have the computing power to perform simulation-based methods 
+such as bootstrapping. 
+Although convenient, theory-based methods fall short 
+where we cannot estimate sampling distributions from sample statistics. 
+Both `Percentile` and `SE` methods are based on bootstrap distribution. 
+The `SE` methods are applicable 
+when the bootstrap distribution is roughly normally shaped. 
+The `Percentile` method is the most flexible among the three. 
+It also works when we cannot estimate sampling distributions from 
+sample statistics and/or the bootstrap distribution is not normally shaped. 
+
+
+## Interpreting confidence intervals
+
+Now that we've shown you three methods of how to construct confidence intervals 
+using a sample drawn from a population, 
+let's now focus on how to interpret their effectiveness. 
+The effectiveness of a confidence interval is judged 
+by whether or not it contains the true value of the population parameter. 
+Recall the fishing analogy we introduced at the beginning of this chapter, 
+this is like asking, "Did our net capture the fish?".
+
+So, for example, does our percentile-based confidence interval of 
+[`r percentile_lower`, `r percentile_upper`]
+capture" the true mean weight of *all* bananas? 
+Normally, we will never be able to tell, 
+because we don't know what the true value of $\mu$ is. 
+After all, we are sampling to estimate it!
+However, it should not come as a surprise that the "population of bananas" 
+from which Cy drew her numerous samples was *simulated* by me. 
+Using a special algorithm, 
+I created `r n_pop` plausible numbers representing the weight of `r n_pop` bananas. 
+The numbers are stored in the data frame `banana_pop`. 
+
+```{r banana-pop, eval=F}
+dget("https://raw.githubusercontent.com/chunyunma/baby-modern-dive/master/data/banana_pop.txt")
+tibble::glimpse(banana_pop)
+```
+
+```{r echo=F}
+tibble::glimpse(banana_pop)
+```
+
+
+From those numbers, I drew samples such as `banana_sample`. 
+
+```{r}
+banana_sample
+```
+
+Although the numbers are fictional, 
+they bear important information that reflects the reality. 
+Let's calculate (not estimate) the true mean weight of bananas $\mu$
+in the simulated population 
+and find out whether or not a confidence interval "captured" this value. 
+
+```{r}
+banana_pop %>% 
+  dp$summarise(pop_mean = mean(weight))
+```
+
+```{r echo=F}
+m_pop <- banana_pop %>% 
+  dp$summarise(pop_mean = mean(weight)) %>% 
+  dp$pull() 
+```
+
+Now we *know* that the population mean weight $\mu$ is `r round(m_pop, 2)` grams. 
+Let's now compare the confidence interval of mean we have constructured earlier 
+to the true population mean. 
+We will then see if the confidence interval 
+has "captured" the true value of $\mu$. 
+
+
+### Did the net capture the fish?
+
+Before we reveal the answer, 
+let's quickly review the process of how we get here. 
+
+<!-- Maybe a flowchart.  -->
++ An unbiased sample of bananas was randomly chosen.
++ A bootstrap distribution (which approximates the sampling distribution)
+was constructed by REsampling multiple times from the said sample.
++ A confidence interval was constructed using the bootstrap distribution.
++ The confidencee interval was compared to the true value of the population parameter.
+
+```{r percentile-ci-pop-mean, message=FALSE, echo=F, fig.cap='Percentile method 95% confidence interval. True population mean marked by a vertical line.'}
+percentile_ci <- resampled_means %>% 
+  dp$rename(stat = mean_weight) %>% 
+  infer::get_ci(level = 0.95, type = "percentile")
+
+gg$ggplot(resampled_means, gg$aes(x = mean_weight)) +
+  gg$geom_density(alpha=.3) +
+  gg$labs(x = "Resample sample mean") +
+  infer::shade_ci(endpoints = percentile_ci) + 
+  gg$geom_vline(xintercept = m_pop, size = 1)
+```
+As shown in Figure \@ref(fig:percentile-ci-pop-mean), 
+The true value of $\mu$ marked by the black vertical line 
+is well within the confidence interval marked by the turquoise-coloured area. 
+Therefore, we can say that this particular confidence interval did capture 
+the population mean. 
+But was it pure luck that the confidnece interval I construcuted 
+captured the population parameter?
+Had I had another sample to start with --- unbiased and randomly chosen, 
+but different from the previous sample, 
+would it still result in a confidence interval that captures the population mean? 
+
+Let's put this idea to test now that we have access 
+to the entire (simulated) population of bananas. 
+Specifically, let's draw 100 samples from the population, 
+and construct a bootstrap confidence interval from each sample, 
+which would result in 100 bootstrap confidence intervals. 
+
+```{r hundred-ci, echo=F}
+if(!file.exists("rds/banana_percentile_95cis.rds")){
+  set.seed(4)
+
+  # Function to run infer pipeline
+  bootstrap_pipeline <- function(sample_data){
+    sample_data %>% 
+      infer::specify(formula = weight ~ NULL) %>% 
+      infer::generate(reps = 1000, type = "bootstrap") %>% 
+      infer::calculate(stat = "mean")
+  }
+  
+  # Compute nested data frame with sampled data, sample proportions, all 
+  # bootstrap replicates, and percentile_ci
+  banana_percentile_cis <- banana_pop %>% 
+    infer::rep_sample_n(size = 50, reps = 100, replace = FALSE) %>% 
+    dp$group_by(replicate) %>% 
+    tidyr::nest() %>% 
+    dp$mutate(sample_weight = purrr::map_dbl(data, ~mean(.x$weight))) %>%
+    # run infer pipeline on each nested tibble to generated bootstrap replicates
+    dp$mutate(bootstraps = purrr::map(data, bootstrap_pipeline)) %>% 
+    dp$group_by(replicate) %>% 
+    # Compute 95% percentile CI's for each nested element
+    dp$mutate(percentile_ci = purrr::map(bootstraps, infer::get_ci, 
+                                         type = "percentile", level = 0.95))
+  
+  # Save output to rds object
+  saveRDS(object = banana_percentile_cis, "rds/banana_percentile_95cis.rds")
+} else {
+  banana_percentile_cis <- readRDS("rds/banana_percentile_95cis.rds")
+}
+```
+
+```{r echo=F}
+# banana_percentile_cis %>% 
+#   filter(replicate < 51) %>% 
+#   purrr::unnest(data) %>%
+#   gg$ggplot(gg$aes(x = weight)) + 
+#   gg$geom_density(alpha=.3) + 
+#   gg$facet_wrap(~ replicate, ncol=5)
+```
+
+Let's visusalize the results in Figure \@ref(fig:reliable-percentile) where: 
+
+
+1. We mark the true value of $\mu = `r round(m_pop, 2)`$ with a vertical line.
+1. We mark each of the one-hundred 95% confidence intervals with horizontal lines. 
+   These are the "nets."
+1. The horizontal line is colored grey 
+   if the confidence interval "captures" the true value of $\mu$ 
+   marked with the vertical line. 
+   The horizontal line is colored black otherwise.
+
+(ref:reliable-perc) 100 percentile-based 95% confidence intervals for $\mu$.
+
+```{r reliable-percentile, fig.cap="(ref:reliable-perc)", echo=F}
+percentile_cis <- banana_percentile_cis %>% 
+  tidyr::unnest(percentile_ci) %>% 
+  dp$mutate(captured = `lower_ci` <= m_pop & m_pop <= `upper_ci`)
+
+gg$ggplot(percentile_cis) +
+  gg$geom_segment(gg$aes(
+    y = replicate, yend = replicate, x = `lower_ci`, xend = `upper_ci`, 
+    alpha = factor(captured, levels = c("TRUE", "FALSE"))
+  )) +
+  # Removed point estimates since it doesn't necessarily act as center for 
+  # percentile-based CI's
+  # geom_point(aes(x = mean_weight, y = replicate, color = captured)) +
+            gg$labs(x = expression("Average banana weight"), 
+                    y = "Repeated bootstrapping", 
+                    alpha = "Captured") + 
+gg$geom_vline(xintercept = m_pop, color = "red") + 
+            gg$coord_cartesian(xlim = c(180, 200)) + 
+            gg$theme_light() + 
+            gg$theme(panel.grid.major.y = gg$element_blank(), 
+                     panel.grid.minor.y = gg$element_blank(),
+                     panel.grid.minor.x = gg$element_blank())
+```
+
+Of the one-hundred 95% confidence intervals, 
+`r sum(percentile_cis[["captured"]])` of them 
+captured the true value `r round(m_pop, 2)`, 
+whereas `r 100 - sum(percentile_cis[["captured"]])` of them did not. 
+To apply the fishing analogy again, 
+100 people cast their net, 
+`r sum(percentile_cis[["captured"]])` of them caught fish, 
+whereas `r 100 - sum(percentile_cis[["captured"]])` of them came back empty. 
+Now is the time to introduce the formal definition of the 95% confidence interval: 
+
+> 
+  For every one hundred 95% confidence intervals, 
+  we *expect* that 95 of them will capture the population quantity 
+  (e.g., $\mu$) and that five of them won't.
+
+
+Note that "expect" is a probabilistic statement referring to a long-run average. 
+In other words, for every 100 confidence intervals, 
+we will observe *about* 95 confidence intervals 
+that capture the population parameter, 
+but not always exactly 95. 
+In Figure \@ref(fig:reliable-percentile) for example, 
+`r sum(percentile_cis[["captured"]])` of the confidence intervals 
+captured $\mu$.
+
+
+To further accentuate the point about *confidence levels*, 
+let's generate a figure similar to Figure \@ref(fig:reliable-percentile), 
+but this time constructing 80% confidence intervals instead. 
+Let's visualize the results in Figure \@ref(fig:reliable-percentile-80) 
+with the scale on the x-axis being the same 
+as in Figure \@ref(fig:reliable-percentile) to make comparison easy.
+
+<!-- Maybe show CIs using se method during lecture. [TODO] -->
+
+(ref:reliable-percentile-80) 100 percentile-based 80% confidence intervals for $\mu$.
+
+```{r reliable-percentile-80, fig.cap='(ref:reliable-percentile-80)', echo=F, fig.height=6.6, message=FALSE, warning=FALSE}
+if(!file.exists(here::here("rds", "banana_percentile_80cis.rds"))){
+  # Set random number generator seed value.
+  set.seed(9)
+  
+  # Function to run infer pipeline
+  bootstrap_pipeline <- function(sample_data){
+    sample_data %>% 
+      infer::specify(formula = weight ~ NULL) %>% 
+      infer::generate(reps = 1000, type = "bootstrap") %>% 
+      infer::calculate(stat = "mean")
+  }
+  
+  # Compute nested data frame with sampled data, sample proportions, all 
+  # bootstrap replicates, and se_ci
+  banana_percentile80_cis <- banana_pop %>% 
+    infer::rep_sample_n(size = 50, reps = 100, replace = FALSE) %>% 
+    dp$group_by(replicate) %>% 
+    tidyr::nest() %>% 
+    dp$mutate(sample_weight = purrr::map_dbl(data, ~mean(.x$weight))) %>%
+    # run infer pipeline on each nested tibble to generated bootstrap replicates
+    dp$mutate(bootstraps = purrr::map(data, bootstrap_pipeline)) %>% 
+    dp$group_by(replicate) %>% 
+    # Compute 80% percentile CI's for each nested element
+    dp$mutate(percentile_ci = purrr:::map(bootstraps, infer::get_ci, type = "percentile", level = 0.80))
+  
+  # Save output to rds object
+  saveRDS(object = banana_percentile80_cis, here::here("rds", "banana_percentile_80cis.rds"))
+} else {
+  banana_percentile80_cis <- readRDS(here::here("rds", "banana_percentile_80cis.rds"))
+}
+
+# Identify if confidence interval captured true p
+percentile80_cis <- banana_percentile80_cis %>% 
+  tidyr::unnest(percentile_ci) %>% 
+  dp$mutate(captured = `lower_ci` <= m_pop & m_pop <= `upper_ci`)
+
+# Plot them!
+gg$ggplot(percentile80_cis) +
+  gg$geom_segment(gg$aes(
+    y = replicate, yend = replicate, x = `lower_ci`, xend = `upper_ci`, 
+    alpha = factor(captured, levels = c("TRUE", "FALSE"))
+  )) + 
+  gg$labs(x = expression("Average banana weight"), 
+       y = "Repeated bootstrapping", 
+       alpha = "Captured") +
+  gg$geom_vline(xintercept = m_pop, color = "red") + 
+  gg$coord_cartesian(xlim = c(180, 200)) + 
+  gg$theme_light() + 
+  gg$theme(panel.grid.major.y = gg$element_blank(), 
+        panel.grid.minor.y = gg$element_blank(),
+        panel.grid.minor.x = gg$element_blank())
+```
+
+Observe how the 80% confidence intervals are narrower 
+than the 95% confidence intervals. 
+Consider the size of the confidence interval as the size of a net. 
+The smaller the size, the lower chance that this net will catch the target. 
+We will explore other determinants of condidence interval width in the upcoming 
+section \@ref(ci-width). 
+
+Furthermore, observe that of the one-hundred 80% confidence intervals, 
+`r percentile80_cis[["captured"]] %>% sum()` of them 
+captured the population mean weight $\mu$ = `r round(m_pop, 2)`, 
+whereas `r 100 - sum(percentile80_cis[["captured"]])` of them did not. 
+Since we lowered the confidence level from 95% to 80%, 
+we now have fewer confidence intervals that caught the fish. 
+
+### Precise and shorthand interpretation {#shorthand}
+
+Let's return our attention to 95% confidence intervals. 
+The precise and mathematically correct interpretation 
+of a 95% confidence interval is a little long-winded:
+
+> 
+  Precise interpretation: 
+  If we repeated our sampling procedure a large number of times, 
+  we expect about 95% of the resulting confidence intervals 
+  to capture the value of the population parameter. 
+
+This is what we observed in Figure \@ref(fig:reliable-percentile). 
+Our confidence interval construction procedure is 95% _reliable_. 
+That is to say, we can expect our confidence intervals 
+to include the true population parameter about 95% of the time.
+
+A common but incorrect interpretation is: 
+"There is a 95% probability that the confidence interval contains $\mu$." 
+Looking at Figure \@ref(fig:reliable-percentile), 
+each of the confidence intervals either does or doesn't contain $\mu$. 
+In other words, the probability is either a 1 or a 0. 
+
+
+Loosely speaking, we can think of these intervals as our "best guess" 
+of a plausible range of values for the mean weight $\mu$ of *all* bananas. 
+For the rest of this class, 
+we'll use the following shorthand summary of the precise interpretation. 
+
+> 
+  Short-hand interpretation: 
+  We are 95% "confident" that a 95% confidence interval captures 
+  the value of the population parameter. 
+
+We use quotation marks around "confident" to emphasize that 
+while 95% relates to the reliability of our confidence interval 
+construction procedure, 
+ultimately a constructed confidence interval 
+is our best guess of an interval that contains the population parameter. 
+In other words, it's our best net.
+
+So returning to our banana weight example and focusing on the percentile method, 
+we are 95% "confident" that the true mean weight of bananas 
+is somewhere between `r percentile_lower` and `r percentile_upper` grams.
+
+### Width of confidence intervals {#ci-width}
+
+#### Impact of confidence level {-}
+
+
+One factor that determines confidence interval widths 
+is the pre-specified confidence level. 
+For example, in Figures \@ref(fig:reliable-percentile) 
+and \@ref(fig:reliable-percentile-80), 
+we compared the widths of 95% and 80% confidence intervals 
+and observed that the 95% confidence intervals were wider. 
+In order to be more confident in our best guess of a range of values, 
+we need to widen the range of values.
+
+To elaborate on this, imagine we want to guess the forecasted high temperature 
+in Ottawa, Canana on May 15th. 
+Given Ottawa's temperate climate with four distinct seasons, 
+we could say somewhat confidently that the high temperature would be between 
+10&deg;C - 20&deg;C. 
+However, if we wanted a temperature range we were *absolutely* confident about, 
+we would need to widen it. 
+
+We need this wider range to allow for the possibility of anomalous weather, 
+like a freak cold spell or an extreme heat wave. 
+So a range of temperatures we could be near certain about 
+would be between 0&deg;C - 35&deg;C. 
+On the other hand, if we could tolerate being a little less confident, 
+we could narrow this range to between 10&deg;C - 20&deg;C. 
+
+```{r echo=F}
+n_sample = 50
+```
+
+
+In order to have a higher confidence level, 
+our confidence intervals must be wider. 
+Ideally, we would want a high confidence level 
+and a narrow confidence intervals. 
+However, we cannot have it both ways. 
+If we want to _be more confident_, 
+we need to allow for wider intervals. 
+Conversely, if we would like a narrow interval, 
+we must tolerate a lower confidence level. 
+
+The moral of the story is: 
+**Holding everything else constant, 
+higher confidence levels tend to produce wider confidence intervals.** 
+When looking at Figure \@ref(fig:reliable-percentile) 
+and Figure \@ref(fig:reliable-percentile-80), 
+it is important to keep in mind that 
+we kept the sample size fixed at $n$ = `r n_sample`. 
+What happens if instead we took samples of different sizes? 
+
+#### Impact of sample size {-}
+
+
+This time, let's fix the confidence level at 95%, 
+but consider three different sample sizes for $n$: 25, 50, and 100. 
+Specifically, we'll take 30 different random samples --- 
+10 random samples of size $n = 25$, 
+10 random samples of size $n = 50$, 
+and 10 random samples of size $n = 100$. 
+We'll then construct 95% percentile-based confidence intervals for each sample. 
+Finally, we'll compare the widths of these intervals. 
+We visualize the resulting 30 confidence intervals 
+in Figure \@ref(fig:reliable-percentile-n-25-50-100). 
+Note also the vertical line marking the true value of $\mu$ = `r round(m_pop, 2)`.
+
+
+```{r echo=F}
+if(!file.exists("rds/banana_perc_cis_n_25_50_100.rds")){
+  set.seed(7)
+  
+  # Function to run infer pipeline:
+  infer_pipeline <- function(entry, ci_level){
+    entry %>% 
+      infer::specify(formula = weight ~ NULL) %>% 
+      infer::generate(reps = 1000, type = "bootstrap") %>% 
+      infer::calculate(stat = "mean") %>% 
+      infer::get_ci(level = 0.95)
+  }
+
+  # Compute 95% percentile CI's based on n=25 for each nested element
+  perc_cis_n_25 <- banana_pop %>% 
+    infer::rep_sample_n(size = 25, reps = 10, replace = FALSE) %>% 
+    dp$group_by(replicate) %>% 
+    tidyr::nest() %>% 
+    dp$mutate(
+      percentile_ci = purrr::map(data, infer_pipeline), 
+      point_estimate = purrr::map_dbl(data, ~mean(.x$weight))
+    ) %>% 
+    tidyr::unnest(percentile_ci) %>% 
+    # dp$rename(lower = `2.5%`, upper = `97.5%`) %>% 
+    dp$select(-data) %>%
+    dp$mutate(sample_size = "n = 25")
+  
+  # Compute 95% percentile CI's based on n=50 for each nested element
+  perc_cis_n_50 <- banana_pop %>% 
+    infer::rep_sample_n(size = 50, reps = 10, replace = FALSE) %>% 
+    dp$group_by(replicate) %>% 
+    tidyr::nest() %>% 
+    dp$mutate(
+      percentile_ci = purrr::map(data, infer_pipeline),
+      point_estimate = purrr::map_dbl(data, ~mean(.x$weight))
+    ) %>% 
+    tidyr::unnest(percentile_ci) %>% 
+    #     dp$rename(lower = `2.5%`, upper = `97.5%`) %>% 
+    dp$select(-data) %>%
+    dp$mutate(sample_size = "n = 50")
+  
+  # Compute 95% percentile CI's based on n=100 for each nested element
+  perc_cis_n_100 <- banana_pop %>% 
+    infer::rep_sample_n(size = 100, reps = 10, replace = FALSE) %>% 
+    dp$group_by(replicate) %>% 
+    tidyr::nest() %>% 
+    dp$mutate(
+      percentile_ci = purrr::map(data, infer_pipeline),
+      point_estimate = purrr::map_dbl(data, ~mean(.x$weight))
+    ) %>% 
+    tidyr::unnest(percentile_ci) %>% 
+    #     dp$rename(lower = `2.5%`, upper = `97.5%`) %>% 
+    dp$select(-data) %>%
+    dp$mutate(sample_size = "n = 100")
+  
+  # Combine into single data frame
+  percentile_cis_by_n <- dp$bind_rows(perc_cis_n_25, perc_cis_n_50, perc_cis_n_100) %>% 
+    dp$mutate(sample_size = factor(sample_size, levels = c("n = 25", "n = 50", "n = 100")))
+  
+  # Save output to rds object
+  readr::write_rds(percentile_cis_by_n, "rds/banana_perc_cis_n_25_50_100.rds")
+} else {
+  percentile_cis_by_n <- readr::read_rds("rds/banana_perc_cis_n_25_50_100.rds")
+}
+```
+
+(ref:rel-perc-n) Ten 95% confidence intervals for $\mu$ with $n = 25, 50,$ and $100$.
+
+```{r reliable-percentile-n-25-50-100, echo=F, fig.cap='(ref:rel-perc-n)', fig.height=2.5}
+sample_of_cis <- percentile_cis_by_n %>% 
+  dp$group_by(sample_size) %>% 
+  dp$mutate(sample_row = 1:10)
+
+cis_plot <- gg$ggplot(sample_of_cis) +
+  # Doesn't make sense to show point_estimate center for percentile confidence 
+  # intervals:
+  # geom_point(aes(x = point_estimate, y = sample_row)) +
+  gg$geom_segment(gg$aes(y = sample_row, yend = sample_row, x = lower_ci, xend = upper_ci)) +
+  gg$labs(x = expression("Mean weight of bananas"), y = "") +
+  gg$scale_y_continuous(breaks = 1:10) +
+  gg$facet_wrap(~sample_size) + 
+  gg$geom_vline(xintercept = m_pop, color = "red")
+
+cis_plot
+```
+
+Observe that as the confidence intervals are constructed from larger and larger sample sizes, they tend to get narrower. Let's compare the average widths in Table \@ref(tab:perc-cis-average-width-2).
+
+```{r perc-cis-average-width-2, warning = FALSE, echo=F}
+percentile_cis_by_n %>% 
+  dp$mutate(width = upper_ci - lower_ci) %>% 
+  dp$group_by(sample_size) %>% 
+  dp$summarize(`Mean width` = mean(width)) %>% 
+  dp$rename(`Sample size` = sample_size) %>% 
+  knitr::kable(
+    digits = 3,
+    caption = "Average width of 95\\% confidence intervals based on $n = 25$, $50$, and $100$", 
+    booktabs = TRUE,
+    longtable = TRUE,
+    escape = FALSE,
+    linesep = ""
+  ) %>% 
+  kableExtra::kable_styling(font_size = 16)
+```
+
+
+The moral of the story is: 
+**Larger sample sizes tend to produce narrower confidence intervals.** 
+The bigger the sample size, 
+the narrower the confidence interval, 
+and thus the smaller the expected uncertainty in the estimated population parameter. 
+This is why you sometimes hear the notion that a bigger sample size is preferable 
+(within reasonable limits). 
+A bigger sample size allows you to get a more precise estimate 
+of the population parameter. 
+
+#### Impact of standard deviation {-}
+
+Recall that, using the theory-based method, 
+the confidence interval can be estimated via Equation \@ref(eq:se-theory). 
+I reproduce the equation below:
+
+  $$
+  \bar{x} \pm (1.96 \cdot SE_\bar{x}) = \bar{x} \pm (1.96 \cdot \frac{sd}{\sqrt{n}})
+  $$
+
+
+Based on this equation, the width of the a confidence interval 
+is tied to three factors: 
+the multiplier (e.g., 1.96), or the confidence level; 
+the sample size (e.g., n = 50);
+and the sample standard deviation. 
+
+We have shown that the width of a confidence interval increases 
+as the confidence level / multiplier increases, 
+and that it *decreases* as the sample size increases 
+(because $\sqrt{n}$ is in the denominator). 
+Likewise, the larger the sample standard deviation, 
+the wider the confidence interval. 
+
+To summarize, confidence interval widths are determined by an interplay 
+of the confidence level, the sample size n, and the standard deviation. 
+
+## Conclusion {#ci-conclusion}
+
+### Constructing confidence intervals with package `infer` {#infer-workflow}
+
+In Section \@ref(resample-thousand), we used the `infer::rep_sample_n()` 
+function to generate 1,000 REsamples with replacemen. 
+In this section, we will build off that idea to construct 
+bootstrap confidence intervals using a new package `infer`. 
+This pacakge provides functions with intuitive verb-like names 
+to perform statistical inferences. 
+It makes efficient use of the `%>%` pipe operator 
+to spell out the sequence of steps necessary to perform statistical inference. 
+Let's now illustrate the sequence of verbs necessary 
+to construct a confidence interval for $\mu$, 
+the population mean weight of bananas.
+
+#### 1. `specify` variables {-}
+
+
+```{r infer-specify, out.width="20%", out.height="20%", echo=FALSE, fig.cap="Diagram of the specify() verb.", purl=FALSE}
+knitr::include_graphics("docs/images/flowcharts/infer/specify.png")
+```
+
+As shown in Figure \@ref(fig:infer-specify), 
+the `specify()` \index{infer!specify()} function is used 
+to choose which variables in a data frame will be the focus 
+of our statistical inference. 
+We do this by `specify`ing the `response` argument. 
+For example, in our `banana_sample` data frame of the `r n_sample` bananas, 
+the variable of interest is `weight`:
+
+```{r}
+banana_sample %>% 
+  infer::specify(response = weight)
+```
+
+<!-- [TODO] maybe include this in a later chapter -->
+<!-- Notice how the data itself doesn't change,  -->
+<!-- but the `Response: weight (numeric)` *meta-data* does\index{meta-data}.  -->
+<!-- This is similar to how the `group_by()` verb from `dplyr` doesn't change the data,  -->
+<!-- but only adds "grouping" meta-data, as we saw in Section \@ref(groupby). -->
+<!--  -->
+<!-- We can also specify which variables will be the focus  -->
+<!-- of our statistical inference using a `formula = y ~ x`.  -->
+<!-- This is the same formula notation you saw in Chapters \@ref(regression)  -->
+<!-- and \@ref(multiple-regression) on regression models:  -->
+<!-- the response variable `y` is separated from the explanatory variable  -->
+<!-- `x` by a `~` ("tilde").  -->
+<!-- The following use of `specify()` with the `formula` argument  -->
+<!-- yields the same result seen previously: -->
+
+```{r eval=FALSE, echo=F}
+banana_sample %>% 
+  specify(formula = weight ~ NULL)
+```
+
+<!-- Since in the case of banana weight we only have a response variable  -->
+<!-- and no explanatory variable of interest,  -->
+<!-- we set the `x` on the right-hand side of the `~` to be `NULL`.  -->
+<!--  -->
+<!-- While in the case of the banana weight  -->
+<!-- either specification works just fine,  -->
+<!-- we'll see examples later on where the `formula` specification is simpler.  -->
+<!-- In particular, this comes up in the upcoming Section \@ref(case-study-two-prop-ci) on comparing two proportions and Section \@ref(infer-regression) on inference for regression. -->
+
+#### 2. `generate` replicates {-}
+
+```{r infer-generate, out.width="60%", out.height="60%", echo=FALSE, fig.cap="Diagram of generate() replicates.", purl=FALSE}
+knitr::include_graphics("docs/images/flowcharts/infer/generate.png")
+```
+
+After we `specify()` the variables of interest, 
+we pipe the results into the `generate()` function to generate replicates. 
+Figure \@ref(fig:infer-generate) shows how this is combined with `specify()` 
+to start the pipeline. 
+In other words, repeat the resampling process a large number of times. 
+Recall in Sections \@ref(resample-thousand)
+we did this `r n_resample` times.
+
+The `generate()` \index{infer!generate()} function's first argument is `reps`, 
+which sets the number of replicates we would like to generate. 
+Since we want to resample the `r n_sample` bananas in `banana_sample` 
+with replacement `r n_resample` times, 
+we set ``reps = `r n_resample` ``. 
+The second argument `type` determines the type of computer simulation 
+we'd like to perform. 
+We set this to `type = "bootstrap"` 
+indicating that we want to perform bootstrap resampling. 
+You'll see different options for `type` in Chapter \@ref(hypothesis-testing). 
+
+```{r eval=FALSE}
+banana_sample %>% 
+  infer::specify(response = weight) %>% 
+  infer::generate(reps = 1000, type = "bootstrap")
+```
+
+```{r echo=FALSE, purl=FALSE}
+if (!file.exists("rds/banana_sample_generate.rds")) {
+  banana_sample_generate <- banana_sample %>%
+    infer::specify(response = weight) %>%
+    infer::generate(reps = 1000, type = "bootstrap")
+  readr::write_rds(banana_sample_generate, "rds/banana_sample_generate.rds")
+} else {
+  banana_sample_generate <- readr::read_rds("rds/banana_sample_generate.rds")
+}
+banana_sample_generate
+```
+
+Observe that the resulting data frame has `r (n_sample * n_resample) %>% 
+formatC(big.mark = ",")` rows. 
+This is because we performed resampling of `r n_sample` bananas 
+with replacement `r n_resample` times and `r (n_sample * n_resample) %>% 
+formatC(big.mark=",")` = `r n_sample` $\cdot$ `r n_resample`. 
+
+The variable `replicate` indicates which resample each row belongs to. 
+So it has the value `1` `r n_sample` times, the value `2` `r n_sample` times, 
+all the way through to the value `` `r n_resample` `` `r n_sample` times. 
+The default value of the `type` argument is `"bootstrap"` in this scenario, 
+so if the last line was written as ``generate(reps = `r n_resample`)``, 
+we'd obtain the same results. 
+
+**Comparing with original workflow**: 
+Note that the steps of the `infer` workflow so far 
+produce the same results as the original workflow 
+using the `rep_sample_n()` function we saw earlier. 
+In other words, the following two code chunks produce similar results:
+
+```{r eval=FALSE, purl=FALSE}
+# infer workflow:                            # Original workflow:
+banana_sample %>%                            banana_sample %>% 
+  infer::specify(response = weight) %>%        infer::rep_sample_n(size = 50, replace = TRUE, 
+  infer::generate(reps = 1000)                                     reps = 1000)              
+```
+
+#### 3. `calculate` summary statistics {-}
+
+```{r infer-calculate, out.width="80%", out.height="80%", echo=FALSE, fig.cap="Diagram of calculate() summary statistics.", purl=FALSE}
+knitr::include_graphics("docs/images/flowcharts/infer/calculate.png")
+```
+
+After we `generate()` many replicates of bootstrap resampling with replacement, 
+we next want to summarize each of the `r n_resample` resamples 
+of size `r n_sample` to a single sample statistic value. 
+As seen in the diagram, the `calculate()` \index{infer!calculate()} function does this.
+
+In our case, we want to calculate the mean `weight` 
+for each bootstrap resample of size `r n_sample`. 
+To do so, we set the `stat` argument to `"mean"`. 
+You can also set the `stat` argument 
+to a variety of other common summary statistics, 
+like `"median"`, `"sum"`, `"sd"` (standard deviation), 
+and `"prop"` (proportion). 
+To see a list of all possible summary statistics you can use, 
+type `?infer::calculate` and read the help file.
+
+Let's save the result in a data frame called `bootstrap_distribution` 
+and explore its contents:
+
+```{r eval=FALSE}
+bootstrap_distribution <- banana_sample %>% 
+  infer::specify(response = weight) %>% 
+  infer::generate(reps = 1000) %>% 
+  infer::calculate(stat = "mean")
+bootstrap_distribution
+```
+
+```{r echo=FALSE, purl=FALSE}
+if (!file.exists("rds/bootstrap_distribution_banana.rds")) {
+  bootstrap_distribution <- banana_sample %>%
+    infer::specify(response = weight) %>%
+    infer::generate(reps = 1000) %>%
+    infer::calculate(stat = "mean")
+  readr::write_rds(bootstrap_distribution, "rds/bootstrap_distribution_banana.rds")
+} else {
+  bootstrap_distribution <- readr::read_rds("rds/bootstrap_distribution_banana.rds")
+}
+bootstrap_distribution
+```
+
+Observe that the resulting data frame has `r n_resample` rows 
+and 2 columns corresponding to the `r n_resample` `replicate` values. 
+It also has the mean weight for each bootstrap resample saved in the variable `stat`. 
+
+**Comparing with original workflow**: You may have recognized at this point that the `calculate()` step in the `infer` workflow produces the same output as the `group_by() %>% summarize()` steps in the original workflow.
+
+```{r eval=FALSE, purl=FALSE}
+# infer workflow:                           # Original workflow:
+banana_sample %>%                           banana_sample %>% 
+  infer::specify(response = weight) %>%        infer::rep_sample_n(size = 50, replace = TRUE, 
+  infer::generate(reps = 1000) %>%                                 reps = 1000) %>%              
+  infer::calculate(stat = "mean")              dplyr::group_by(replicate) %>% 
+                                               dplyr::summarize(stat = mean(weight))
+```
+
+#### 4. `visualize` the results {-}
+
+```{r infer-visualize, out.width="70%", echo=FALSE, fig.cap="Diagram of visualize() results.", purl=FALSE}
+knitr::include_graphics("docs/images/flowcharts/infer/visualize.png")
+```
+
+The `visualize()` \index{infer!visualize()} verb 
+provides a quick way to visualize the bootstrap distribution 
+as a histogram of the numerical `stat` variable's values. 
+The pipeline of the main `infer` verbs used for exploring bootstrap distribution 
+results is shown in Figure \@ref(fig:infer-visualize).  
+
+```{r eval=FALSE}
+infer::visualize(bootstrap_distribution)
+```
+
+```{r boostrap-distribution-infer, echo=FALSE, fig.show="hold", fig.cap="Bootstrap distribution.", purl=FALSE}
+# Will need to make a tweak to the {infer} package so that it doesn't always display "Null" here (added to `develop` branch on 2019-10-26)
+infer::visualize(bootstrap_distribution) #+
+#  ggtitle("Simulation-Based Bootstrap Distribution")
+```
+
+**Comparing with original workflow**: 
+<!-- [TODO] maybe add this to a later chapter  -->
+<!-- In fact, `visualize()` is a *wrapper function* for the `ggplot()` function  -->
+<!-- that uses a `geom_histogram()` layer.  -->
+<!-- Recall that we illustrated the concept of a wrapper function  -->
+<!-- in Figure \@ref(fig:moderndive-figure-wrapper) in Subsection \@ref(model1table). -->
+
+```{r eval=FALSE, purl=FALSE}
+# infer workflow:                           # Original workflow:
+infer::visualize(bootstrap_distribution)    ggplot2::ggplot(bootstrap_distribution, 
+                                                            ggplot2::aes(x = stat)) +
+                                              ggplot2::geom_histogram()
+```
+
+The `visualize()` function can take many other arguments 
+which we'll see momentarily to customize the plot further. 
+It also works with helper functions to do the shading of the histogram values 
+corresponding to the confidence interval values.
+
+Let's recap the steps of the `infer` workflow 
+for constructing a bootstrap distribution 
+and then visualizing it in Figure \@ref(fig:infer-workflow-ci).
+
+```{r infer-workflow-ci, out.width="100%", echo=FALSE, fig.cap="infer package workflow for confidence intervals.", purl=FALSE}
+knitr::include_graphics("docs/images/flowcharts/infer/ci_diagram.png")
+```
+
+Recall how we introduced two different methods 
+for constructing 95% confidence intervals 
+for an unknown population parameter in Section \@ref(bootstrap-ci): 
+the *percentile method* and the *standard error method*. 
+Let's now check out the `infer` package code that explicitly constructs these. 
+There are also some additional neat functions 
+to visualize the resulting confidence intervals built-in to the `infer` package!
+
+
+### Percentile method with `infer` {#percentile-method-infer}
+
+Recall the percentile method for constructing 95% confidence intervals 
+we introduced in Subsection \@ref(percentile-method). 
+This method sets the lower endpoint of the confidence interval 
+at the 2.5th percentile of the bootstrap distribution 
+and similarly sets the upper endpoint at the 97.5th percentile. 
+The resulting interval captures the middle 95% of the values 
+of the sample mean in the bootstrap distribution.
+
+We can compute the 95% confidence interval by piping `bootstrap_distribution` 
+into the `get_confidence_interval()` \index{infer!get\_confidence\_interval()} 
+function from the `infer` package, 
+with the confidence `level` set to `0.95` 
+and the confidence interval `type` to be `"percentile"`. 
+Let's save the results in `percentile_ci`.
+
+```{r}
+percentile_ci <- bootstrap_distribution %>% 
+  infer::get_confidence_interval(level = 0.95, type = "percentile")
+percentile_ci
+```
+
+Alternatively, we can visualize the interval 
+[`r percentile_ci[["lower_ci"]] %>% round(2)`, `r percentile_ci[["upper_ci"]] %>% round(2)`]
+by piping the `bootstrap_distribution` data frame 
+into the `visualize()` function and adding a `shade_confidence_interval()` 
+\index{infer!shade\_confidence\_interval()} layer. 
+We set the `endpoints` argument to be `percentile_ci`.
+
+```{r eval=FALSE}
+infer::visualize(bootstrap_distribution) + 
+  infer::shade_confidence_interval(endpoints = percentile_ci)
+```
+
+(ref:perc-ci-viz) Percentile method 95% confidence interval shaded corresponding to potential values.
+
+```{r percentile-ci-viz, echo=FALSE, fig.cap="(ref:perc-ci-viz)", purl=FALSE, fig.height=3}
+# Will need to make a tweak to the {infer} package so that it doesn't always display "Null" here (added to `develop` branch on 2019-10-26)
+infer::visualize(bootstrap_distribution) +
+  infer::shade_confidence_interval(endpoints = percentile_ci) #+
+  #  ggtitle("Simulation-Based Bootstrap Distribution")
+```
+
+Observe in Figure \@ref(fig:percentile-ci-viz) that 
+95% of the sample means stored in the `stat` variable 
+in `bootstrap_distribution` fall between the two endpoints 
+marked with the darker lines, 
+with 2.5% of the sample means to the left of the shaded area 
+and 2.5% of the sample means to the right. 
+You also have the option to change the colors of the shading 
+using the `color` and `fill` arguments. 
+
+You can also use the shorter named function `shade_ci()` 
+and the results will be the same. 
+This is for folks who don't want to type out all of `confidence_interval` 
+and prefer to type out `ci` instead. Try out the following code!
+
+```{r eval=FALSE}
+infer::visualize(bootstrap_distribution) + 
+  infer::shade_ci(endpoints = percentile_ci, color = "hotpink", fill = "khaki")
+```
+
+
+### Standard error method with `infer` {#infer-se}
+
+Recall the standard error method for constructing 95% confidence intervals 
+we introduced in Subsection \@ref(se-method). 
+For any distribution that is normally shaped, 
+roughly 95% of the values lie within two standard deviations of the mean. 
+In the case of the bootstrap distribution, 
+the standard deviation has a special name: the _standard error_. 
+
+So in our case, 95% of values of the bootstrap distribution 
+will lie within $\pm `r qnorm(0.975) %>% round(2)`$ standard errors of $\bar{x}$. 
+Thus, a 95% confidence interval is 
+
+  $$
+  \bar{x} \pm `r qnorm(0.975) %>% round(2)` \cdot SE
+  = [\bar{x} - `r qnorm(0.975) %>% round(2)` \cdot SE, \, \bar{x} +
+  `r qnorm(0.975) %>% round(2)` \cdot SE]
+  $$
+
+Computation of the 95% confidence interval can once again be done 
+by piping the `bootstrap_distribution` data frame 
+we created into the `get_confidence_interval()` function. 
+However, this time we set the first `type` argument to be `"se"`. 
+Second, we must specify the `point_estimate` argument 
+in order to set the center of the confidence interval. 
+We set this to be the sample mean of the original sample of `r n_sample` bananas 
+of `r m_onesample` we have calculated in Section \@ref(theory-ci). 
+
+```{r}
+standard_error_ci <- bootstrap_distribution %>% 
+  infer::get_confidence_interval(type = "se", point_estimate = m_onesample, level =0.95)
+standard_error_ci
+```
+
+
+If we would like to visualize the interval 
+(`r standard_error_ci[["lower_ci"]] %>% round(2)`, `r standard_error_ci[["upper_ci"]] %>% round(2)`), 
+we can once again pipe the `bootstrap_distribution` data frame 
+into the `visualize()` function and add a `shade_confidence_interval()` layer 
+to our plot. 
+We set the `endpoints` argument to be `standard_error_ci`. 
+The resulting standard-error method based on a 95% confidence interval 
+for $\mu$ can be seen in Figure \@ref(fig:se-ci-viz).
+
+(ref:se-viz) Standard-error-method 95% confidence interval.
+
+```{r eval=FALSE}
+infer::visualize(bootstrap_distribution) + 
+  infer::shade_confidence_interval(endpoints = standard_error_ci)
+```
+
+```{r se-ci-viz, echo=FALSE, fig.show="hold", fig.cap="(ref:se-viz)", purl=FALSE, fig.height=3.4}
+# Will need to make a tweak to the {infer} package so that it doesn't always display "Null" here
+# (added to `develop` branch on 2019-10-26)
+
+infer::visualize(bootstrap_distribution) +
+  infer::shade_confidence_interval(endpoints = standard_error_ci) #+
+#    ggtitle("Simulation-Based Bootstrap Distribution")
+```
+
+As noted in Section \@ref(bootstrap-ci), 
+both methods produce similar confidence intervals:
+
+* Percentile method: 
+  [`r percentile_ci[["lower_ci"]] %>% round(2)`, 
+  `r percentile_ci[["upper_ci"]] %>% round(2)`]
+* Standard error method: 
+  [`r standard_error_ci[["lower_ci"]] %>% round(2)`, 
+  `r standard_error_ci[["upper_ci"]] %>% round(2)`]
+
+```{block, type="learncheck", purl=FALSE}
+\vspace{-0.15in}
+**_Learning check_**
+\vspace{-0.1in}
+```
+
+**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
+Construct a 95% confidence interval for the *median* weight of all bananas. 
+Use the percentile method and, if appropriate, then use the standard-error method.
+
+```{block, type="learncheck", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+### Comparing bootstrap and sampling distributions {#bootstrap-vs-sampling}
+
+In this chapter, 
+we have learned three methods of constructing confidence intervals. 
+All of them rely on approximating the sampling distribution, 
+either using the Central Limit Theorem, 
+or *bootstrap resampling with replacement* from a single sample. 
+In the latter case, we used the *bootstrap distribution* of $\bar{x}$ 
+to approximate the sampling distribution of $\bar{x}$ (Section \@ref(resample-thousand)). 
+
+Let's compare 
+
+1. the sampling distribution of $\bar{x}$ based on 1,000 samples 
+   Cy drew from the population `banana_pop` in Chapter \@ref(clt), and 
+2. the bootstrap distribution of $\bar{x}$ based on 1,000 REsamples with replacement 
+   from a single sample `banana_sample`in Section \@ref(resample-thousand). 
+
+#### Sampling distribution {-}
+
+Here is the code to construct the sampling distribution of $\bar{x}$ you saw 
+at the beginning of the chapter, 
+reproduced in Figure \@ref(fig:sampling-vs-bootstrap), 
+with some changes to incorporate the statistical terminology relating to sampling 
+from Section \@ref(sampling-terminology). 
+
+```{r eval=F}
+# Take one-thousand samples of size 50 from the population
+banana_samples <- banana_pop %>% 
+  infer::rep_sample_n(size = 50, reps = 1000, replace = FALSE)
+
+# Compute the sampling distribution of 1000 values of x-bar
+sampling_distribution <- banana_samples %>% 
+  dp$group_by(replicate) %>% 
+  dp$summarize(mean_weight = mean(weight))
+
+# Visualize sampling distribution of x-bar
+gg$ggplot(sampling_distribution, gg$aes(x = mean_weight)) + 
+  gg$geom_histogram(boundary = 190, binwidth=1, colour="white") + 
+  gg$labs(x = "Sample mean weight of 50 bananas (gram)", y = "", 
+          title = "Sampling distribution")
+```
+
+```{r sampling-vs-bootstrap, fig.show="hold", echo=F, fig.cap="Previously seen sampling distribution of sample mean weight for $n = 1000$."}
+gg$ggplot(df_weight_avrg, gg$aes(x = mean_weight)) + 
+  gg$geom_histogram(boundary = 190, binwidth=1, colour="white") + 
+  gg$labs(x = "Sample mean weight of 50 bananas (gram)", y = "", 
+          title = "Sampling distribution")
+```
+
+An important thing to keep in mind is 
+the default value for `replace` is `FALSE` 
+when using `rep_sample_n()`. 
+This is because when sampling `r n_sample` bananas, 
+we are extracting `r n_sample` bananas (i.e., numbers that represent banana weights) 
+from `banana_pop` all at once. 
+This is in contrast to bootstrap resampling *with* replacement, 
+where we take one banana weight and put it back 
+before taking the next banana weight. 
+
+Let's quantify the variability in this sampling distribution 
+by calculating the standard deviation of the `mean_weight` variable 
+representing `r n_resample` values of the sample mean $\bar{x}$. 
+Remember that the standard deviation of the sampling distribution 
+is the *standard error*, frequently denoted as $SE_{\bar{x}}$.
+
+```{r eval=F}
+sampling_distribution %>% dp$summarize(se = sd(mean_weight))
+```
+
+```{r echo=F}
+df_weight_avrg %>% dp$summarize(se = sd(mean_weight))
+se_samp <- df_weight_avrg %>%
+  dp$summarize(se = sd(mean_weight)) %>%
+  dp$pull(se)
+```
+
+
+#### Bootstrap distribution {-}
+
+Here is the code you previously saw in Section \@ref(infer-workflow) 
+to construct the bootstrap distribution of $\bar{x}$. 
+
+```{r eval=FALSE}
+bootstrap_distribution <- banana_sample %>% 
+  infer::specify(response = weight) %>% 
+  infer::generate(reps = 1000, type = "bootstrap") %>% 
+  infer::calculate(stat = "mean") %>% 
+  infer::visualize(boundary=190, binwidth=1, colour="white")
+```
+
+```{r echo=F}
+if(!file.exists(here::here("rds", "bootstrap_distribution_banana.rds"))){
+  set.seed(76)
+  bootstrap_distribution <- banana_sample %>% 
+    infer::specify(response = weight) %>% 
+    infer::generate(reps = 1000, type = "bootstrap") %>% 
+    infer::calculate(stat = "mean")
+  saveRDS(bootstrap_distribution, 
+            here::here("rds", "bootstrap_distribution_banana.rds"))
+} else {
+  bootstrap_distribution <- readRDS(here::here("rds", "bootstrap_distribution_banana.rds"))
+}
+```
+
+```{r sampling-vs-bootstrap-2, echo=FALSE, fig.show="hold", fig.cap="Bootstrap distribution of sample mean weight for $n = 1000$."}
+# Visualize bootstrap distribution of x-bar
+bootstrap_distribution %>%
+  infer::visualize(boundary=190, binwidth=1, colour="white") +
+  ggplot2::labs(
+    x = "Sample mean weight of 50 bananas (gram)",
+    title = "Bootstrap distribution"
+  )
+```
+
+```{r}
+bootstrap_distribution %>% dp$summarize(se = sd(stat))
+```
+
+```{r echo=FALSE, purl=FALSE}
+se_boot <- bootstrap_distribution %>%
+  dp$summarize(se = sd(stat)) %>%
+  dp$pull(se)
+```
+
+#### Comparison {-}
+
+Now that we have computed both the sampling distribution 
+and the bootstrap distributions, 
+let's compare them side-by-side in Figure \@ref(fig:side-by-side). 
+We'll make both histograms have matching scales 
+on the x- and y-axes to make them more comparable. Furthermore, we'll add:
+
+1. To the sampling distribution on the top: 
+   a solid line denoting the true population mean weight of bananas 
+   $\mu = `r round(m_pop, 2)`$.
+1. To the bootstrap distribution on the bottom: 
+   a dashed line at the sample mean $\bar{x}$ = `r m_onesample` gram 
+   of the original sample `banana_sample`
+
+
+(ref:side-by-side) Comparing the sampling and bootstrap distributions of $\bar{x}$
+
+```{r side-by-side, echo=F, fig.height=4.5, fig.cap="(ref:side-by-side)"}
+p_samp <- gg$ggplot(df_weight_avrg, gg$aes(x = mean_weight)) +
+  gg$geom_density(fill = "salmon", alpha = 0.3) +
+  gg$labs(x = "Sample mean weight of 50 bananas (gram)", 
+          title = "Sampling distribution: idealized, impossible in reality") +
+  gg$geom_vline(xintercept = m_pop, size = 1) + 
+  gg$scale_x_continuous(limits = c(180, 200), 
+                     breaks = seq(from = 180, to = 200, by = 5))
+
+p_boot <- gg$ggplot(bootstrap_distribution, gg$aes(x = stat)) +
+  gg$geom_density(fill = "blue", alpha = 0.3) + 
+  gg$labs(x = "Sample mean weight of 50 bananas (gram)", 
+       title = 
+         "Bootstrap distribution: similar shape and spread"
+       ) +
+  gg$geom_vline(xintercept = m_onesample, size = 1, linetype = "dashed") + 
+  gg$scale_x_continuous(limits = c(180, 200), 
+                     breaks = seq(from = 180, to = 200, by = 5))
+
+p_samp / p_boot
+```
+
+There is a lot going on in Figure \@ref(fig:side-by-side), 
+so let's break down all the comparisons slowly. 
+First, observe how the sampling distribution on top 
+is centred at $\mu$ = `r round(m_pop, 2)`. 
+This is because the sampling is done at random and in an unbiased fashion. 
+So the estimates $\bar{x}$ are centred at the true value of $\mu$. 
+
+However, this is not the case with the following bootstrap distribution. 
+The bootstrap distribution is centered at `r m_onesample` grams, 
+which is the sample mean weight of `banana_sample`. 
+This is because we are resampling from the same sample over and over again. 
+Since the bootstrap distribution is centered at the original sample's mean, 
+it doesn't necessarily provide a better estimate of $\mu$ = `r round(m_pop, 2)`. 
+This leads us to our first lesson about bootstrapping:
+
+> 
+  The bootstrap distribution will likely not have the same center 
+  as the sampling distribution. 
+  In other words, bootstrapping cannot improve the quality of a point estimate.
+
+Second, let's now compare the spread of the two distributions: 
+they are somewhat similar. 
+In the previous code, 
+we computed the standard deviations of both distributions as well. 
+Recall that such standard deviations have a special name: *standard errors*. 
+Let's compare them in Table \@ref(tab:comparing-se).
+
+```{r comparing-se, echo=FALSE, message=FALSE, purl=FALSE}
+tibble::tibble(
+  `Distribution type` = c("Sampling distribution", "Bootstrap distribution"),
+  `Standard error` = c(se_samp, se_boot)
+) %>%
+  knitr::kable(
+    caption = "Comparing standard errors",
+    digits = 3,
+    booktabs = TRUE,
+    escape = FALSE,
+    linesep = ""
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 16 
+  )
+```
+
+Notice that the bootstrap distribution's standard error 
+is a rather good *approximation* to the sampling distribution's standard error. 
+This leads us to our second lesson about bootstrapping:
+
+> 
+  Even if the bootstrap distribution might not have the same center 
+  as the sampling distribution, 
+  it will likely have very similar shape and spread. 
+  In other words, bootstrapping will give you a good estimate 
+  of the *standard error*. 
+
+Thus, using the fact that the bootstrap distribution 
+and sampling distributions have similar spreads, 
+we can build confidence intervals using bootstrapping 
+as we've done all throughout this chapter!
+
+
+If you want more examples of the `infer` workflow to construct confidence intervals, 
+we suggest you check out the `infer` package homepage, 
+in particular, a series of example analyses available at <https://infer.netlify.app/articles/>.
+
+
+### What's to come?
+
+Now that we've equipped ourselves with confidence intervals, 
+in Chapter \@ref(hypothesis-testing) we'll cover the other common tool 
+for statistical inference: hypothesis testing. Just like confidence intervals, 
+hypothesis tests are used to infer about a population using a sample. 
+However, we'll see that the framework for making such inferences is slightly different. 

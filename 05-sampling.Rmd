@@ -17,7 +17,7 @@ rq <- 0
 options(scipen = 99, digits = 3)
 
 # Set random number generator for replicable pseudorandomness
-set.seed(6)
+set.seed(76)
 ```
 
 In this chapter, 
@@ -79,7 +79,8 @@ xf <- loadNamespace('xfun')
 
 cran_primary <- c(
                   "dplyr", 
-                  "ggplot2", 
+                  "here", 
+                  "ggplot2"
 )
 
 if (length(cran_primary) != 0) xf$pkg_load2(cran_primary)
@@ -92,7 +93,8 @@ import::from(patchwork, .all=TRUE)
 ```
 
 ```{r import-pkg, echo=F, message=FALSE, warning=FALSE}
-cran_secondary <- c(
+cran_internal <- c(
+                    "here", 
                     "dplyr", 
                     "ggplot2", 
                     "kableExtra", 
@@ -155,23 +157,39 @@ measuring the weight of each, and plotting their weights.]{color="rosybrown"}
 
 ```{r banana-pop, echo = FALSE}
 # generate a population of 10000 bananas, right-skewed
+n_pop <- 100000
+if (!file.exists(here::here("rds", "banana_pop.rds"))) {
+  set.seed(6)
+  banana_pop <- tibble::tibble(
+                               weight = floor(
+                                              sn::rsn(
+                                                      n=n_pop, 
+                                                      xi = 175, 
+                                                      omega = 20, 
+                                                      alpha = 5
+                                                      )
+                               )
+  )
+  saveRDS(object = banana_pop, here::here("rds", "banana_pop.rds"))
+} else {
+  banana_pop <- readRDS(here::here("rds", "banana_pop.rds"))
+}
 
-banana_pop <- tibble::tibble(
-                             weight = floor(
-                                            sn::rsn(
-                                                    n=10000, 
-                                                    xi = 175, 
-                                                    omega = 20, 
-                                                    alpha = 5
-                                                    )
-                             )
-)
-
+if (!file.exists(here::here("data", "banana_pop.txt"))) {
+  dput(banana_pop, here::here("data", "banana_pop.txt"))
+}
 
 # take a sample
-banana_sample <- banana_pop %>%
-  dplyr::slice_sample(n = 50)
-dput(banana_sample, "data/banana_sample_ch5.txt")
+if (!file.exists(here::here("rds", "banana_sample.rds"))) {
+  banana_sample <- banana_pop %>%
+    dplyr::slice_sample(n = 50)
+  saveRDS(banana_sample, here::here("data", "banana_sample.rds"))
+} else {
+  banana_sample <- readRDS(here::here("data", "banana_sample.rds"))
+}
+if (!file.exists(here::here("data", "banana_sample.txt"))) {
+  dput(banana_sample, here::here("data", "banana_sample.txt"))
+}
 ```
 
 ```{r dist-one-sample, echo=F, fig.cap="Distribution of 50 bananas' weight"}
@@ -202,8 +220,9 @@ Cy also calculated the average weight of the 50-banana sample:]{color="rosybrown
 
 ```{r echo = FALSE}
 m_onesample <- banana_sample %>% 
-  dp$summarize(avrg_weight = mean(weight)) %>% 
-  dp$pull(avrg_weight)
+  dp$summarize(mean_weight = mean(weight)) %>% 
+  dp$pull(mean_weight)
+# round or not?
 ```
 
 
@@ -233,8 +252,14 @@ she feels obligated to give her best effort to this important matter. ]{color="r
 Cy completed weighing and plotting 1,000 banana samples. ]{color="rosybrown"}
 
 ```{r echo = FALSE}
-banana_samples <- banana_pop %>% 
-  infer::rep_sample_n(size = 50, reps = 1000, replace = TRUE)
+if (!file.exists(here::here("rds", "banana_samples.rds"))) {
+  set.seed(6)
+  banana_samples <- banana_pop %>% 
+    infer::rep_sample_n(size = 50, reps = 1000, replace = FALSE)
+  saveRDS(banana_samples, here::here("rds", "banana_samples.rds"))
+} else {
+  banana_samples <- readRDS(here::here("rds", "banana_samples.rds"))
+}
 ```
 
 ```{r dist-thousand, message = FALSE, echo=F, fig.cap="Distribution of 50 bananas' weight in the first 20 samples out of 1,000"}
@@ -251,13 +276,17 @@ banana_samples %>%
 ```{r average-thousand, echo=F}
 df_weight_avrg <- banana_samples %>% 
   dp$group_by(replicate) %>% 
-  dp$summarize(weight_avrg = mean(weight))
-dput(df_weight_avrg, "data/banana_sampling_ch5.txt")
+  dp$summarize(mean_weight = mean(weight))
+
+if (!file.exists(here::here("data", "banana_sampling_ch5.txt"))) {
+  dput(df_weight_avrg, here::here("data", "banana_sampling_ch5.txt"))
+}
+
 df_weight_avrg %>% 
-  dp$rename(`Average Weight` = weight_avrg) %>% 
+  dp$rename(`Average Weight` = mean_weight) %>% 
   dp$slice_head(n = 20) %>% 
   knitr::kable(
-               caption = "Average weight of 50 bananas in the first 5 samples 
+               caption = "Average weight of 50 bananas in the first 20 samples 
                out of 1,000"
                ) %>% 
   kableExtra::scroll_box(height = "300px")
@@ -302,7 +331,7 @@ she should visualize them using a histogram.]{color="rosybrown"}
 
 ```{r dist-thousand-sample, echo=F, fig.cap="Distribution of 1,000 sample means"}
 hist_thousandsample <- gg$ggplot(df_weight_avrg, 
-                                 gg$aes(x = weight_avrg)) + 
+                                 gg$aes(x = mean_weight)) + 
 gg$geom_histogram(gg$aes(y = ..density..), boundary = 190, binwidth=1, 
                   colour="black", fill="white") + 
   gg$geom_density(alpha=.2, fill="#FF6666") + 
@@ -317,14 +346,14 @@ a histogram based on *50 individual bananas*
 and the new histogram based on *1,000 samples means*.]{color="rosybrown"}
 
 <!-- Someone may fixate on the size 50 vs. 1000.  -->
-<!-- Plot a histogram with 1000 individual bananas for a demostration.  -->
+<!-- TODO: Plot a histogram with 1000 individual bananas for a demostration.  -->
 
 ```{r one-versus-thousand, echo=F, fig.cap="A sample distribution and a sampling distribution", echo = FALSE}
 # facet_compare <- dp$bind_rows(
 #   banana_sample %>% 
 #     dp$mutate(sample_size = "one"), 
 #   df_weight_avrg %>% 
-#     dp$rename(weight = weight_avrg) %>% 
+#     dp$rename(weight = mean_weight) %>% 
 #     dp$mutate(sample_size = "one-thousand")
 # ) %>% 
 #   dp$mutate(sample_size = factor(sample_size, 
@@ -340,10 +369,8 @@ and the new histogram based on *1,000 samples means*.]{color="rosybrown"}
 
 hist_onesample + hist_thousandsample + 
   patchwork::plot_annotation(tag_levels = 'A', 
-title = 'Banana weights in ONE sample (A) \n and average weights from ONE-THOUSAND samples (B)'
+title = 'Fifty banana weights in ONE sample (A) \n and ONE-THOUSAND mean weights from ONE-THOUSAND samples (B)'
   )
-# maybe just use patchwork and scale_x_continuous, 
-# combine hist_onesample and hist_thousandsample
 ```
 
 Once panel A and B in Figure \@ref(fig:one-versus-thousand) are juxtaposed, 
@@ -435,11 +462,11 @@ one particular type of question: estimating the *population mean*.
 ```{r sampling-stats, echo = FALSE}
 # one-thousand samples
 sd_thousandsample <- df_weight_avrg %>% 
-  dp$summarize(sd = sd(weight_avrg)) %>% 
+  dp$summarize(sd = sd(mean_weight)) %>% 
   dp$pull(sd)
 
 m_thousandsample <- df_weight_avrg %>% 
-  dp$summarize(mean = mean(weight_avrg)) %>% 
+  dp$summarize(mean = mean(mean_weight)) %>% 
   dp$pull(mean)
 ```
 
@@ -447,7 +474,7 @@ m_thousandsample <- df_weight_avrg %>%
 [After thoroughly examining 1,000 samples and their average weights, 
 Cy estimates that a typical banana weighs `r m_thousandsample %>% round(0)` grams, 
 and that this estimate has a margin of error 
-of `r round(sd_thousandsample*2, 2)` grams.]{color="rosybrown"}
+of `r round(sd_thousandsample*1.96, 2)` grams.]{color="rosybrown"}
 
 In reality, most of us can only afford the time and resources 
 to study one sample, instead of one-thousand samples. 
@@ -504,9 +531,9 @@ For instance, Cy could say that
 [*by estimate, a typical banana weighs `r round(m_thousandsample, 0)` grams, 
 and I am 95% confident that the average weight of bananas 
 is within `r round(m_thousandsample, 0)` 
-$\pm$ `r round(sd_thousandsample*2, 2)` grams, 
-or within [`r round(m_thousandsample - sd_thousandsample*2, 2)`, 
-`r round(m_thousandsample + sd_thousandsample*2, 2)`] grams*.]{color="rosybrown"}
+$\pm$ `r round(sd_thousandsample*1.96, 2)` grams, 
+or within [`r round(m_thousandsample - sd_thousandsample*1.96, 2)`, 
+`r round(m_thousandsample + sd_thousandsample*1.96, 2)`] grams*.]{color="rosybrown"}
 Naturally, the wider the range, the higher uncertainty. 
 To say that tomorrow's high temperature is within the range of -10 to +10&deg;C 
 sounds much more uncertain than to say it is between 0 to 5&deg;C.  
@@ -533,7 +560,7 @@ Thus far, we have unpacked the entire Central Limit Theorem.
 Let's wrap up by revisiting the theorem 
 and elaborating on key concepts involved in the theorem. 
 
-## Revisit the Central Limit Theorem
+## Revisit the Central Limit Theorem {#revisit-clt}
 
 > 
   If you take a large number of samples from a population, 
@@ -601,7 +628,7 @@ hist_sd_thousandsample <- hist_thousandsample +
 
 hist_sd_onesample + hist_sd_thousandsample + 
   patchwork::plot_annotation(tag_levels = 'A', 
-title = 'Banana weights in ONE sample (A) \n and average weights from ONE-THOUSAND samples (B)'
+title = 'Fifty banana weights in ONE sample (A) \n and ONE-THOUSAND mean weights from ONE-THOUSAND samples (B)'
   )
 ```
 
@@ -680,7 +707,7 @@ and compare the results.
 
 ```{r eval=F}
 # retrieve a single sample of bananas
-banana_sample <- dget("https://raw.githubusercontent.com/chunyunma/baby-modern-dive/master/data/banana_sample_ch5.txt")
+banana_sample <- dget("https://raw.githubusercontent.com/chunyunma/baby-modern-dive/master/data/banana_sample.txt")
 # take a look at the sample
 head(banana_sample)
 ```
@@ -707,7 +734,7 @@ head(banana_sample_means)
 ```{r eval=F}
 # compute standard deviation for the sampling distribution, 
 # aka, the standard error
-se_empirical <- dplyr::summarize(banana_sample_means, sd(weight_avrg)) %>% 
+se_empirical <- dplyr::summarize(banana_sample_means, sd(mean_weight)) %>% 
   round(2)
 se_empirical
 ```
@@ -720,7 +747,7 @@ How does `se_theory` compare to `se_empirical`?
 ```
 
 
-### More terminology and notations
+### More terminology and notations {#sampling-terminology}
 
 Here is a list of concepts instrumental to understanding the Central Limit Theorem.  
 It is okay if you are not familiar with them yet. 

@@ -49,6 +49,7 @@ cran_packages = c(
                   "magrittr", 
                   "mvtnorm", 
                   "patchwork", 
+                  "purrr", 
                   "readr", 
                   "readxl", 
                   "remotes", 

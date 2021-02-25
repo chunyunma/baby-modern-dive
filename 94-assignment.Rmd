@@ -37,7 +37,7 @@ set.seed(76)
 
 * Reading
 
-  Housekeeping and Chapter \@ref(getting-started). 
+  [Housekeeping](#housekeeping) and Chapter \@ref(getting-started). 
 
 There are two parts to this week's assignment. 
 

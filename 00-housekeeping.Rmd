@@ -1,4 +1,4 @@
-# Housekeeping {-}
+# Housekeeping {-#housekeeping}
 
 ## What's with the "baby" in the name? {-}
 
@@ -81,10 +81,11 @@ I needed to run some analyses which I only knew then how to do in SAS.
 However, SAS being SAS, it did not support Mac.
 After wasting some time on finding a hacked solution to make SAS run 
 on my Mac, 
-I decided that it was time for me to adopt R, 
-It would allow me to run the indended analysis properly, it is cross-platform, 
-it is free, 
-and what better opportunity to learn a new toy 
+I decided that it was time for me to adopt R. 
+It would allow me to run the indended analysis properly. 
+It is cross-platform. 
+It is free. 
+And what better opportunity to learn a new toy 
 than a PhD dissertation?
 
 Fast forward to 2017, I completed my dissertation, including all the analyses 
@@ -304,12 +305,10 @@ it is essential that you finish the reading in advance.
 And after each lecture, it is recommended that 
 you re-read the material to deepen your understanding. 
 
-<!-- a datacamp module before lecture 2 on ggplot [ ] -->
-
 
 ### Syllabus & assignments {-}
 
-Discuss in class
+Please see Appendix \@ref(assignments) for details. 
 
 ### Datacamp {-}
 

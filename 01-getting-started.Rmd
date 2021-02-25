@@ -438,7 +438,7 @@ you will understand them much better.
 I ask everyone to tolerate some ambiguity at this point. 
 Buckle up. The ride is about to get a bit turbulent. 
 
-* Setting up a project folder as your first sandbox. 
+#### Setting up a project folder as your first sandbox {-}
 
 During your interaction with RStudio, 
 you will generate different types of files. 
@@ -550,6 +550,7 @@ Here are a few links for you to explore:
 + <http://swcarpentry.github.io/r-novice-gapminder/02-project-intro/>
 + <https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects>
 
+#### Setting up `revn` {-}
 
 We have completed the first step in our workflow setup. 
 Next on the agenda is [`renv`](https://rstudio.github.io/renv/index.html). 
@@ -787,7 +788,7 @@ To conclude, I will avoid using `library()` throughout this course,
 and explicitly reference each function in association with its package. 
 There are two exceptions to this rule. 
 
-* There are some `R` functions that come with every clearn install of `R`, 
+* There are some `R` functions that come with every clean install of `R`, 
   such as `install.packages()`, `c()`. 
   These functions are often referred to as "base R functions". 
   When using them, no package reference is required. 

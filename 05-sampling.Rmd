@@ -716,8 +716,8 @@ head(banana_sample)
 # sample size is 50
 n <- 50
 # compute standard deviation for the single sample
-banana_sample %>% 
-  dplyr::summarize(sd_onesample = sd(weight))
+sd_onesample <- banana_sample %>% 
+  dplyr::summarize(sd = sd(weight))
 # estimate standard error using Equation (5.3)
 se_theory <- sd_onesample / sqrt(n) %>% round(2)
 se_theory

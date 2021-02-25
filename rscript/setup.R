@@ -57,6 +57,7 @@ knitr::opts_chunk$set(
 	results = "hold", 
   tidy = FALSE,
 	purl = TRUE, 
+	attr.source='.numberLines',
   out.width = "100%",
   fig.align = "center",
 	fig.width = 8, 

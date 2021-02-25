@@ -99,7 +99,7 @@ head(df_sales, 3) %>%
 Confirm where the value $3145.13 in the problem statement came from. 
 
 ```{r}
-qean(df_sales$order_amount)
+mean(df_sales$order_amount)
 ```
 
 <!-- Complete the report with your response.

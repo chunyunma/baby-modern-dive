@@ -24,7 +24,9 @@ In this chapter,
 we kick off the second portion of this book on statistical inference 
 by presenting the *Central Limit Theorem*. 
 Understanding this theorem is essential to 
-correctly interpreting a *p* value or a *confidence interval*. 
+correctly interpreting a *p* value or a *confidence interval*, 
+which we will cover in Chapters \@ref(confidence-intervals)
+and \@ref(hypothesis-testing). 
 Can you, with absolute confidence, explain the difference between 
 a *standard deviation* and a *standard error*? 
 If not, then you will want to ~~read this chapter~~ read this chapter twice. 

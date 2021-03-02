@@ -308,8 +308,8 @@ Of the 1,000 means, roughly 95% of them lie between
 This range is commonly knowns as the **95% confidence interval**, 
 or CI for short. 
 As statisticians often put it, 
-a banana weighs `r round(mean_of_means, 0)` on average, 
-($CI$ = [`r round(mean_of_means + 1.96*se, 2)`, 
+a banana weighs `r round(mean_of_means, 0)` grams on average, 
+($CI$ = [`r round(mean_of_means - 1.96*se, 2)`, 
 `r round(mean_of_means + 1.96*se, 2)`]). 
 
 Next, we learn three different methods 
@@ -394,7 +394,7 @@ Thus, the 95% confidence interval for mean weight of banana is:
   $$
 
 The range is formally called a **95% confidence interval**. 
-And the `95%` is referred to as the **confidence level**.  
+And the `95%` is referred to as the **confidence level**. 
 We can say that based on our sample, 
 the estimated banana weight is `r m_onesample %>% round(2)`, 
 with a 95% confidence intevel 
@@ -437,12 +437,12 @@ we need to introduce a concept: resampling with replacement.
 ### Resampling once {#resample-once}
 
 **Step 1**: Print out identically sized slips of paper 
-representing the weights of 50 randomly sampled banana
+representing the weights of 50 randomly sampled banana.
 
-**Step 2**: Put the 50 slips of paper into a tuque
+**Step 2**: Put the 50 slips of paper into a tuque.
 
 **Step 3**: Mix the tuque's contents and draw one slip of paper at random. 
-Record the weight
+Record the weight.
 
 **Step 4**: Place the slip of paper back in the tuque! 
 In another word, *RE*-place it.
@@ -453,9 +453,9 @@ resulting in 50 recorded weights.
 
 What we just performed was a *resampling* 
 of the original sample of 50 bananas. 
-Unlike Cy, who sampled repeatedly from the population of all bananas, 
+Unlike Cy, who sampled repeatedly from the *population* of bananas, 
 we are mimicking her action by 
-*re*sampling from a single sample of 50 bananas.  
+*re*sampling from a single *sample* of 50 bananas.  
 
 Now ask youreself, why did we place our resampled slip of paper 
 back into the tuque in Step 4? 
@@ -549,7 +549,7 @@ n_resample = 1000
 
 Resampling from a single sample by following step 1-5 
 described in Section \@ref(resample-once) 
-does not have obvious advantages over sampling from the population. 
+does not have obvious advantages compared to sampling from the population. 
 To repeat step 1-5 a thousand times, thereby re-sampling 1,000 times 
 sounds as daunting as what Cy did with the 1,000 samples she collected 
 and measured in Chapter \@ref(clt). 
@@ -902,7 +902,7 @@ cis_three_types <- dp$bind_rows(theory_ci,
   dp$mutate(Note = c(
                      'Requires sampling distribution normality', 
                      'Requires computing power & \n bootstrap distribution normality', 
-                     'Requires computing power, \n '
+                     'Requires computing power'
   )
   )
 
@@ -950,7 +950,8 @@ After all, we are sampling to estimate it!
 However, it should not come as a surprise that the "population of bananas" 
 from which Cy drew her numerous samples was *simulated* by me. 
 Using a special algorithm, 
-I created `r n_pop` plausible numbers representing the weight of `r n_pop` bananas. 
+I created `r n_pop %>% formatC(big.mark=",")` plausible numbers 
+representing the weight of `r n_pop` bananas. 
 The numbers are stored in the data frame `banana_pop`. 
 
 ```{r banana-pop, eval=F}

@@ -8,7 +8,7 @@ output:
   bookdown::gitbook: 
     pandoc_args: ["--lua-filter=color-text.lua"]
 documentclass: book
-bibliography: [bib/books.bib, bib/packages.bib, bib/articles.bib]
+bibliography: [bib/books.bib, bib/packages.bib, bib/articles.bib, bib/teaching_2021W.bib]
 biblio-style: "apalike"
 link-citations: yes
 github-repo: chunyunma/baby-modern-dive

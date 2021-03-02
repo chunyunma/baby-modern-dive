@@ -687,7 +687,7 @@ mean_of_means <- resampled_means %>%
   dp$pull()
 ```
 
-The mean of these 1000 means is `r mean_of_means` grams, 
+The mean of these 1000 means is `r mean_of_means %>% round(2)` grams, 
 which is quite close to the mean of our original sample of 50 banana weights 
 of `r m_onesample` grams. 
 This is the case since each of the 1,000 resamples 
@@ -787,7 +787,7 @@ let's use this fact about normal distributions
 to construct a confidence interval in a different way.
 
 First, recall the bootstrap distribution has a mean equal to 
-`mean_of_means` = `r mean_of_means` grams. 
+`mean_of_means` = `r mean_of_means %>% round(2)` grams. 
 <!-- This value almost coincides exactly with the value 
 of the sample mean $\bar{x}$ of our original 50 bananas of 
 `r m_onesample %>% round(2)`.  -->
@@ -805,7 +805,7 @@ to the sampling distribution.
 Recall also that the standard deviation of a sampling distribution 
 has a special name: the *standard error*. 
 Putting these two facts together, we can say that 
-`r bootstrap_se` is an approximation 
+`r bootstrap_se %>% round(2)` is an approximation 
 of $SE_{\bar{x}}$, i.e., the standard error of $\bar{x}$.  
 
 Thus, using our 95% rule of thumb about normal distributions 

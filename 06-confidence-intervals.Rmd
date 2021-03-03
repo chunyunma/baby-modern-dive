@@ -955,7 +955,7 @@ representing the weight of `r n_pop` bananas.
 The numbers are stored in the data frame `banana_pop`. 
 
 ```{r banana-pop, eval=F}
-dget("https://raw.githubusercontent.com/chunyunma/baby-modern-dive/master/data/banana_pop.txt")
+banana_pop <- dget("https://raw.githubusercontent.com/chunyunma/baby-modern-dive/master/data/banana_pop.txt")
 tibble::glimpse(banana_pop)
 ```
 
@@ -1491,7 +1491,7 @@ Let's now illustrate the sequence of verbs necessary
 to construct a confidence interval for $\mu$, 
 the population mean weight of bananas.
 
-#### 1. `specify` variables {-}
+#### 1. `specify` variables {-#ci-specify}
 
 
 ```{r infer-specify, out.width="20%", out.height="20%", echo=FALSE, fig.cap="Diagram of the specify() verb.", purl=FALSE}

@@ -525,14 +525,24 @@ banana_resample <- dget("https://raw.githubusercontent.com/chunyunma/baby-modern
 head(banana_resample)
 ```
 
-```{r}
+```{r eval=F}
 # compute mean of the original sample
-banana_sample %>% 
+m_onesample <- banana_sample %>% 
   dp$summarize(sample_mean = mean(weight))
 # compute mean of the RE-sample and compare to that of the original sample
+m_oneresample <- banana_resample %>% 
+  dp$summarize(resample_mean = mean(weight))
+m_onesample
+m_oneresample
+```
+
+```{r echo=F}
+banana_sample %>% 
+  dp$summarize(sample_mean = mean(weight))
 banana_resample %>% 
   dp$summarize(resample_mean = mean(weight))
 ```
+
 
 Resampling from a *single* sample introduced variation, 
 similar to what Cy has observed by sampling repeatedly from the population 

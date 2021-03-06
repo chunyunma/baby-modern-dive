@@ -29,6 +29,7 @@ cran_packages = c(
                   "gapminder", 
                   "ggplot2", 
                   "ggrepel", 
+                  "gt",
                   "knitr", 
                   "moderndive", 
                   "nycflights13", 

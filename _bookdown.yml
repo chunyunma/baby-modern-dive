@@ -9,6 +9,7 @@ rmd_files: [
   # # "05-regression.Rmd", 
   "05-sampling.Rmd", 
   "06-confidence-intervals.Rmd", 
+  "07-hypothesis-testing.Rmd",
   # "anscombe.Rmd", 
   "91-basics.Rmd", 
   "93-tips.Rmd", 

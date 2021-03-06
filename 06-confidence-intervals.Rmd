@@ -221,7 +221,7 @@ import::from(patchwork, .all=TRUE)
 ```
 
 
-## Constructing a confidence interval
+## Constructing a confidence interval {#bootstrap-process}
 
 Previously, Cy sampled 1,000 times and plotted the distribution of 1,000 *means* 
 calculated from those samples. 
@@ -1501,7 +1501,7 @@ Let's now illustrate the sequence of verbs necessary
 to construct a confidence interval for $\mu$, 
 the population mean weight of bananas.
 
-#### 1. `specify` variables {-#ci-specify}
+#### 1. `specify` variables {-}
 
 
 ```{r infer-specify, out.width="20%", out.height="20%", echo=FALSE, fig.cap="Diagram of the specify() verb.", purl=FALSE}
@@ -1972,8 +1972,9 @@ to construct the bootstrap distribution of $\bar{x}$.
 bootstrap_distribution <- banana_sample %>% 
   infer::specify(response = weight) %>% 
   infer::generate(reps = 1000, type = "bootstrap") %>% 
-  infer::calculate(stat = "mean") %>% 
-  infer::visualize(boundary=190, binwidth=1, colour="white")
+  infer::calculate(stat = "mean")
+
+infer::visualize(bootstrap_distribution, boundary=190, binwidth=1, colour="white")
 ```
 
 ```{r echo=F}

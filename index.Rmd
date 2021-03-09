@@ -54,7 +54,8 @@ cran_packages = c(
                   "sn", 
                   "stringr", 
                   "tibble", 
-                  "tidyr"
+                  "tidyr", 
+                  "viridis"
                   # "rmarkdown", 
                   # "scales", 
 )

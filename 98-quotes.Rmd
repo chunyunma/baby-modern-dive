@@ -1,7 +1,56 @@
-# Workflow related
+# Quotes
+
+## Statistics in the pop culture
+
+In one episode of *Elementary*, a modern spin of Sherlock Holmes, 
+Holmes quoted a statistician: 
 
 > 
-  Renouncing .Rdata and restarting R often are not intrinsically important 
+  while the individual man is an insoluble puzzle, 
+  in the aggregate he becomes a mathematical certainty. 
+  You can, for example, never foretell what any one man will do, 
+  but you can say with precision what an average number will be up to. 
+  Individuals vary, but percentages remain constant. So says the statistician.
+
+<http://statpics.blogspot.com/2013/01/sherlock-holmes-quotes-sherlock-holmes_14.html>
+
+
+
+## Models
+
+> 
+  All models are wrong. Some are useful. 
+
+--- George Box
+
+<https://en.wikipedia.org/wiki/All_models_are_wrong>
+
+## Inspirational
+
+> 
+  As you learn to program, you are going to get frustrated. 
+  You are learning a new language, and it will take time to become fluent. 
+  But frustration is not just natural, 
+  it’s actually a positive sign that you should watch for. 
+  Frustration is your brain’s way of being lazy; 
+  it’s trying to get you to quit and go do something easy or fun. 
+  If you want to get physically fitter, 
+  you need to push your body even though it complains. 
+  If you want to get better at programming, 
+  you’ll need to push your brain. 
+  Recognize when you get frustrated and see it as a good thing: 
+  you’re now stretching yourself. 
+  Push yourself a little further every day, 
+  and you’ll soon be a confident programmer.
+
+--- From Garrett Grolemund 
+in the Prologue of his book “Hands-On Programming with R”. 
+
+
+## Workflow related
+
+> 
+  Renouncing `.Rdata` and restarting R often are not intrinsically important 
   or morally superior behaviours. 
   They are important because they provide constant pressure for you 
   to do the right thing: 
@@ -15,3 +64,14 @@
   that constrain your behavior a little, in the name of public safety.
 
 <https://rstats.wtf/project-oriented-workflow.html>
+
+## Problem solving
+
+>
+  When you have eliminated the impossible, 
+  whatever remains, however improbable, must be the truth. 
+
+--- Sir Authur Conan Doyle, stated by Sherlock Holmes
+
+<https://en.wikiquote.org/wiki/Sherlock_Holmes>
+

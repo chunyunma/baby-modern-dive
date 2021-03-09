@@ -315,7 +315,8 @@ a banana weighs `r round(mean_of_means, 0)` grams on average,
 Next, we learn three different methods 
 of constructing a 95% confidence interval 
 for the estimated mean weight of bananas in the population. 
-Spoiler alert. All three methods lead to similar results. 
+Spoiler alert. All three methods lead to similar results 
+for the current example.
 
 ## Theory-based approach {#theory-ci}
 

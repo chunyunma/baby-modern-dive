@@ -1,0 +1,1336 @@
+# S'more Hypothesis Testing {#t-test}
+
+```{r setup_infer, include=FALSE, purl=FALSE}
+# Used to define Learning Check numbers:
+chap <- 8
+lc <- 0
+
+
+# Set output digit precision
+options(scipen = 99) # , digits = 3)
+
+# Set random number generator see value for replicable pseudorandomness
+set.seed(76)
+```
+
+In Chapter \@ref(hypothesis-testing), 
+we introduced a framework for hypothesis testing using verbs 
+from the package `infer`, 
+and demonstrated it within the context of 
+testing difference between proprotions.
+In this chapter, we continue to demonstrate this framework 
+by applying it to another type of problems: testing difference between means.
+We will walk you through two examples, 
+each one twice, once with the `infer`-based simulation method, 
+followed by the traditional theory-based method.
+
+### Needed packages {-#t-test-packages}
+
+Let's get ready all the packages we will need for this chapter. 
+
+```{r load-package, eval=F}
+# Install xfun so that I can use xfun::pkg_load2
+if (!requireNamespace('xfun')) install.packages('xfun')
+xf <- loadNamespace('xfun')
+
+cran_packages <- c(
+                  "dplyr", 
+                  "ggplot2", 
+                  "infer", 
+                  "moderndive", 
+                  "skimr",
+                  "tibble",
+                  "tidyr"
+)
+
+if (length(cran_packages) != 0) xf$pkg_load2(cran_packages)
+
+gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
+
+import::from(magrittr, '%>%')
+import::from(patchwork, .all=TRUE)
+```
+
+```{r import-pkg, echo=F, message=FALSE, warning=FALSE}
+cran_internal <- c(
+                    "dplyr", 
+                    "ggplot2", 
+                    "infer", 
+                    "kableExtra", 
+                    "moderndive", 
+                    "patchwork", 
+                    "readr", 
+                    "skimr",
+                    "tibble", 
+                    "tidyr", 
+                    "viridis"
+)
+gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
+
+import::from(magrittr, '%>%')
+import::from(patchwork, .all=TRUE)
+```
+
+## Example 1 {#independent-samples-t}
+
+### Are action or romance movies rated higher? {-#movies-example}
+
+Let's apply our knowledge of hypothesis testing to answer the question: 
+"Are action or romance movies rated higher on IMDb?". 
+[IMDb](https://www.imdb.com/) is a database on the internet 
+providing information on movie and television show casts, plot summaries, 
+trivia, and user ratings. 
+We'll investigate if, on average, 
+action or romance movies get higher ratings on IMDb.
+
+
+### IMDb ratings data {#imdb-data}
+
+```{r echo=FALSE, purl=FALSE}
+import::from(moderndive, movies_sample)
+# This code is used for dynamic non-static in-line text output purposes
+n_movies_sample <- movies_sample %>% nrow()
+```
+
+The `movies_sample` dataset in the `moderndive` package 
+is a random sample of `r movies_sample %>% nrow()` movies that are classified 
+as either "action" or "romance" but not both. 
+
+```{r eval=F}
+import::from(moderndive, movies_sample)
+movies_sample
+```
+
+```{r echo=F}
+movies_sample
+```
+
+The variables include the `title` and `year` the movie was filmed. 
+Furthermore, we have a numerical variable `rating`, 
+which is the IMDb rating out of 10 stars, 
+and a binary categorical variable `genre` indicating 
+if the movie was an `Action` or `Romance` movie. 
+We are interested in whether `Action` or `Romance` movies 
+got a higher `rating` on average.
+
+Let's perform an exploratory data analysis of this data. 
+Recall from Subsection \@ref(geomboxplot) 
+that a boxplot is a visualization we can use 
+to show the relationship between a numerical and a categorical variable. 
+
+
+```{r action-romance-boxplot, fig.cap="Boxplot of IMDb rating vs. genre.", fig.height=2.7}
+gg$ggplot(data = movies_sample, gg$aes(x = genre, y = rating)) +
+  gg$geom_boxplot() +
+  gg$labs(y = "IMDb rating")
+```
+
+Eyeballing Figure \@ref(fig:action-romance-boxplot), romance movies have a higher median rating. Do we have reason to believe, however, that there is a *significant* difference between the mean `rating` for action movies compared to romance movies?  It's hard to say just based on this plot. The boxplot does show that the median sample rating is higher for romance movies. 
+
+However, there is a large amount of overlap between the boxes. Recall that the median isn't necessarily the same as the mean either, depending on whether the distribution is skewed.  
+
+Let's calculate some summary statistics split by the binary categorical variable `genre`: the number of movies, the mean rating, and the standard deviation split by `genre`. We'll do this using `dplyr` data wrangling verbs. Notice in particular how we count the number of each type of movie using the `n()` summary function. 
+
+```{r}
+movies_sample %>% 
+  dp$group_by(genre) %>% 
+  dp$summarize(n = dp$n(), mean_rating = mean(rating), std_dev = sd(rating))
+```
+
+```{r echo=FALSE, purl=FALSE}
+movies_genre_summaries <- movies_sample %>%
+  dp$group_by(genre) %>%
+  dp$summarize(n = dp$n(), mean_rating = mean(rating), std_dev = sd(rating))
+
+x_bar_action <- movies_genre_summaries %>%
+  dp$filter(genre == "Action") %>%
+  dp$pull(mean_rating)
+x_bar_romance <- movies_genre_summaries %>%
+  dp$filter(genre == "Romance") %>%
+  dp$pull(mean_rating)
+sd_action <- movies_genre_summaries %>% 
+  dp$filter(genre == "Action") %>% 
+  dp$pull(std_dev)
+sd_romance <- movies_genre_summaries %>% 
+  dp$filter(genre == "Romance") %>% 
+  dp$pull(std_dev)
+n_action <- movies_genre_summaries %>%
+  dp$filter(genre == "Action") %>%
+  dp$pull(n)
+n_romance <- movies_genre_summaries %>%
+  dp$filter(genre == "Romance") %>%
+  dp$pull(n)
+DF <- n_action + n_romance - 2
+```
+
+Observe that we have `r n_romance` movies with an average rating of `r x_bar_romance %>% round(3)` stars and `r n_action` movies with an average rating of `r x_bar_action %>% round(3)` stars. The difference in these average ratings is thus `r x_bar_romance %>% round(3)` - `r x_bar_action %>% round(3)` = `r (x_bar_romance - x_bar_action) %>% round(3)`. So there appears to be an edge of `r (x_bar_romance - x_bar_action) %>% round(3)` stars in favor of romance movies. The question is, however, are these results indicative of a true difference for *all* romance and action movies? Or could we attribute this difference to chance *sampling variation*? 
+
+
+### Sampling scenario
+
+Let's now revisit this study in terms of terminology and notation 
+related to sampling we studied in Subsection \@ref(sampling-terminology). 
+The *study population* is all movies in the IMDb database 
+that are either action or romance (but not both). 
+The *sample* from this population is the `r n_movies_sample` movies 
+included in the `movies_sample` dataset. 
+
+Since this sample was randomly taken from the population `movies`, 
+it is representative of all romance and action movies on IMDb. 
+Thus, any analysis and results based on `movies_sample` 
+can generalize to the entire population. 
+What are the relevant *population parameter* and *point estimates*? 
+We introduce the fourth sampling scenario in Table \@ref(tab:table-parameters). 
+
+```{r table-parameters, echo=F, message=FALSE, warning = FALSE}
+sampling_scenarios <- tibble::tibble(
+                            `Scenario` = c(1:5), 
+                            `Population Parameter` = c(
+                                                       "Population proportion",
+                                                       "Population mean", 
+                                                       "Difference in population proportions", 
+                                                       "Difference in population means", 
+                                                       "Population regression slope"
+                                                       ), 
+                            `Notation` = c(
+                                           '$p$',
+                                           '$\\mu$', 
+                                           '$p_1 - p_2$', 
+                                           '$\\mu_1 - \\mu_2$', 
+                                           '$\\beta_1$'
+                                           ), 
+                            `Point estimate` = c(
+                                                 'Sample proportion',
+                                                 'Sample mean', 
+                                                 'Difference in sample proportions', 
+                                                 'Difference in sample means', 
+                                                 'Fitted regression slope'
+                                                 ), 
+                            `Symbol(s)` = c(
+                                            '$\\widehat{p}$',
+                                            '$\\widehat{\\mu}$ or $\\bar{x}$', 
+                                            '$\\widehat{p}_1 - \\widehat{p}_2$', 
+                                            '$\\bar{x}_1 - \\bar{x}_2$', 
+                                            '$\\widehat{\\beta}_1$ or $b_1$'
+                                            )
+                            )
+
+sampling_scenarios %>%
+  # filter(Scenario %in% c(1:4)) %>%
+  knitr::kable(
+    caption = "Scenarios of sampling for inference",
+    booktabs = TRUE,
+    escape = FALSE,
+    linesep = ""
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 16
+  ) %>%
+  kableExtra::column_spec(1, width = "0.5in") %>%
+  kableExtra::column_spec(2, width = "0.7in") %>%
+  kableExtra::column_spec(3, width = "1in") %>%
+  kableExtra::column_spec(4, width = "1.1in") %>%
+  kableExtra::column_spec(5, width = "1in")
+```
+
+
+The banana exercise in Chapter \@ref(confidence-intervals) concerned *means*, 
+<!-- the case study on whether yawning is contagious in Section \@ref(case-study-two-prop-ci)  -->
+and the promotions activity in Chapter \@ref(hypothesis-testing) 
+concerned *differences in proportions*.
+We are now concerned with *differences in means*. 
+
+In other words, the population parameter of interest 
+is the difference in population mean ratings $\mu_a - \mu_r$, 
+where $\mu_a$ is the mean rating of all action movies on IMDb 
+and similarly $\mu_r$ is the mean rating of all romance movies. 
+Additionally the point estimate/sample statistic of interest 
+is the difference in sample means $\overline{x}_a - \overline{x}_r$, 
+where $\overline{x}_a$ is the mean rating of the $n_a$ = `r n_action` movies 
+in our sample and $\overline{x}_r$ is the mean rating of the $n_r$ = 
+`r n_romance` in our sample. 
+Based on our earlier exploratory data analysis, 
+our estimate $\overline{x}_a - \overline{x}_r$ is 
+$`r x_bar_action %>% round(3)` - `r x_bar_romance %>% round(3)` = 
+`r (x_bar_action - x_bar_romance) %>% round(3)`$. 
+
+So there appears to be a slight difference of 
+`r (x_bar_action - x_bar_romance) %>% round(3)` in favor of romance movies. 
+The question is, however, could this difference of 
+`r (x_bar_action - x_bar_romance) %>% round(3)` 
+be merely due to chance and sampling variation? 
+Or are these results indicative of a true difference in mean ratings 
+for *all* romance and action movies on IMDb?  
+To answer this question, we'll use hypothesis testing. 
+
+
+### Conducting hypothesis test with `infer` {#ht-movie}
+
+Let's first apply the simulated-based method to this problem.
+We'll be testing:
+
+$$
+\begin{aligned}
+H_0 &: \mu_a - \mu_r = 0\\
+\text{vs } H_A&: \mu_a - \mu_r \neq 0
+\end{aligned}
+$$
+
+In other words, the null hypothesis $H_0$ suggests that both romance and action movies have the same mean rating. This is the "hypothesized universe" we'll *assume* is true. On the other hand, the alternative hypothesis $H_A$ suggests that there is a difference. Unlike the one-sided alternative we used in the promotions exercise $H_A: p_m - p_f > 0$, we are now considering a two-sided alternative of $H_A: \mu_a - \mu_r \neq 0$. 
+
+We also need to set the significance level, a.k.a. the $\alpha$ level. 
+Recall that in Chapter \@ref(hypothesis-testing), 
+we introduced a cut-off value to decide 
+if $p$-value is sufficiently small to reject null hypothesis. 
+This value defines the boundary on the null distribution, 
+beyond which are unlikely values, 
+and that if the observed statistic is categorized as among these unlikely values, 
+we reject the null hypothesis.
+
+This cut-off value is known as $\alpha$ value, 
+and the extreme values on the null distribution, 
+as defined by the $\alpha$ level, 
+make up what is called the **critical region**. 
+These extreme values in the tail(s) of the null distribution 
+define outcomes that are not consistent with the null hypothesis ($H_0$); 
+that is, they are very unlikely to occure if the null hypothesis is true. 
+Whenever the data from a research study produce an observed statistic 
+that is located in the **critical region**, 
+we conclude that the data are not consistent with the null hypothesis, 
+and we reject the null hypothesis.
+<!-- citation -->
+<!-- [^2]: Gravetter, F. J., & Wallnau, L. B. (2011). Essentials of statistics for the behavioral sciences. In Essentials of statistics for the behavioral sciences (7th ed, pp. 206–207). Wadsworth/Cengage Learning. -->
+
+
+For the current dataset, 
+we will pre-specify a low significance level of $\alpha$ = 0.001. 
+By setting this value low, all things being equal, 
+there is a lower chance that the $p$-value will be less than $\alpha$. 
+Thus, there is a lower chance that we'll reject the null hypothesis $H_0$ 
+in favor of the alternative hypothesis $H_A$. 
+In other words, we'll reject the hypothesis that there is no difference 
+in mean ratings for all action and romance movies, 
+only if we have quite strong evidence. 
+This is known as a "conservative" hypothesis testing procedure.
+
+```{r alpha-movie}
+ALPHA <- 0.001
+```
+
+
+
+#### 1. `specify` variables {-}
+
+Let's now perform all the steps of the `infer` workflow. We first `specify()` the variables of interest in the `movies_sample` data frame using the formula `rating ~ genre`. This tells `infer` that the numerical variable `rating` is the outcome variable, while the binary variable `genre` is the explanatory variable. Note that unlike previously when we were interested in proportions, since we are now interested in the mean of a numerical variable, we do not need to set the `success` argument.
+
+```{r}
+movies_sample %>% 
+  infer::specify(formula = rating ~ genre)
+```
+
+Observe at this point that the data in `movies_sample` has not changed. The only change so far is the newly defined `Response: rating (numeric)` and `Explanatory: genre (factor)` *meta-data*.
+
+#### 2. `hypothesize` the null {-}
+
+We set the null hypothesis $H_0: \mu_a - \mu_r = 0$ by using the `hypothesize()` function. Since we have two samples, action and romance movies, we set `null` to be `"independence"` as we described in Section \@ref(ht-infer).
+
+```{r}
+movies_sample %>% 
+  infer::specify(formula = rating ~ genre) %>% 
+  infer::hypothesize(null = "independence")
+```
+
+#### 3. `generate` replicates {-}
+
+```{r echo=FALSE, purl=FALSE}
+# This code is used for dynamic non-static in-line text output purposes
+n_reps <- 1000L
+```
+
+After we have set the null hypothesis, we generate "shuffled" replicates assuming the null hypothesis is true by repeating the shuffling/permutation exercise you performed in Section \@ref(ht-activity). 
+
+We'll repeat this resampling without replacement of `type = "permute"` a total of ``reps = `r n_reps` `` times. 
+
+```{r eval=FALSE}
+movies_sample %>% 
+  infer::specify(formula = rating ~ genre) %>% 
+  infer::hypothesize(null = "independence") %>% 
+  infer::generate(reps = 1000, type = "permute")
+```
+
+Feel free to run the code below to check out what the `generate()` step produces.
+
+```{r eval=FALSE}
+tmp <- movies_sample %>% 
+  infer::specify(formula = rating ~ genre) %>% 
+  infer::hypothesize(null = "independence") %>% 
+  infer::generate(reps = 1000, type = "permute")
+View(tmp)
+```
+
+
+```{r echo=FALSE, purl=FALSE}
+set.seed(76)
+if (!file.exists(here::here("rds", "movies_sample_generate.rds"))) {
+  movies_sample_generate <- movies_sample %>%
+    infer::specify(formula = rating ~ genre) %>%
+    infer::hypothesize(null = "independence") %>%
+    infer::generate(reps = 1000, type = "permute")
+  saveRDS(movies_sample_generate, here::here("rds", "movies_sample_generate.rds"))
+} else {
+  movies_sample_generate <- readRDS(here::here("rds", "movies_sample_generate.rds"))
+}
+```
+
+#### 4. `calculate` summary statistics {-}
+
+Now that we have `r n_reps` replicated "shuffles" assuming the null hypothesis $H_0$ that both `Action` and `Romance` movies on average have the same ratings on IMDb, let's `calculate()` the appropriate summary statistic for these `r n_reps` replicated shuffles. From Section \@ref(understanding-ht), summary statistics relating to hypothesis testing have a specific name: *test statistics*. Since the unknown population parameter of interest is the difference in population means $\mu_{a} - \mu_{r}$, the test statistic of interest here is the difference in sample means $\overline{x}_{a} - \overline{x}_{r}$. 
+
+For each of our `r n_reps` shuffles, we can calculate this test statistic by setting `stat = "diff in means"`. Furthermore, since we are interested in $\overline{x}_{a} - \overline{x}_{r}$, we set `order = c("Action", "Romance")`. Let's save the results in a data frame called `null_distribution_movies`:
+
+```{r eval=FALSE}
+null_distribution_movies <- movies_sample %>% 
+  specify(formula = rating ~ genre) %>% 
+  hypothesize(null = "independence") %>% 
+  generate(reps = 1000, type = "permute") %>% 
+  calculate(stat = "diff in means", order = c("Action", "Romance"))
+null_distribution_movies
+```
+
+```{r echo=FALSE, purl=FALSE}
+if (!file.exists(here::here("rds", "null_distribution_movies.rds"))) {
+  null_distribution_movies <- movies_sample_generate %>%
+    infer::calculate(stat = "diff in means", order = c("Action", "Romance"))
+  saveRDS(null_distribution_movies, here::here("rds", "null_distribution_movies.rds"))
+} else {
+  null_distribution_movies <- readRDS(here::here("rds", "null_distribution_movies.rds"))
+}
+null_distribution_movies
+```
+
+Observe that we have `r n_reps` values of `stat`, each representing one instance of $\overline{x}_{a} - \overline{x}_{r}$. The `r n_reps` values form the *null distribution*, which is the technical term for the sampling distribution of the difference in sample means $\overline{x}_{a} - \overline{x}_{r}$ assuming $H_0$ is true. What happened in real life? What was the observed difference in promotion rates? What was the *observed test statistic* $\overline{x}_{a} - \overline{x}_{r}$? Recall from our earlier data wrangling, this observed difference in means was $`r x_bar_action %>% round(3)` - `r x_bar_romance %>% round(3)` = `r (x_bar_action - x_bar_romance) %>% round(3)`$. We can also achieve this using the code that constructed the null distribution `null_distribution_movies` but with the `hypothesize()` and `generate()` steps removed. Let's save this in `obs_diff_means`:
+
+```{r}
+obs_diff_means <- movies_sample %>% 
+  infer::specify(formula = rating ~ genre) %>% 
+  infer::calculate(stat = "diff in means", order = c("Action", "Romance"))
+obs_diff_means
+```
+
+#### 5. `visualize` the p-value {-}
+
+Lastly, in order to compute the $p$-value, we have to assess how "extreme" the observed difference in means of `r obs_diff_means$stat %>% round(3)` is. We do this by comparing `r obs_diff_means$stat %>% round(3)` to our null distribution, which was constructed in a hypothesized universe of no true difference in movie ratings. Let's visualize both the null distribution and the $p$-value in Figure \@ref(fig:null-distribution-movies-2). 
+Unlike our example in Subsection \@ref(infer-workflow-ht) involving promotions, 
+now we have a two-sided $H_A: \mu_a - \mu_r \neq 0$, 
+so we set `direction = "both"`.
+As a result, the area under the curve 
+at or more extreme than the observed statistic consists of: 
+
++ area to the left of `r obs_diff_means$stat %>% round(3)`, and 
++ area to the right of `r (obs_diff_means$stat * -1)%>% round(3)`
+
+```{r null-distribution-movies-2, fig.cap="Null distribution, observed test statistic, and $p$-value.", purl=FALSE}
+infer::visualize(null_distribution_movies, bins = 10) + 
+  infer::shade_p_value(obs_stat = obs_diff_means, direction = "both")
+```
+
+Let's go over the elements of this plot. First, the histogram is the *null distribution*. Second, the solid line is the *observed test statistic*, or the difference in sample means we observed in real life of $`r x_bar_action %>% round(3)` - `r x_bar_romance %>% round(3)` = `r (x_bar_action - x_bar_romance) %>% round(3)`$. Third, the two shaded areas of the histogram form the *$p$-value*, or the probability of obtaining a test statistic just as or more extreme than the observed test statistic *assuming the null hypothesis $H_0$ is true*.
+
+What proportion of the null distribution is shaded? In other words, what is the numerical value of the $p$-value? We use the `get_p_value()` function to compute this value:
+
+```{r}
+null_distribution_movies %>% 
+  infer::get_p_value(obs_stat = obs_diff_means, direction = "both")
+```
+
+```{r echo=FALSE}
+p_value_movies <- null_distribution_movies %>%
+  infer::get_p_value(obs_stat = obs_diff_means, direction = "both") %>%
+  dp$mutate(p_value = round(p_value, 3))
+```
+
+This $p$-value of `r p_value_movies$p_value` is very small, 
+which explains that we can barely discern the shaded region 
+in Figure \@ref(fig:null-distribution-movies-2) 
+(you may see a pink thin line on either tail if you squint very hard).
+In other words, there is a very small chance that we would observe a difference 
+of `r x_bar_action %>% round(3)` - `r x_bar_romance %>% round(3)` = 
+`r (x_bar_action - x_bar_romance) %>% round(3)` 
+in a hypothesized universe where there was truly no difference in ratings. 
+
+But this $p$-value is larger than our (even smaller) pre-specified 
+$\alpha$ significance level of 0.001. 
+Thus, we failed to reject the null hypothesis $H_0: \mu_a - \mu_r = 0$. 
+In non-statistical language, the conclusion is: 
+we do not have the evidence needed in this sample of data 
+to say that romance and action movies in the IMDb 
+are, on average, rated differently. 
+
+
+```{block imdb, type="learncheck", purl=FALSE}
+\vspace{-0.15in}
+**_Learning check_**
+\vspace{-0.1in}
+```
+
+**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
+Conduct the same analysis comparing action movies versus romantic movies 
+using the median rating instead of the mean rating. 
+What was different and what was the same? 
+
+**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
+We visualized the `movies_sample` using a boxplot 
+in Figure \@ref(fig:action-romance-boxplot).
+Another option to do so would be a faceted histogram (see Section \@ref(facets)).
+Create a faceted histogram for `movies_sample`.
+What conclusions can you make from viewing the faceted histogram 
+that you couldn't see when looking at the boxplot?
+
+```{block, type="learncheck", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+``` 
+
+### Theory-based method {#movie-thoery}
+
+Recall that the test statistic we discussed
+in Section \@ref(theory-hypo) for the theory-based method was a $z$-statistic, 
+which allowed us to test the difference in two sample proportions.
+To test the difference between two sample means, 
+we will need to use a different statistic, 
+commonly known as *two-sample $t$-statistic*, 
+and the corresponding theory-based test is a *two-sample $t$-test*.
+
+#### Check assumptions {-}
+
+Recall that the validity of conclusions drawn from a theory-based method
+rely on whether assumptions of such method are met.
+In order to use the two-sample $t$-test, 
+we need to check the following assumptions.
+
+
+1. _Independent observations_:  The observations are independent in both groups.
+
+    Unfortunately, we don't know how IMDb computes the ratings. 
+    For example, if the same person rated multiple movies, 
+    then those observations would be related and hence not independent.
+
+2. _Approximately normal_:  The distribution of the response for each group 
+   should be normal or the sample sizes should be at least 30.
+
+    ```{r movie-normality, fig.cap="Distributions of user ratings for action and romance movies in IMDb."}
+    movies_sample %>% 
+      gg$ggplot(gg$aes(x = rating)) +
+      gg$geom_histogram(color = "white", binwidth = 1) +
+      gg$facet_wrap(~ genre)
+    ```
+
+    Both histograms are reasonably close to a bell-shaped normal curve.
+    In addition, the sample sizes for each group are greater than 30,
+    so the assumptions should apply.
+
+
+3. _Independent samples_: The samples should be collected without any natural pairing.
+
+    This is met since we sampled the action and romance movies at random 
+    and in an unbiased fashion from the database of all IMDb movies.
+
+In summary, we cannot be 100% sure whether all three assumptions have been satisfied.
+As is often the case in practice, 
+we still proceed with the subsequent test.
+Should new evidence surface that shows any clear violation of the assumptions, 
+we would need to change the analytical plan.
+
+
+#### Two-sample t-statistic {-}
+
+Just as we had to convert the difference in proportions 
+to a $z$-statistic by applying Equation \@ref(eq:z-prop-diff),
+we need to first standardize
+the difference of sample mean ratings $\overline{x}_a - \overline{x}_r$ 
+of action versus romance movies, 
+How?
+By once again subtracting its mean and dividing by its standard deviation, 
+which gives us the *two-sample $t$-statistic*\index{two-sample t-statistic}:
+
+$$
+t = \dfrac{ (\bar{x}_a - \bar{x}_r) - (\mu_a - \mu_r)}{ \text{SE}_{\bar{x}_a - \bar{x}_r} } = \dfrac{ (\bar{x}_a - \bar{x}_r) - (\mu_a - \mu_r)}{ \sqrt{\dfrac{{s_a}^2}{n_a} + \dfrac{{s_r}^2}{n_r}}  }
+(\#eq:t-mean-diff)
+$$
+
+Let's unpack Equation \@ref(eq:t-mean-diff) a bit.
+In the numerator, $\bar{x}_a-\bar{x}_r$ is the difference in sample means, while $\mu_a - \mu_r$ is the difference in population means. In the denominator, $s_a$ and $s_r$ are the *sample standard deviations* of the action and romance movies in our sample `movies_sample`. Lastly, $n_a$ and $n_r$ are the sample sizes of the action and romance movies. Putting this together under the square root gives us the standard error $\text{SE}_{\bar{x}_a - \bar{x}_r}$.
+Observe once again that the formula for $\text{SE}_{\bar{x}_a - \bar{x}_r}$ 
+has the sample sizes $n_a$ and $n_r$ in them. 
+So as the sample sizes increase, the standard error goes down. 
+
+So how can we use the two-sample $t$-statistic as a test statistic 
+in our hypothesis test? 
+Assuming the null hypothesis $H_0: \mu_a - \mu_r = 0$ is true, 
+the right-hand side of the numerator (to the right of the $-$ sign), 
+$\mu_a - \mu_r$, becomes 0. 
+
+Second, similarly to how the Central Limit Theorem from Chapter \@ref(clt)
+states that sample means follow a normal distribution, 
+it can be mathematically proven that the two-sample $t$-statistic 
+follows a *$t$-distribution with degrees of freedom* 
+"roughly equal" to $df = n_a + n_r - 2$. 
+Degrees of freedom can be loosely defined as a measure of 
+how many data points are involved in coomputing a sample statistic, 
+in this case, the $t$-statistic.
+To better understand this concept of _degrees of freedom_, 
+we next display three examples of $t$-distributions 
+in Figure \@ref(fig:t-distributions) along with the standard normal $z$ curve.
+
+```{r t-distributions, echo=FALSE, fig.cap="Examples of t-distributions and the z curve.", purl=FALSE, out.width="100%"}
+all_points <- tibble::tibble(
+  domain = seq(from = -4, to = 4, by = 0.01),
+  `t: df = 1` = dt(x = domain, df = 1),
+  `t: df = 3` = dt(x = domain, df = 3),
+  `t: df = 10` = dt(x = domain, df = 10),
+  `z` = dnorm(x = domain)
+) %>%
+  tidyr::gather(key = "Distribution", value = "value", -domain) %>%
+  dp$mutate(
+    type = ifelse(Distribution == "z", "z", "t"),
+    Distribution = factor(
+      Distribution,
+      levels = c("z", "t: df = 10", "t: df = 3", "t: df = 1")
+    )
+  )
+
+for_labels <- all_points %>%
+  dp$filter(
+    dp$between(domain, -1.205, -1.195) & Distribution == "t: df = 1" |
+      dp$between(domain, -0.205, -0.195) & Distribution == "t: df = 3" |
+      dp$between(domain, 0.095, 0.105) & Distribution == "t: df = 10" |
+      domain == 2.2 & Distribution == "z"
+  )
+
+all_points %>%
+  gg$ggplot(gg$aes(x = domain, y = value, color = Distribution)) +
+  gg$geom_line(gg$aes(linetype = type)) +
+  viridis::scale_color_viridis(discrete = TRUE, begin = 0, end = 0.7) +
+  ggrepel::geom_label_repel(
+    data = for_labels, 
+    mapping = gg$aes(label = Distribution),
+    nudge_x = c(1, -2, 2, -2)
+  ) +
+  gg$theme_light() +
+  gg$theme(
+    axis.title.y = gg$element_blank(),
+    axis.title.x = gg$element_blank(),
+    axis.text.y = gg$element_blank(),
+    axis.ticks.y = gg$element_blank(),
+    legend.position = "none"
+  )
+```
+
+Begin by looking at the center of the plot at 0 on the horizontal axis. 
+As you move up from the value of 0, 
+follow along with the labels and note that the bottom curve corresponds to 
+1 degree of freedom, the curve above it is for 3 degrees of freedom, 
+the curve above that is for 10 degrees of freedom, 
+and lastly the dotted curve is the standard normal $z$ curve.
+
+Observe that all four curves have a bell shape, are centered at 0. 
+Compared to the standard normal $z$-curve, $t$-distributions tend to have more values 
+in the tails of their distributions. 
+As the degrees of freedom increase, 
+or, because the degrees of freedom is tied to the sample size, 
+as sample sizes increase, 
+the $t$-distribution more and more resembles the standard normal $z$ curve.
+In fact, when the sample size approaches infinity, 
+a $t$-distribution becomes a $z$-distribution.
+
+The "roughly equal" statement indicates that 
+the equation $df = n_a + n_r - 2$ is a "good enough" approximation 
+to the true degrees of freedom. 
+The true [formula](https://en.wikipedia.org/wiki/Student%27s_t-test#Equal_or_unequal_sample_sizes,_unequal_variances) 
+is a bit more complicated than this simple expression, 
+and it does little to build the intuition of the $t$-test, 
+so we will not discuss it here.
+
+The message to retain, however, is that small sample sizes lead to small degrees of freedom and thus small sample sizes lead to $t$-distributions that are different from the $z$ curve. 
+In contrast, large sample sizes correspond to large degrees of freedom 
+and thus produce $t$ distributions that closely align with the standard normal $z$-curve.
+  
+So, assuming the null hypothesis $H_0$ is true, 
+our formula for the test statistic simplifies a bit:
+
+$$
+t = \dfrac{ (\bar{x}_a - \bar{x}_r) - 0}{ \sqrt{\dfrac{{s_a}^2}{n_a} + 
+\dfrac{{s_r}^2}{n_r}}  } = 
+\dfrac{ \bar{x}_a - \bar{x}_r}{ \sqrt{\dfrac{{s_a}^2}{n_a} + 
+\dfrac{{s_r}^2}{n_r}}  } \sim t (df = `r n_action +  n_romance -2`)
+(\#eq:t-mean-diff-2)
+$$
+
+where $df = n_a + n_r -2 = `r n_action` + `r n_romance` -2 = `r n_action + n_romance -2`$
+
+#### Observed $t$-score {-}
+
+In Section \@ref(z-statistic), 
+we directly calculated the observed $z$-score using `infer` verbs. 
+We also mentioned an alternative approach: 
+subtitute each variable in Equation \@ref(t-mean-diff-2) with 
+actual values based on the sample. 
+Let's take this approach this time 
+and compute the values necessary for the observed $t$-score.
+Recall the summary statistics we computed during our exploratory data analysis 
+in Section \@ref(imdb-data).
+
+```{r}
+movies_sample %>% 
+  dp$group_by(genre) %>% 
+  dp$summarize(n = dp$n(), mean_rating = mean(rating), std_dev = sd(rating))
+```
+
+```{r echo=FALSE, purl=FALSE}
+t_stat <- movies_sample %>%
+  infer::specify(formula = rating ~ genre) %>%
+  infer::calculate(stat = "t", order = c("Action", "Romance")) %>%
+  dp$pull(stat) %>%
+  round(3)
+```
+
+Using these values, the observed two-sample $t$-test statistic is 
+
+$$
+\dfrac{ \bar{x}_a - \bar{x}_r}{ \sqrt{\dfrac{{s_a}^2}{n_a} + \dfrac{{s_r}^2}{n_r}}  } = 
+\dfrac{5.28 - 6.32}{ \sqrt{\dfrac{{1.36}^2}{32} + \dfrac{{1.61}^2}{36}}  } = 
+`r t_stat`
+(\#eq:t-score)
+$$
+
+#### Conducting a $t$-test using base-R functions {-}
+
+Now that we have explained behind-the-scenes of a $t$-test, 
+including what test statistic to use and how to compute one, 
+let's complete the remaining grunt work with the function `t.test()` 
+from the `stats` package. 
+Like `prop.test()` from the `stats` package in Section \@ref(prop-test), 
+`t.test()` also comes with every clean install of `R` 
+and requires no extra installation.
+
+```{r attr.output=".numberLines"}
+stats::t.test(rating ~ genre, 
+              data = movies_sample, 
+              alternative = "two.sided", 
+              conf.level = 1 - ALPHA
+)
+```
+
+Note that `alternative = "two.sided` matches the alternative hypothesis 
+we defined in Section \@ref(ht-movie).
+
+```{r echo=F}
+t_test <- 
+  stats::t.test(rating ~ genre, 
+                data = movies_sample, 
+                alternative = "two.sided", 
+                conf.level = 1 - ALPHA
+  )
+```
+
+Next, we zoom-in on each line of the output above.
+
+### Interpreting output from a `t.test()`
+
+#### Line 1-3 {-}
+
+Why is the output of `t.test()` titled "Welch Two sample $t$-test"? 
+
+> 
+  [Welch's $t$-test is] an adaptation of Student's $t$-test, 
+  and is more reliable when the two samples have unequal variances 
+  and/or unequal sample sizes. [^4]
+
+
+[^4]: https://en.wikipedia.org/wiki/Welch%27s_t-test
+
+Recall the summary statistics we computed during our exploratory data analysis 
+in Section \@ref(imdb-data).
+
+```{r}
+movies_sample %>% 
+  dp$group_by(genre) %>% 
+  dp$summarize(n = dp$n(), mean_rating = mean(rating), std_dev = sd(rating))
+```
+
+By default, `t.test()` uses Welch's $t$-test 
+unless the two groups have (almost) identical variances and sample sizes. 
+
+#### Line 5 {-}
+
+The observed $t$-score is `r t_test$statistic %>% round(3)`, 
+agreeing with what we have manually computed using Equation \@ref(eq:t-score).
+Also note that the degrees of freedom reported on Line 5,
+$df = `r t_test$parameter %>% round(2)`$, 
+is slightly different from what we used in Equation \@ref(eq:t-mean-diff-2), in which
+$df = n_a + n_r -2 = `r n_action` + `r n_romance` -2 = `r n_action + n_romance -2`$.
+More precisely, degrees of freedom has "shrunken" from `r n_action + n_romance -2` 
+to `r t_test$parameter %>% round(2)`.
+This is a direct consequence of applying the Welch's two-sample $t$-test. 
+To "compensate" for the unequal sample sizes and/or variances, 
+the original degree of freedom, `r n_action + n_romance -2`, 
+took a penalty and got reduced in size, 
+resulting in a slightly more conservative test.
+The more sample sizes and variances deviate from being equal between two groups, 
+the larger the penalty.
+The smaller degrees of freedom, `r t_test$parameter %>% round(2)`,
+is also known as the Satterthwaite approximation 
+and involves a quite complicated formula. 
+For most problems, reporting the much simpler $df = n_1 + n_2 -2$ will suffice.
+
+
+The $p$-value --- the probability of observing a $\lvert t_{`r DF`} \rvert$ value 
+of $\lvert `r t_test$statistic %>% round(3)` \rvert = 
+`r abs(t_test$statistic) %>% round(3)`$ or more extreme (in both directions) 
+under the null hypothesis --- is around `r t_test$p.value %>% round (4)`. 
+Given that the $p$-value is larger 
+than the pre-determined $\alpha$ level of `r ALPHA`, 
+we fail to reject the null hypotehsis $H_0: \mu_a - \mu_r = 0$, 
+which leads us to draw the same conclusion as we did 
+using the simulation-based method earlier.
+
+
+<!-- The $p$ value can also be calculated directly using the function `pt()`  -->
+<!-- from the `stats` package.  -->
+<!-- Notice the `2 *` part because of the two-sided test. -->
+<!--  -->
+<!-- ```{r pval1} -->
+<!-- 2 * pt(t_stat, df = DF, lower.tail = FALSE) -->
+<!-- ``` -->
+<!--  -->
+<!-- Recall that for large degrees of freedom, the $t$ distribution is roughly equal to the standard normal curve. We can also approximate by using the standard normal curve: -->
+<!--  -->
+<!-- ```{r pval2} -->
+<!-- 2 * pnorm(t_stat, lower.tail = FALSE) -->
+<!-- ``` -->
+
+Similar to what we did in Section \@ref(null-thoery),
+let's visualize the $p$-value by marking it on the theory-based null-distribution.
+As usual, we reproduce the simulated-based counterpart from Section \@ref(ht-movie)
+next to it for comparison.
+Before we do so, can you picture in your mind what they would look like?
+
+```{r eval=FALSE}
+# Construct simulation-based null distribution of xbar_a - xbar_r:
+null_distribution_movies <- movies_sample %>% 
+  infer::specify(formula = rating ~ genre) %>% 
+  infer::hypothesize(null = "independence") %>% 
+  infer::generate(reps = 1000, type = "permute") %>% 
+  infer::calculate(stat = "diff in means", order = c("Action", "Romance"))
+infer::visualize(null_distribution_movies, bins = 10)
+```
+
+
+```{r eval=FALSE}
+# Construct theory-baseed null distribution of t:
+null_distribution_movies_t <- movies_sample %>% 
+  infer::specify(formula = rating ~ genre) %>% 
+  infer::hypothesize(null = "independence") %>% 
+  infer::generate(reps = 1000, type = "permute") %>% 
+  # Notice we switched stat from "diff in means" to "t"
+  infer::calculate(stat = "t", order = c("Action", "Romance"))
+infer::visualize(null_distribution_movies_t, bins = 10)
+```
+
+```{r echo=FALSE, purl=FALSE}
+if (!file.exists(here::here("rds", "null_distribution_movies_t.rds"))) {
+  null_distribution_movies_t <- movies_sample %>%
+    infer::specify(formula = rating ~ genre) %>%
+    infer::hypothesize(null = "independence") %>%
+    infer::generate(reps = 1000, type = "permute") %>%
+    # Notice we switched stat from "diff in means" to "t"
+    infer::calculate(stat = "t", order = c("Action", "Romance"))
+  saveRDS(
+    null_distribution_movies_t,
+    here::here("rds", "null_distribution_movies_t.rds")
+  )
+} else {
+  null_distribution_movies_t <- readRDS(here::here("rds", "null_distribution_movies_t.rds"))
+}
+```
+
+```{r eval=F}
+null_dist_1 <- infer::visualize(null_distribution_movies, bins = 10) + 
+  infer::shade_p_value(obs_stat = obs_diff_means, 
+                       direction = "both", 
+                       fill = c("hotpink"), 
+                       size = 1)
+
+null_dist_2 <- infer::visualize(null_distribution_movies_t, 
+                                bins = 10, 
+                                method = "theoretical") + 
+  infer::shade_p_value(obs_stat = -2.906, 
+                       direction = "both", 
+                       fill = c("hotpink"), 
+                       size = 1)
+
+null_dist_1 + null_dist_2
+```
+
+```{r comparing-diff-means-t-stat, fig.cap="Comparing the null distributions of two test statistics.", echo=FALSE, purl=FALSE}
+# simulation-based null dist
+null_dist_1 <- infer::visualize(null_distribution_movies, bins = 10) +
+  infer::shade_p_value(obs_stat = obs_diff_means, 
+                       direction = "both", 
+                       fill = c("hotpink"), 
+                       size = 1) + 
+  gg$labs(title = "Sampling distribution for \n difference in means", 
+  x = expression(bar(x)["a"] - bar(x)["r"])
+  )
+
+# theory-based
+null_dist_2 <- infer::visualize(null_distribution_movies_t, 
+                                bins = 10, 
+                                method = "theoretical") +
+  infer::shade_p_value(obs_stat = t_stat, 
+                       direction = "both", 
+                       fill = c("hotpink"), 
+                       size = 1) + 
+  gg$labs(x = "t-statistic", 
+          title = "t-distribution curve; \n df = 66")
+
+null_dist_1 + null_dist_2 + 
+  patchwork::plot_annotation(tag_levels = 'A')
+```
+
+Similar to Section \@ref(null-theory), 
+the scales on the x-axis between Panel A and B 
+in Figure \@ref(fig:comparing-diff-means-t-stat) are different, 
+despite the similar shapes of two distributions. 
+In Panel A, each unit on the scale of the x-axis represents 
+one point of actual difference 
+in IMDb ratings between Action and Romance movies.
+In Panel B, each unit on the scale of the x-axis represents 
+one standard deviation on the $t$-distribution curve ($df$ = `r DF`).
+
+The shaded regions under the $t$-distribution curve in Panel B of 
+Figure \@ref(fig:comparing-diff-means-t-stat) represent the $p$-value 
+of the theory-based hypothesis test.
+Unlike Section \@ref(null-theory), 
+we need to add up the shaded regions on both tails of the distribution, 
+because our alternative hypothesis is a two-sided one:
+$H_A: \mu_a - \mu_r \neq 0$.
+
+#### Line 7-8 {-}
+
+`t.test()` also returned the 99.9% confidence interval of 
+$\bar{x}_a - \bar{x}_r$, which is $[`r t_test$conf.int[1] %>% round(2)`, 
+`r t_test$conf.int[2] %>% round(2)`]$. 
+A key value included in this 99.9% confidence interval for 
+$\bar{x}_a - \bar{x}_r$: the value 0. 
+In other words, at the 99.9% confidence level, or at alpha level 
+$\alpha = 0.001$, $\bar{x}_a$ and $\bar{x}_r$ are not truly different. 
+This conclusion corroborates what we found based on $p$ value previously.
+
+### Summary
+
+In this first example, 
+we applied both simulation-based and theory-based methods 
+to the same dataset in order to answer the question: 
+are action or romance movies rated higher. 
+Both methods led to the same conclusion. 
+There is not enough evidence in the current dataset 
+that could support the claim that action and romance movies 
+are rated differently.
+
+## Example 2 {#independent-samples-t-2}
+
+### Problem statement {-#income-example}
+
+Average income varies from one region of the country to
+another, and it often reflects both lifestyles and regional living expenses. Suppose a new graduate
+is considering a job in two locations, Cleveland, OH and Sacramento, CA, and he wants to see
+whether the average income in one of these cities is higher than the other. He would like to conduct
+a hypothesis test based on two randomly selected samples from the 2000 Census. [Tweaked a bit from @isrs2014 [Chapter 5]]
+
+
+### Competing hypotheses
+
+#### In words {-}
+
+- Null hypothesis: The mean income is the **same** for both cities.
+
+- Alternative hypothesis:  The mean income is **different** for the two cities.
+
+
+#### In symbols (with annotations) {-}
+
+- $H_0: \mu_{sac} = \mu_{cle}$ or $H_0: \mu_{sac} - \mu_{cle} = 0$, where $\mu$ represents the average income.
+- $H_A: \mu_{sac} - \mu_{cle} \ne 0$
+
+#### Set $\alpha$ {-}
+
+It's important to set the significance level 
+before starting the testing using the data. 
+Let's set the significance level at 5% here.
+
+### Exploring the sample data
+
+```{r eval=FALSE}
+cle_sac <- read.delim("https://moderndive.com/data/cleSac.txt") %>%
+  dp$rename(
+    income = Total_personal_income
+  ) %>% 
+	dp$mutate(
+    metro_area = as.factor(Metropolitan_area_Detailed)
+		) %>% 
+  dp$select(income, metro_area) %>% 
+  na.omit()
+tibble::glimpse(cle_sac)
+```
+
+```{r echo=FALSE}
+if(!file.exists(here::here("rds", "cle_sac.rds"))) {
+  cle_sac <- read.delim(here::here("data", "cleSac.txt")) %>%
+    dp$rename(
+      income = Total_personal_income
+    ) %>% 
+    dp$mutate(
+      metro_area = as.factor(Metropolitan_area_Detailed)
+      ) %>% 
+    dp$select(income, metro_area) %>% 
+    na.omit()
+  saveRDS(cle_sac, here::here("rds", "cle_sac.rds"))
+} else {
+  cle_sac <- readRDS(here::here("rds", "cle_sac.rds"))
+}
+tibble::glimpse(cle_sac)
+```
+
+```{r}
+# Create a template function for descriptives
+my_skim <- skimr::skim_with(base = skimr::sfl(n = length, missing = skimr::n_missing), 
+                     numeric = skimr::sfl(
+                                          mean, sd, iqr = IQR,
+# stats::IQR            The Interquartile Range
+                                          min, 
+                                          p25 = ~ quantile(., 1/4), 
+                                          median, 
+                                          p75 = ~ quantile(., 3/4), 
+                                          max
+                                          ), 
+                            append = FALSE
+) #sfl stands for "skimr function list"
+
+cle_sac %>% 
+  dp$group_by(metro_area) %>% 
+  my_skim(income)
+```
+
+
+The boxplot below also shows the mean for each group highlighted by the red dots.
+
+```{r boxplot, fig.cap="Income in two cities"}
+gg$ggplot(cle_sac, gg$aes(x = metro_area, y = income)) +
+  gg$geom_boxplot() +
+  gg$stat_summary(fun = "mean", geom = "point", color = "red")
+```
+
+#### Guess about statistical significance {-}
+
+We are looking to see if a difference exists in the mean income of the two levels of the explanatory variable.  Based solely on the boxplot, we have reason to believe that no difference exists.  The distributions of income seem similar and the means fall in roughly the same place.
+
+
+### Simulation-based methods
+
+#### Collecting summary info {-}
+
+We now compute the observed statistic:
+
+```{r summarize, echo=F}
+inc_summ <- cle_sac %>% 
+  dp$group_by(metro_area) %>%
+  dp$summarize(sample_size = dp$n(),
+    mean = mean(income),
+    sd = sd(income),
+    minimum = min(income),
+    lower_quartile = quantile(income, 0.25),
+    median = median(income),
+    upper_quartile = quantile(income, 0.75),
+    max = max(income))
+```
+
+```{r stats2, include=FALSE}
+# Next we will assign some key values to variable names in R:
+xbar_cle <- inc_summ$mean[1]
+xbar_sac <- inc_summ$mean[2]
+obs_diff <- xbar_sac - xbar_cle
+n_cle <- inc_summ$sample_size[1]
+n_sac <- inc_summ$sample_size[2]
+```
+
+```{r}
+income_diff <- cle_sac %>%
+  infer::specify(income ~ metro_area) %>%
+  infer::calculate(
+    stat = "diff in means",
+    order = c("Sacramento_ CA", "Cleveland_ OH")
+  )
+income_diff
+```
+
+#### Randomization for hypothesis test using `infer` verbs {-}
+
+
+```{r echo=FALSE}
+if (!file.exists(here::here("rds", "null_distn_two_means.rds"))) {
+  set.seed(2018)
+  null_distn_two_means <- cle_sac %>%
+    infer::specify(income ~ metro_area) %>%
+    infer::hypothesize(null = "independence") %>%
+    infer::generate(reps = 1000, type = "permute") %>%
+    infer::calculate(
+      stat = "diff in means",
+      order = c("Sacramento_ CA", "Cleveland_ OH")
+    )
+  saveRDS(object = null_distn_two_means, here::here("rds", "null_distn_two_means.rds"))
+} else {
+  null_distn_two_means <- readRDS(here::here("rds", "null_distn_two_means.rds"))
+}
+```
+
+```{r sim4, eval=FALSE}
+# set random seed for reproducible results
+set.seed(2018)
+null_distn_two_means <- cle_sac %>%
+  infer::specify(income ~ metro_area) %>%
+  infer::hypothesize(null = "independence") %>%
+  infer::generate(reps = 1000, type = "permute") %>%
+  infer::calculate(
+    stat = "diff in means",
+    order = c("Sacramento_ CA", "Cleveland_ OH")
+  )
+```
+
+```{r income-diff-viz-p, fig.cap="Null distribution, observed test statistic, and $p$-value."}
+infer::visualize(null_distn_two_means) + 
+  infer::shade_p_value(obs_stat = income_diff, direction = "both")
+```
+
+Recall this is a two-tailed test so we will be looking for values 
+that are greater than or equal to `r income_diff` or less than or equal 
+to `r -income_diff` for our $p$-value.
+
+
+##### Calculate $p$-value {-}
+
+```{r}
+pvalue <- null_distn_two_means %>%
+  infer::get_pvalue(obs_stat = income_diff, direction = "both")
+pvalue
+```
+
+So our $p$-value is `r pvalue %>% round(3)` 
+and we fail to reject the null hypothesis at the 5% level. 
+You can also see this from the histogram above 
+that the observed test statistic are not very far into the tail of the null distribution.
+
+#### Bootstrapping for confidence interval {-}
+
+We can also create a confidence interval for the unknown population parameter $\mu_{sac} - \mu_{cle}$ using our sample data with *bootstrapping*.  Here we will bootstrap each of the groups with replacement instead of shuffling.  This is done using the `groups`
+argument in the `resample` function to fix the size of each group to
+be the same as the original group sizes of `r n_sac` for Sacramento and `r n_cle` for Cleveland.
+
+```{r echo=FALSE}
+if (!file.exists("rds/boot_distn_two_means.rds")) {
+  boot_distn_two_means <- cle_sac %>%
+    infer::specify(income ~ metro_area) %>%
+    infer::generate(reps = 1000, type = "bootstrap") %>%
+    infer::calculate(
+      stat = "diff in means",
+      order = c("Sacramento_ CA", "Cleveland_ OH")
+    )
+  saveRDS(object = boot_distn_two_means, here::here("rds", "boot_distn_two_means.rds"))
+} else {
+  boot_distn_two_means <- readRDS(here::here("rds", "boot_distn_two_means.rds"))
+}
+```
+
+```{r boot4, eval=FALSE}
+boot_distn_two_means <- cle_sac %>%
+  infer::specify(income ~ metro_area) %>%
+  infer::generate(reps = 1000, type="bootstrap") %>%
+  infer::calculate(
+    stat = "diff in means",
+    order = c("Sacramento_ CA", "Cleveland_ OH")
+  )
+```
+
+```{r}
+ci <- boot_distn_two_means %>%
+  infer::get_ci()
+ci
+```
+
+```{r two-means-ci, fig.show="hold", fig.cap="Percentile-based 95% confidence interval."}
+boot_distn_two_means %>%
+  infer::visualize(endpoints = ci, direction = "between")
+```
+
+We see that 0 is contained in this confidence interval 
+as a plausible value of $\mu_{sac} - \mu_{cle}$ 
+(the unknown population parameter). 
+This matches with our hypothesis test results 
+of failing to reject the null hypothesis. 
+Since zero is a plausible value of the population parameter, 
+we do not have evidence that Sacramento incomes are different than Cleveland incomes.
+
+**Interpretation**: 
+We are 95% confident the true mean yearly income 
+for those living in Sacramento is between 
+`r round(-ci[["lower_ci"]], 2)` dollars 
+smaller to `r round(ci[["upper_ci"]], 2)` dollars higher than for Cleveland.
+
+<!-- **Note**:  -->
+<!-- You could also use the null distribution based on randomization  -->
+<!-- with a shift to have its center at $\bar{x}_{sac} - \bar{x}_{cle} =  -->
+<!-- \$`r round(income_diff, 2)`$ instead of at 0 and calculate its percentiles.  -->
+<!-- The confidence interval produced via this method  -->
+<!-- should be comparable to the one done using bootstrapping above. -->
+
+
+### Theory-based method
+
+##### Check conditions {-}
+
+Remember that in order to use the short-cut (formula-based, theoretical) approach, we need to check that some conditions are met.
+
+1. _Independent observations_:  The observations are independent in both groups.
+
+    This `metro_area` variable is met since the cases are randomly selected from each city.
+
+2. _Approximately normal_:  The distribution of the response for each group should be normal or the sample sizes should be at least 30.
+
+```{r hist, fig.cap="Distributions of income in two cities"}
+gg$ggplot(cle_sac, gg$aes(x = income)) +
+  gg$geom_histogram(color = "white", binwidth = 20000) +
+  gg$facet_wrap(~metro_area)
+```
+
+We have some reason to doubt the normality assumption here since both the histograms show deviation from a normal model fitting the data well for each group. 
+The sample sizes for each group are greater than 100 though so the assumptions should still apply.
+
+3. _Independent samples_: The samples should be collected without any natural pairing.
+
+    There is no mention of there being a relationship between those selected in Cleveland and in Sacramento.
+
+
+#### Test statistic {-}
+
+Here, we are interested in seeing if our observed difference in sample means ($\bar{x}_{sac, obs} - \bar{x}_{cle, obs}$ = `r inc_summ$mean[2] - inc_summ$mean[1]`) is statistically different than 0.  Assuming that conditions are met and the null hypothesis is true, we can use the $t$ distribution to standardize the difference in sample means ($\bar{X}_{sac} - \bar{X}_{cle}$) using the approximate standard error of $\bar{X}_{sac} - \bar{X}_{cle}$ (invoking $S_{sac}$ and $S_{cle}$ as estimates of unknown $\sigma_{sac}$ and $\sigma_{cle}$).
+
+$$
+t = \frac{ (\bar{x}_{sac} - \bar{x}_{cle}) - (\mu_{sac} - \mu_{cle})}{ \text{SE}_{\bar{x}_{sac} - \bar{x}_{cle}} } 
+= \dfrac{ (\bar{x}_{sac} - \bar{x}_{cle}) - 0}{ \sqrt{\dfrac{{s_{sac}}^2}{n_{sac}} + \dfrac{{s_{cle}}^2}{n_{cle}}}  } \sim t (df = n_{sac} + n_{cle} - 2)
+(\#eq:t-income-diff)
+$$
+
+where $n_{sac} = 175$ for Sacramento and $n_{cle} = 212$ for Cleveland.
+
+#### Observed test statistic {-}
+
+
+```{r}
+t.test(income ~ metro_area, data = cle_sac, alternative = "two.sided")
+```
+
+```{r echo=F}
+t_test <- 
+  t.test(income ~ metro_area, data = cle_sac, alternative = "two.sided")
+DF <- n_cle + n_sac -2
+```
+
+
+```{r echo=F, eval=F}
+cle_sac %>%
+  infer::specify(income ~ metro_area) %>%
+  infer::calculate(
+    stat = "t",
+    order = c("Cleveland_ OH", "Sacramento_ CA")
+  )
+```
+
+
+We see here that the observed $t$-score is 
+around `r t_test$statistic %>% round(2)`.
+
+
+
+<!--Recall that for large degrees of freedom, the $t$ distribution is roughly equal to the standard normal curve so our difference in `df` for the Satterthwaite and "min" variations doesn't really matter.-->
+
+
+#### $p$-value and confidence interval {-}
+
+The $p$-value --- the probability of observing a $\lvert t_{`r DF`} \rvert$ value of 
+$\lvert `r t_test$statistic %>% round(3)` \rvert = 
+`r abs(t_test$statistic) %>% round(3)`$ or more extreme (in both directions) 
+in our null distribution --- is `r t_test$p.value %>% round(3)`. 
+
+<!-- This can also be calculated in R directly: -->
+<!--  -->
+<!-- ```{r pval1a} -->
+<!-- 2 * pt(-1.501, df = min(212 - 1, 175 - 1), lower.tail = TRUE) -->
+<!-- ``` -->
+<!--  -->
+<!-- We can also approximate by using the standard normal curve: -->
+<!--  -->
+<!-- ```{r pval2means} -->
+<!-- 2 * pnorm(-1.501) -->
+<!-- ``` -->
+
+Note that the 95% confidence interval given above 
+matches well with the one calculated using bootstrapping.
+
+#### State conclusion {-}
+
+We, therefore, do not have sufficient evidence to reject the null hypothesis. 
+Our initial guess that a statistically significant difference 
+not existing in the means was backed by this statistical analysis. 
+We do not have evidence to suggest that the true mean income differs 
+between Cleveland, OH and Sacramento, CA based on this data.
+
+
+<!-- ### Comparing results -->
+<!--  -->
+<!-- Observing the bootstrap distribution and the null distribution that were created, it makes quite a bit of sense that the results are so similar for traditional and non-traditional methods in terms of the $p$-value and the confidence interval since these distributions look very similar to normal distributions.  The conditions also being met leads us to better guess that using any of the methods whether they are traditional (formula-based) or non-traditional (computational-based) will lead to similar results. -->
+<!--  -->
+
+## Conclusion
+
+So far, we have applied the framework of hypothesis testing 
+to two types of problems: difference between sample proportions 
+and difference between sample means.
+In each example, both simulation-based method 
+and theory-based method led to the same conclusion. 
+Ultimately, it is up to you to decide which method you would choose 
+for a problem. 
+However, we believe that the `infer` framework will prevail 
+in the long-run for learning.
+Learning theory-based methods inevitably 
+involves memorizing which function to use for which type of test.
+In contrast, the `infer` framework stays more or less the same 
+for different types of tests.
+John Rauser brilliantly elaborated on this point in a 2014
+[keynote speech](https://www.youtube.com/watch?v=5Dnw46eC-0o): 
+
+> 
+  When I decided to learn statistics, I read several books, 
+  which I shall politely not identify. 
+  I understood none of them. 
+  Most of them simply described statistical procedures 
+  and then applied them without any intuitive explanation, 
+  or hint at how anyone might have invented these procedures in the first place.
+  And this talk was born of that frustration, 
+  and my wish that future students of statistics 
+  will learn the deep and elegant ideas at the heart of statistics 
+  rather than a confusing grab bag of statistical procedures.
+
+I encourage you to watch the 12-minute keynote speech
+and appreciate your newly gained understanding of hypothesis testing!

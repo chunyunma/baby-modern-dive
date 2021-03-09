@@ -518,7 +518,7 @@ or `r diff_rates_20$stat %>% max() %>% round(3)`.
 
 Time to scale this up!
 
-### Shuffle 1,000 times
+### Shuffle 1,000 times {#shuffle-thousand}
 
 By now, you already know the drill. 
 Let me spare you the droning sound of 1,000 shuffles, 
@@ -1453,7 +1453,7 @@ which will then be compared to numbers from a "$z$-distribution".
 <!-- The theory-based method we will focus on is known as the *$z$-test*  -->
 <!-- for testing differences in proportions.  -->
 
-### $z$-statistic
+### $z$-statistic {#z-statistic}
 
 A common task in statistics is the process of "standardizing a variable." 
 By standardizing different variables, 
@@ -1752,13 +1752,13 @@ Next, let's mark the observed difference in promotion rates,
 `r observed_test_statistic*100`%, 
 on the simulation-based null distribution 
 in Panel A of Figure \@ref(fig:comparing-diff-prop-z), 
-as we saw in Section ().
+as we saw in Section \@ref(shuffle-thousand).
 Likewise,
 let's mark the observed $z$-score on the standard normal curve
 in Panel B of Figure \@ref(fig:comparing-diff-prop-z).
 Both of them are shown in Figure \@ref(fig:comparing-diff-prop-z-2).
 Now, ask yourself, 
-how does the observed $z$-score, `r z_score`, fare compared to
+how does the observed $z$-score, `r z_score`, fare compared to the rest of 
 values on the $z$-curve?
 
 ```{r eval=F}
@@ -1779,8 +1779,8 @@ null_dist_2 <- infer::visualize(null_distribution_promotions_z,
 null_dist_1 + null_dist_2
 ```
 
-```{r comparing-diff-prop-z-2, echo=F, message=T, fig.align='center', fig.cap="Comparing the null distributions of two test statistics."}
-# simulated-based null distribution
+```{r comparing-diff-prop-z-2, echo=F, fig.align='center', fig.cap="Comparing the null distributions of two test statistics."}
+# simulation-based null distribution
 null_dist_1 <- infer::visualize(null_distribution, bins = 10) + 
   infer::shade_p_value(obs_stat = observed_test_statistic, 
                        direction = "right", 
@@ -1845,7 +1845,7 @@ p_theory
 ```
 
 This $p$-value from the theory-based method, `r p_theory`, 
-is of the same magnitude as the one we obtained earlier 
+is of the same order of magnitude as the one we obtained earlier 
 using the simulated-based method in Section \@ref(infer-workflow-ht), `r p_value`.
 In other words, both methods led to highly similar results 
 for the current dataset. 
@@ -1933,7 +1933,7 @@ That being said,
 given that much of the world's research still relies on traditional 
 theory-based methods, it is important to understand them.
 
-### Conducting a $z$-test using base-R functions
+### Conducting a $z$-test using base-R functions {#prop-test}
 
 So far, we have focused on the ins and outs of the theory-based $z$-test, 
 using various verbs from the `infer` package.
@@ -2331,7 +2331,7 @@ and witness $p$-hacking in action.
 If you'd like more practice or you're curious to see 
 how the `infer` framework applies to different scenarios, 
 you can find fully-worked out examples for many common hypothesis tests 
-and their corresponding confidence intervals in Appendix \@ref(??).
+and their corresponding confidence intervals in Appendix \@ref(inference-examples).
 We recommend that you carefully review these examples 
 as they also cover how the general frameworks apply 
 to traditional theory-based methods like the $t$-test 

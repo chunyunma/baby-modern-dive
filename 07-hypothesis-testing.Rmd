@@ -1575,16 +1575,10 @@ z_score <- promotions %>%
   infer::specify(formula = decision ~ gender, success = "promoted") %>% 
   # we do not need the `hypothesize` or `generate` verbs this time
   # Notice we switched `stat` from "diff in prop" to "z"
-  infer::calculate(stat = "z", order = c("male", "female"))
-z_score
-```
-
-```{r echo=F}
-z_score <- promotions %>% 
-  infer::specify(formula = decision ~ gender, success = "promoted") %>% 
   infer::calculate(stat = "z", order = c("male", "female")) %>% 
   dp$pull(stat) %>% 
   round(3)
+z_score
 ```
 
 <!-- Using these values, the observed $z$-score is  -->
@@ -1763,7 +1757,7 @@ values on the $z$-curve?
 
 ```{r eval=F}
 null_dist_1 <- infer::visualize(null_distribution, bins = 10) + 
-  infer::shade_p_value(obs_stat = observed_test_statistic, 
+  infer::shade_p_value(obs_stat = obs_diff_prop, 
                        direction = "right", 
                        fill = c("hotpink"), 
                        size = 1)
@@ -1782,7 +1776,7 @@ null_dist_1 + null_dist_2
 ```{r comparing-diff-prop-z-2, echo=F, fig.align='center', fig.cap="Comparing the null distributions of two test statistics."}
 # simulation-based null distribution
 null_dist_1 <- infer::visualize(null_distribution, bins = 10) + 
-  infer::shade_p_value(obs_stat = observed_test_statistic, 
+  infer::shade_p_value(obs_stat = obs_diff_prop, 
                        direction = "right", 
                        fill = c("hotpink"), 
                        size = 1) + 

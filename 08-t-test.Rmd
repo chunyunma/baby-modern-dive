@@ -82,7 +82,7 @@ Let's apply our knowledge of hypothesis testing to answer the question:
 [IMDb](https://www.imdb.com/) is a database on the internet 
 providing information on movie and television show casts, plot summaries, 
 trivia, and user ratings. 
-We'll investigate if, on average, 
+We'll investigate whether, on average, 
 action or romance movies get higher ratings on IMDb.
 
 
@@ -165,7 +165,7 @@ n_romance <- movies_genre_summaries %>%
 DF <- n_action + n_romance - 2
 ```
 
-Observe that we have `r n_romance` movies with an average rating of `r x_bar_romance %>% round(3)` stars and `r n_action` movies with an average rating of `r x_bar_action %>% round(3)` stars. The difference in these average ratings is thus `r x_bar_romance %>% round(3)` - `r x_bar_action %>% round(3)` = `r (x_bar_romance - x_bar_action) %>% round(3)`. So there appears to be an edge of `r (x_bar_romance - x_bar_action) %>% round(3)` stars in favor of romance movies. The question is, however, are these results indicative of a true difference for *all* romance and action movies? Or could we attribute this difference to chance *sampling variation*? 
+Observe that we have `r n_romance` movies with an average rating of `r x_bar_romance %>% round(2)` stars and `r n_action` movies with an average rating of `r x_bar_action %>% round(2)` stars. The difference in these average ratings is thus `r x_bar_romance %>% round(2)` - `r x_bar_action %>% round(2)` = `r (x_bar_romance - x_bar_action) %>% round(2)`. So there appears to be an edge of `r (x_bar_romance - x_bar_action) %>% round(2)` stars in favor of romance movies. The question is, however, are these results indicative of a true difference for *all* romance and action movies? Or could we attribute this difference to chance *sampling variation*? 
 
 
 ### Sampling scenario
@@ -253,13 +253,13 @@ in our sample and $\overline{x}_r$ is the mean rating of the $n_r$ =
 `r n_romance` in our sample. 
 Based on our earlier exploratory data analysis, 
 our estimate $\overline{x}_a - \overline{x}_r$ is 
-$`r x_bar_action %>% round(3)` - `r x_bar_romance %>% round(3)` = 
-`r (x_bar_action - x_bar_romance) %>% round(3)`$. 
+$`r x_bar_action %>% round(2)` - `r x_bar_romance %>% round(2)` = 
+`r (x_bar_action - x_bar_romance) %>% round(2)`$. 
 
 So there appears to be a slight difference of 
-`r (x_bar_action - x_bar_romance) %>% round(3)` in favor of romance movies. 
+`r (x_bar_action - x_bar_romance) %>% round(2)` in favor of romance movies. 
 The question is, however, could this difference of 
-`r (x_bar_action - x_bar_romance) %>% round(3)` 
+`r (x_bar_action - x_bar_romance) %>% round(2)` 
 be merely due to chance and sampling variation? 
 Or are these results indicative of a true difference in mean ratings 
 for *all* romance and action movies on IMDb?  
@@ -292,16 +292,24 @@ we reject the null hypothesis.
 This cut-off value is known as $\alpha$ value, 
 and the extreme values on the null distribution, 
 as defined by the $\alpha$ level, 
-make up what is called the **critical region**. 
+make up what is called the **critical region** 
+(Figure \@ref(fig:critical-region)).
 These extreme values in the tail(s) of the null distribution 
 define outcomes that are not consistent with the null hypothesis ($H_0$); 
 that is, they are very unlikely to occure if the null hypothesis is true. 
 Whenever the data from a research study produce an observed statistic 
-that is located in the **critical region**, 
+that lands inside the **critical region**, 
 we conclude that the data are not consistent with the null hypothesis, 
-and we reject the null hypothesis.
-<!-- citation -->
-<!-- [^2]: Gravetter, F. J., & Wallnau, L. B. (2011). Essentials of statistics for the behavioral sciences. In Essentials of statistics for the behavioral sciences (7th ed, pp. 206–207). Wadsworth/Cengage Learning. -->
+and we reject the null hypothesis [@gravetterintroduction2011].
+
+(ref:critical-region) critial regions on a *sampling distribution* for a two-tailed test with $\alpha = 0.05$.
+
+```{r critical-region, echo=F, fig.cap="(ref:critical-region)"}
+knitr::include_graphics(here::here("docs", 
+                                   "images", 
+                                   "critical_region.png")
+)
+```
 
 
 For the current dataset, 
@@ -410,7 +418,7 @@ if (!file.exists(here::here("rds", "null_distribution_movies.rds"))) {
 null_distribution_movies
 ```
 
-Observe that we have `r n_reps` values of `stat`, each representing one instance of $\overline{x}_{a} - \overline{x}_{r}$. The `r n_reps` values form the *null distribution*, which is the technical term for the sampling distribution of the difference in sample means $\overline{x}_{a} - \overline{x}_{r}$ assuming $H_0$ is true. What happened in real life? What was the observed difference in promotion rates? What was the *observed test statistic* $\overline{x}_{a} - \overline{x}_{r}$? Recall from our earlier data wrangling, this observed difference in means was $`r x_bar_action %>% round(3)` - `r x_bar_romance %>% round(3)` = `r (x_bar_action - x_bar_romance) %>% round(3)`$. We can also achieve this using the code that constructed the null distribution `null_distribution_movies` but with the `hypothesize()` and `generate()` steps removed. Let's save this in `obs_diff_means`:
+Observe that we have `r n_reps` values of `stat`, each representing one instance of $\overline{x}_{a} - \overline{x}_{r}$. The `r n_reps` values form the *null distribution*, which is the technical term for the sampling distribution of the difference in sample means $\overline{x}_{a} - \overline{x}_{r}$ assuming $H_0$ is true. What happened in real life? What was the observed difference in promotion rates? What was the *observed* test statistic $\overline{x}_{a} - \overline{x}_{r}$? Recall from our earlier data wrangling, this observed difference in means was $`r x_bar_action %>% round(2)` - `r x_bar_romance %>% round(2)` = `r (x_bar_action - x_bar_romance) %>% round(2)`$. We can also achieve this using the code that constructed the null distribution `null_distribution_movies` but with the `hypothesize()` and `generate()` steps removed. Let's save this in `obs_diff_means`:
 
 ```{r}
 obs_diff_means <- movies_sample %>% 
@@ -421,7 +429,7 @@ obs_diff_means
 
 #### 5. `visualize` the p-value {-}
 
-Lastly, in order to compute the $p$-value, we have to assess how "extreme" the observed difference in means of `r obs_diff_means$stat %>% round(3)` is. We do this by comparing `r obs_diff_means$stat %>% round(3)` to our null distribution, which was constructed in a hypothesized universe of no true difference in movie ratings. Let's visualize both the null distribution and the $p$-value in Figure \@ref(fig:null-distribution-movies-2). 
+Lastly, in order to compute the $p$-value, we have to assess how "extreme" the observed difference in means of `r obs_diff_means$stat %>% round(2)` is. We do this by comparing `r obs_diff_means$stat %>% round(2)` to our null distribution, which was constructed in a hypothesized universe of no true difference in movie ratings. Let's visualize both the null distribution and the $p$-value in Figure \@ref(fig:null-distribution-movies-2). 
 Unlike our example in Subsection \@ref(infer-workflow-ht) involving promotions, 
 now we have a two-sided $H_A: \mu_a - \mu_r \neq 0$, 
 so we set `direction = "both"`.
@@ -436,7 +444,7 @@ infer::visualize(null_distribution_movies, bins = 10) +
   infer::shade_p_value(obs_stat = obs_diff_means, direction = "both")
 ```
 
-Let's go over the elements of this plot. First, the histogram is the *null distribution*. Second, the solid line is the *observed test statistic*, or the difference in sample means we observed in real life of $`r x_bar_action %>% round(3)` - `r x_bar_romance %>% round(3)` = `r (x_bar_action - x_bar_romance) %>% round(3)`$. Third, the two shaded areas of the histogram form the *$p$-value*, or the probability of obtaining a test statistic just as or more extreme than the observed test statistic *assuming the null hypothesis $H_0$ is true*.
+Let's go over the elements of this plot. First, the histogram is the *null distribution*. Second, the solid line is the *observed test statistic*, or the difference in sample means we observed in real life of $`r x_bar_action %>% round(3)` - `r x_bar_romance %>% round(3)` = `r (x_bar_action - x_bar_romance) %>% round(3)`$. Third, the **two** shaded areas of the histogram form the *$p$-value*, or the probability of obtaining a test statistic just as or more extreme than the observed test statistic *assuming the null hypothesis $H_0$ is true*.
 
 What proportion of the null distribution is shaded? In other words, what is the numerical value of the $p$-value? We use the `get_p_value()` function to compute this value:
 
@@ -566,7 +574,7 @@ Observe once again that the formula for $\text{SE}_{\bar{x}_a - \bar{x}_r}$
 has the sample sizes $n_a$ and $n_r$ in them. 
 So as the sample sizes increase, the standard error goes down. 
 
-So how can we use the two-sample $t$-statistic as a test statistic 
+How can we use the two-sample $t$-statistic as a test statistic 
 in our hypothesis test? 
 Assuming the null hypothesis $H_0: \mu_a - \mu_r = 0$ is true, 
 the right-hand side of the numerator (to the right of the $-$ sign), 
@@ -578,7 +586,7 @@ it can be mathematically proven that the two-sample $t$-statistic
 follows a *$t$-distribution with degrees of freedom* 
 "roughly equal" to $df = n_a + n_r - 2$. 
 Degrees of freedom can be loosely defined as a measure of 
-how many data points are involved in coomputing a sample statistic, 
+how many data points are involved in computing a sample statistic, 
 in this case, the $t$-statistic.
 To better understand this concept of _degrees of freedom_, 
 we next display three examples of $t$-distributions 
@@ -905,7 +913,7 @@ the scales on the x-axis between Panel A and B
 in Figure \@ref(fig:comparing-diff-means-t-stat) are different, 
 despite the similar shapes of two distributions. 
 In Panel A, each unit on the scale of the x-axis represents 
-one point of actual difference 
+one star of actual difference 
 in IMDb ratings between Action and Romance movies.
 In Panel B, each unit on the scale of the x-axis represents 
 one standard deviation on the $t$-distribution curve ($df$ = `r DF`).
@@ -923,7 +931,7 @@ $H_A: \mu_a - \mu_r \neq 0$.
 `t.test()` also returned the 99.9% confidence interval of 
 $\bar{x}_a - \bar{x}_r$, which is $[`r t_test$conf.int[1] %>% round(2)`, 
 `r t_test$conf.int[2] %>% round(2)`]$. 
-A key value included in this 99.9% confidence interval for 
+A key value is included in this 99.9% confidence interval for 
 $\bar{x}_a - \bar{x}_r$: the value 0. 
 In other words, at the 99.9% confidence level, or at alpha level 
 $\alpha = 0.001$, $\bar{x}_a$ and $\bar{x}_r$ are not truly different. 
@@ -948,7 +956,7 @@ Average income varies from one region of the country to
 another, and it often reflects both lifestyles and regional living expenses. Suppose a new graduate
 is considering a job in two locations, Cleveland, OH and Sacramento, CA, and he wants to see
 whether the average income in one of these cities is higher than the other. He would like to conduct
-a hypothesis test based on two randomly selected samples from the 2000 Census. [Tweaked a bit from @isrs2014 [Chapter 5]]
+a hypothesis test based on two randomly selected samples from the 2000 US Census. [Tweaked a bit from @isrs2014 [Chapter 5]]
 
 
 ### Competing hypotheses
@@ -970,6 +978,11 @@ a hypothesis test based on two randomly selected samples from the 2000 Census. [
 It's important to set the significance level 
 before starting the testing using the data. 
 Let's set the significance level at 5% here.
+
+```{r}
+ALPHA <- 0.05
+```
+
 
 ### Exploring the sample data
 
@@ -1076,7 +1089,7 @@ income_diff <- cle_sac %>%
 income_diff
 ```
 
-#### Randomization for hypothesis test using `infer` verbs {-}
+#### Hypothesis test using `infer` verbs {-}
 
 
 ```{r echo=FALSE}
@@ -1115,8 +1128,8 @@ infer::visualize(null_distn_two_means) +
 ```
 
 Recall this is a two-tailed test so we will be looking for values 
-that are greater than or equal to `r income_diff` or less than or equal 
-to `r -income_diff` for our $p$-value.
+that are greater than or equal to `r income_diff %>% round(0)` or less than or equal 
+to `r -income_diff %>% round()` for our $p$-value.
 
 
 ##### Calculate $p$-value {-}
@@ -1134,9 +1147,14 @@ that the observed test statistic are not very far into the tail of the null dist
 
 #### Bootstrapping for confidence interval {-}
 
-We can also create a confidence interval for the unknown population parameter $\mu_{sac} - \mu_{cle}$ using our sample data with *bootstrapping*.  Here we will bootstrap each of the groups with replacement instead of shuffling.  This is done using the `groups`
-argument in the `resample` function to fix the size of each group to
-be the same as the original group sizes of `r n_sac` for Sacramento and `r n_cle` for Cleveland.
+We can also create a confidence interval 
+for the unknown population parameter $\mu_{sac} - \mu_{cle}$ 
+using our sample data with *bootstrapping*.  
+Here we will bootstrap each of the groups with replacement instead of shuffling.
+<!-- This is done using the `groups` argument in the `resample` function  -->
+<!-- to fix the size of each group to -->
+<!-- be the same as the original group sizes of `r n_sac`  -->
+<!-- for Sacramento and `r n_cle` for Cleveland. -->
 
 ```{r echo=FALSE}
 if (!file.exists("rds/boot_distn_two_means.rds")) {
@@ -1180,13 +1198,15 @@ as a plausible value of $\mu_{sac} - \mu_{cle}$
 This matches with our hypothesis test results 
 of failing to reject the null hypothesis. 
 Since zero is a plausible value of the population parameter, 
-we do not have evidence that Sacramento incomes are different than Cleveland incomes.
+we do not have enough evidence 
+that Sacramento incomes are different than Cleveland incomes.
 
-**Interpretation**: 
+**Interpretation of the confidence interval**: 
 We are 95% confident the true mean yearly income 
-for those living in Sacramento is between 
-`r round(-ci[["lower_ci"]], 2)` dollars 
-smaller to `r round(ci[["upper_ci"]], 2)` dollars higher than for Cleveland.
+for those living in Sacramento is somewhere between 
+`r round(-ci[["lower_ci"]], 0)` dollars 
+lower than for Cleveland, 
+to `r round(ci[["upper_ci"]], 0)` dollars higher than for Cleveland.
 
 <!-- **Note**:  -->
 <!-- You could also use the null distribution based on randomization  -->

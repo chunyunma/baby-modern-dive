@@ -26,8 +26,8 @@ to investigate whether gender-based discrimination in promotion rates
 existed in the banking industry at the time of the study. 
 
 The good news is we've already covered many of the necessary concepts 
-to understand hypothesis testing in Chapters \@ref(clt) 
-and \@ref(confidence-intervals). 
+in Chapters \@ref(clt) and \@ref(confidence-intervals)
+to understand hypothesis testing. 
 We will expand further on these ideas here 
 and also provide a general framework for understanding hypothesis tests. 
 By understanding this general framework, 
@@ -67,7 +67,6 @@ if (length(cran_packages) != 0) xf$pkg_load2(cran_packages)
 
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
-md <- import::from(moderndive, .all=TRUE, .into={new.env()})
 
 import::from(magrittr, '%>%')
 import::from(patchwork, .all=TRUE)
@@ -88,7 +87,6 @@ cran_internal <- c(
 
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
-md <- import::from(moderndive, .all=TRUE, .into={new.env()})
 import::from(moderndive, promotions)
 
 import::from(magrittr, '%>%')
@@ -573,7 +571,6 @@ from the 1970 study,
 `r observed_test_statistic`,
 with a solid red line.
 
-<!-- Change the hypothesis at the beginning to directional. TODO -->
 
 ```{r shuffle-1000-distribution, echo=F, fig.show='hold', fig.cap="Differences in promotion rates from 1000 samples."}
 infer::visualize(null_distribution, bins = 10) + 
@@ -653,7 +650,7 @@ Hypothesis testing allows us to make such distinctions.
 
 ## Understanding hypothesis tests {#understanding-ht}
 
-Much like the terminology, notation, and definitions relating to sampling you saw in Section \@ref(sampling-framework), there are a lot of terminology, notation, and definitions related to hypothesis testing as well. Learning these may seem like a very daunting task at first. However, with practice, practice, and more practice, anyone can master them. 
+Much like the terminology, notation, and definitions relating to sampling you saw in Section \@ref(sampling-terminology), there are a lot of terminology, notation, and definitions related to hypothesis testing as well. Learning these may seem like a very daunting task at first. However, with practice, practice, and more practice, anyone can master them. 
 
 First, a **hypothesis** is a statement about the value of an unknown population parameter. 
 Hypothesis tests can involve any of the population parameters in Table \@ref(tab:table-parameters).
@@ -754,7 +751,7 @@ is the difference in sample proportions $\widehat{p}_{m} - \widehat{p}_{f}$.
 
 Fourth, the **observed test statistic** \index{hypothesis testing!observed test statistic} is the value of the test statistic that we observed in real life. In our case, we computed this value using the data saved in the `promotions` data frame. It was the observed difference of $\widehat{p}_{m} -\widehat{p}_{f} = `r p_men_promoted` - `r p_women_promoted` = `r observed_test_statistic` = `r observed_test_statistic*100`\%$ in favor of résumés with male names.
 
-Fifth, the **null distribution** \index{hypothesis testing!null distribution} is the sampling distribution of the test statistic *assuming the null hypothesis $H_0$ is true*. Ooof! That's a long one! Let's unpack it slowly. The key to understanding the null distribution is that the null hypothesis $H_0$ is *assumed* to be true. We're not saying that $H_0$ is true at this point, we're only assuming it to be true for hypothesis testing purposes. In our case, this corresponds to our hypothesized universe of no gender discrimination in promotion rates. Assuming the null hypothesis $H_0$, also stated as "Under $H_0$," how does the test statistic vary due to sampling variation? In our case, how will the difference in sample proportions $\widehat{p}_{m} - \widehat{p}_{f}$ vary due to sampling under $H_0$? Recall from Subsection \@ref(sampling-definitions) that distributions displaying how point estimates vary due to sampling variation are called *sampling distributions*. The only additional thing to keep in mind about null distributions is that they are sampling distributions *assuming the null hypothesis $H_0$ is true*. 
+Fifth, the **null distribution** \index{hypothesis testing!null distribution} is the sampling distribution of the test statistic *assuming the null hypothesis $H_0$ is true*. Ooof! That's a long one! Let's unpack it slowly. The key to understanding the null distribution is that the null hypothesis $H_0$ is *assumed* to be true. We're not saying that $H_0$ is true at this point, we're only assuming it to be true for hypothesis testing purposes. In our case, this corresponds to our hypothesized universe of no gender discrimination in promotion rates. Assuming the null hypothesis $H_0$, also stated as "Under $H_0$," how does the test statistic vary due to sampling variation? In our case, how will the difference in sample proportions $\widehat{p}_{m} - \widehat{p}_{f}$ vary due to sampling under $H_0$? Recall from Subsection \@ref(sample-vs-sampling) that distributions displaying how point estimates vary due to sampling variation are called *sampling distributions*. The only additional thing to keep in mind about null distributions is that they are sampling distributions *assuming the null hypothesis $H_0$ is true*. 
 
 In our case, we previously visualized a null distribution 
 in Figure \@ref(fig:shuffle-1000-distribution), 
@@ -1817,8 +1814,6 @@ both vertical lines are positioned similarly relative to the centre
 of the respective null distribution. 
 
 To calculate the $p$-value of the theory-based hypothesis test, 
-<!-- [TODO]: apprently this is only good for sim-based -->
-<!-- we can apply `infer::get_p_value()` to the null distribution:  -->
 let's use `pnorm()`, a base-R function.
 
 ```{r include=F, eval=F}

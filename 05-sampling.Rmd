@@ -591,7 +591,7 @@ and elaborating on key concepts involved in the theorem.
   where $sd$ is the sample standard deviation
 
 
-### Sample vs. sampling distribution
+### Sample vs. sampling distribution {#sample-vs-sampling}
 
 Figure \@ref(fig:one-versus-thousand) showed two distributions: 
 a distribution of banana weights in ONE sample, 

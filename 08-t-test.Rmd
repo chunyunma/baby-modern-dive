@@ -5,7 +5,6 @@
 chap <- 8
 lc <- 0
 
-
 # Set output digit precision
 options(scipen = 99) # , digits = 3)
 
@@ -1021,8 +1020,9 @@ tibble::glimpse(cle_sac)
 # Create a template function for descriptives
 my_skim <- skimr::skim_with(base = skimr::sfl(n = length, missing = skimr::n_missing), 
                      numeric = skimr::sfl(
-                                          mean, sd, iqr = IQR,
-# stats::IQR            The Interquartile Range
+                                          mean, 
+                                          sd, 
+                                          iqr = IQR,
                                           min, 
                                           p25 = ~ quantile(., 1/4), 
                                           median, 
@@ -1074,9 +1074,13 @@ inc_summ <- cle_sac %>%
 # Next we will assign some key values to variable names in R:
 xbar_cle <- inc_summ$mean[1]
 xbar_sac <- inc_summ$mean[2]
+sd_cle <- inc_summ$sd[1] %>% round(0)
+sd_sac <- inc_summ$sd[2] %>% round(0)
 obs_diff <- xbar_sac - xbar_cle
 n_cle <- inc_summ$sample_size[1]
 n_sac <- inc_summ$sample_size[2]
+cleveland <- cle_sac %>% dp$filter(metro_area == "Cleveland_ OH")
+sacramento <- cle_sac %>% dp$filter(metro_area != "Cleveland_ OH")
 ```
 
 ```{r}
@@ -1188,8 +1192,8 @@ ci
 ```
 
 ```{r two-means-ci, fig.show="hold", fig.cap="Percentile-based 95% confidence interval."}
-boot_distn_two_means %>%
-  infer::visualize(endpoints = ci, direction = "between")
+infer::visualize(boot_distn_two_means) +
+  infer::shade_confidence_interval(endpoints = ci)
 ```
 
 We see that 0 is contained in this confidence interval 
@@ -1310,11 +1314,23 @@ matches well with the one calculated using bootstrapping.
 
 #### State conclusion {-}
 
-We, therefore, do not have sufficient evidence to reject the null hypothesis. 
+We, therefore, do not have sufficient evidence to reject the null hypothesis, 
+$t$(`r n_sac+n_cle - 2`) = `r t_test$statistic %>% round(2)`, 
+$p$ = `r t_test$p.value %>% round (2)`. 
 Our initial guess that a statistically significant difference 
 not existing in the means was backed by this statistical analysis. 
-We do not have evidence to suggest that the true mean income differs 
-between Cleveland, OH and Sacramento, CA based on this data.
+We do not have evidence to suggest that the true mean income 
+differs between Cleveland, OH and Sacramento, CA based on this data 
+($\bar{x}_{sac} = `r xbar_sac %>% round(0)`$, 
+$\text{SD}_{sac} = `r sd_sac %>% round(0)`$; 
+$\bar{x}_{cle} = `r xbar_cle %>% round(0)`$, 
+$\text{SD}_{cle} = `r sd_cle %>% round(0)`$).[^5]
+
+[^5]: Given that data in both groups deviate from a normal distribution, 
+reporting IQR instead of SD is more appropriate, 
+but SD is more typically reported in the literature. 
+$\text{IQR}_{sac} = `r IQR(sacramento$income)`$, 
+$\text{IQR}_{cle} = `r IQR(cleveland$income)`$
 
 
 <!-- ### Comparing results -->

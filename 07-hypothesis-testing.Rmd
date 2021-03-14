@@ -948,7 +948,8 @@ in gender-based discrimination rates.
 We set this null hypothesis $H_0$ in our `infer` workflow 
 using the `null` argument of the `hypothesize()` function to either:
 
-- `"point"` for hypotheses involving a single sample or
+- `"point"` for hypotheses involving a single sample 
+  (e.g., Appendix \@ref(one-sample-t)) or
 - `"independence"` for hypotheses involving two samples.
 
 In our case, since we have two samples 

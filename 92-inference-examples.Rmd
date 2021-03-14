@@ -1,3 +1,820 @@
 # Inference Examples {#inference-examples}
 
-Coming soon!
+This appendix is designed to provide you 
+with examples of the xx basic hypothesis tests 
+and their corresponding confidence intervals. 
+Traditional theory-based methods 
+as well as computational-based methods are presented.
+
+<!-- A list of all the following examples. -->
+
+```{r setup_infer, include=FALSE, purl=FALSE}
+# Used to define Learning Check numbers:
+chap <- "B"
+lc <- 0
+
+
+# Set output digit precision
+options(scipen = 99) # , digits = 3)
+
+# Set random number generator see value for replicable pseudorandomness
+set.seed(76)
+```
+
+
+### Needed packages {-}
+
+```{r load-package, eval=F}
+# Install xfun so that I can use xfun::pkg_load2
+if (!requireNamespace('xfun')) install.packages('xfun')
+xf <- loadNamespace('xfun')
+
+cran_packages <- c(
+                  "dplyr", 
+                  "ggplot2", 
+                  "infer", 
+                  "moderndive"
+)
+
+if (length(cran_packages) != 0) xf$pkg_load2(cran_packages)
+
+gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
+
+import::from(magrittr, '%>%')
+import::from(patchwork, .all=TRUE)
+```
+
+```{r import-pkg, echo=F, message=FALSE, warning=FALSE}
+cran_internal <- c(
+                    "dplyr", 
+                    "ggplot2", 
+                    "infer", 
+                    "kableExtra", 
+                    "moderndive", 
+                    "patchwork", 
+                    "tibble",
+                    "tidyr"
+)
+
+gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
+import::from(moderndive, promotions)
+
+import::from(magrittr, '%>%')
+import::from(patchwork, .all=TRUE)
+```
+
+## One mean {#one-sample-t}
+
+### Problem statement
+
+The National Survey of Family Growth conducted by the
+Centers for Disease Control gathers information on family life, 
+marriage and divorce, pregnancy, infertility, use of contraception, 
+and men's and women's health. 
+One of the variables collected on this survey is the age at first marriage. 
+5,534 randomly sampled US women between 2006 and 2010 completed the survey. 
+The women sampled here had been married at least once. 
+Do we have evidence that the mean age of first marriage for all US women 
+from 2006 to 2010 is greater than 23 years? 
+[Tweaked a bit from @isrs2014 [Chapter 4]]
+
+
+### Competing hypotheses
+
+#### In words {-}
+
+- Null hypothesis: 
+  The mean age of first marriage for all US women from 2006 to 2010 
+  is equal to 23 years.
+
+- Alternative hypothesis: 
+  The mean age of first marriage for all US women from 2006 to 2010 
+  is greater than 23 years.
+
+#### In symbols (with annotations) {-#age-hypothesis}
+
+- $H_0: \mu = \mu_{0}$, where $\mu$ represents the mean age of first marriage 
+  for all US women from 2006 to 2010 and $\mu_0$ is 23.
+
+- $H_a: \mu > 23$
+
+#### Set $\alpha$ {-}
+
+It's important to set the significance level before starting the testing using the data. 
+Let's set the significance level at 5\% here.
+
+
+### Exploring the sample data
+
+```{r eval=FALSE}
+age_at_marriage <- readr::read_csv("https://moderndive.com/data/ageAtMar.csv")
+```
+
+```{r read_data1, echo=FALSE, warning=FALSE, message=FALSE}
+age_at_marriage <- readr::read_csv(here::here("data", "ageAtMar.csv"))
+```
+
+```{r skimr-template}
+# Create a template function for descriptives to be recycled
+my_skim <- skimr::skim_with(base = skimr::sfl(n = length, missing = skimr::n_missing), 
+                     numeric = skimr::sfl(
+                                          mean, 
+                                          sd, 
+                                          iqr = IQR,
+                                          min, 
+                                          p25 = ~ quantile(., 1/4), 
+                                          median, 
+                                          p75 = ~ quantile(., 3/4), 
+                                          max
+                                          ), 
+                            append = FALSE
+) #sfl stands for "skimr function list"
+```
+
+
+```{r summarize1}
+age_at_marriage %>% 
+  my_skim(age)
+```
+
+```{r echo=F}
+age_summ <- age_at_marriage %>%
+  dp$summarize(
+    sample_size = dp$n(),
+    mean = mean(age),
+    sd = sd(age),
+    minimum = min(age),
+    lower_quartile = quantile(age, 0.25),
+    median = median(age),
+    upper_quartile = quantile(age, 0.75),
+    max = max(age)
+  )
+```
+The histogram below also shows the distribution of `age`.
+
+```{r hist1b, fig.cap="Distribution of age at first marriage for women in US between 2006-2010."}
+gg$ggplot(data = age_at_marriage, mapping = gg$aes(x = age)) +
+  gg$geom_histogram(binwidth = 3, color = "white")
+```
+
+The observed statistic of interest here is the sample mean:
+
+```{r}
+x_bar <- age_at_marriage %>%
+  infer::specify(response = age) %>%
+  infer::calculate(stat = "mean")
+x_bar
+```
+
+Note that the code above to calculate `x_bar` is equivalent to the following: 
+
+```{r eval=F}
+x_bar <- mean(age_at_marriage$age)
+```
+
+
+#### Guess about statistical significance {-}
+
+We are looking to see if the observed sample mean of `r age_summ$mean %>% round(2)` 
+is statistically greater than $\mu_0 = 23$. 
+They seem to be quite close, but we have a large sample size here. 
+I am going to guess that the large sample size 
+will lead us to reject this practically trivial difference. 
+
+
+### Simulation-based methods {#age-sim-method}
+
+#### Bootstrapping for hypothesis test {-}
+
+In order to look to see if the observed sample mean of `r age_summ$mean %>% round(2)` 
+is statistically greater than $\mu_0 = 23$, 
+we need to account for the sample size. 
+We also need to determine a process that replicates 
+how the original sample of size `r nrow(age_at_marriage)` was selected.  
+
+We can use the idea of *bootstrapping* 
+to simulate the population from which the sample came 
+and then generate samples from that simulated population 
+to account for sampling variability. 
+<!-- Recall how bootstrapping would apply in this context: -->
+
+```{r echo=FALSE}
+mu0 <- 23
+```
+
+
+```{r echo=FALSE}
+if (!file.exists(here::here("rds", "null_distn_one_mean.rds"))) {
+  set.seed(2018)
+  null_distn_one_mean <- age_at_marriage %>%
+    infer::specify(response = age) %>%
+    # `null = point` because the hypothesis only involves a single sample
+    infer::hypothesize(null = "point", mu = 23) %>%
+    infer::generate(reps = 1000) %>%
+    infer::calculate(stat = "mean")
+  saveRDS(object = null_distn_one_mean, 
+          here::here("rds", "null_distn_one_mean.rds"))
+} else {
+  null_distn_one_mean <- readRDS(here::here("rds", "null_distn_one_mean.rds"))
+}
+```
+
+```{r sim1, eval=FALSE}
+set.seed(2018)
+null_distn_one_mean <- age_at_marriage %>%
+  infer::specify(response = age) %>%
+  # `null = point` because the hypothesis only involves a single sample
+  infer::hypothesize(null = "point", mu = 23) %>%
+  infer::generate(reps = 1000) %>%
+  infer::calculate(stat = "mean")
+```
+
+```{r age-null-dist, fig.cap="Null distribution for age using bootstrapping."}
+infer::visualize(null_distn_one_mean)
+```
+
+```{block bootstrap-point, type="btw", purl=F}
+\vspace{-0.15in}
+
+**_Good to know_**
+
+\vspace{-0.1in}
+```
+
+**How was the sampling distribution in Figure \@ref(fig:age-null-dist) created?**
+
+
+1. Sample with replacement from the original sample 
+   of `r nrow(age_at_marriage)` women and repeat this process 1,000 times, 
+
+2. calculate the mean for each of the 1,000 bootstrap samples created in Step 1.,
+
+3. combine all of these bootstrap statistics calculated in Step 2 
+   into a `boot_distn` object, and
+
+4. shift the center of this distribution over to the null value of `r mu0`. 
+   (This is needed; otherwise it will be centered at `r age_summ$mean %>% round(2)` 
+   as a result of the bootstrapping process)
+
+
+```{block, type="btw", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+
+Next, we can use this distribution to observe our $p$-value. 
+Recall this is a right-tailed test so we will be looking for values 
+that are greater than or equal to `r age_summ$mean %>% round(2)` for our $p$-value.
+
+(ref:age-null-dist-p) Null distribution for age using bootstrapping; red vertical line = observed test statistic.
+
+```{r age-null-dist-p, fig.cap="(ref:age-null-dist-p)"}
+infer::visualize(null_distn_one_mean) + 
+  infer::shade_p_value(obs_stat = x_bar, direction = "greater")
+```
+
+##### Calculate $p$-value {-}
+
+```{r}
+pvalue <- null_distn_one_mean %>%
+  infer::get_pvalue(obs_stat = x_bar, direction = "greater")
+pvalue
+```
+
+When you run the chunk above, 
+you will likely have received a warning which reads: 
+
+>
+Warning message: 
+Please be cautious in reporting a p-value of 0. 
+This result is an approximation based on the number of `reps` 
+chosen in the `generate()` step. 
+See `?get_p_value()` for more information.
+
+Be definition, a $p$-value could be infinitely small, but never be zero. 
+However, the output of `infer::get_p_value()` could be zero,
+if none of the test statistic from the `infer::calculate()` step 
+is equal or larger than the observed statistic.
+This is largely an artifical effect. 
+In the case that a $p$-value of zero is returned 
+by `infer::get_p_value()`, 
+the true size of $p$-value is likely smaller than `3/reps`. 
+For example, if `reps = 3000`, 
+and if `infer::get_p_value()` returns a `0`, 
+then you can report `p < 0.001`.
+
+So the current $p$-value led us to reject the null hypothesis at the 5% level. 
+You can also see this from the histogram above 
+that we are far into the tail of the null distribution.
+
+#### Bootstrapping for confidence interval {-}
+
+We can also create a confidence interval for the unknown population parameter 
+$\mu$ using our sample data using *bootstrapping*.
+
+<!-- Note that we don't need to shift this distribution  -->
+<!-- since we want the center of our confidence interval  -->
+<!-- to be our point estimate $\bar{x}_{obs} = `r x_bar`$. -->
+
+```{r echo=FALSE}
+if (!file.exists("rds/boot_distn_one_mean.rds")) {
+  boot_distn_one_mean <- age_at_marriage %>%
+    infer::specify(response = age) %>%
+    # we don't need `infer::hypothesize()` for constructing confidence intervals
+    infer::generate(reps = 1000) %>%
+    infer::calculate(stat = "mean")
+  saveRDS(object = boot_distn_one_mean, 
+          here::here("rds", "boot_distn_one_mean.rds"))
+} else {
+  boot_distn_one_mean <- readRDS(here::here("rds", "boot_distn_one_mean.rds"))
+}
+```
+
+```{r boot1, eval=FALSE}
+boot_distn_one_mean <- age_at_marriage %>%
+  infer::specify(response = age) %>%
+  infer::generate(reps = 1000) %>%
+  infer::calculate(stat = "mean")
+```
+
+```{r}
+ci <- boot_distn_one_mean %>%
+  infer::get_ci()
+ci
+```
+
+```{r age-ci, fig.cap="A 95% confidence interval for the mean age of US women who get married between 2006 to 2010."}
+infer::visualize(boot_distn_one_mean) + 
+  infer::shade_ci(endpoints = ci)
+```
+
+Note that although the [alternative hypothesis $H_a$ is one-sided](#age-hypothesis)
+in the current example,
+a confidence interval is typically closed on both sides, 
+i.e., a two-sided one, as shown above.
+
+We see that `r mu0` is not contained in this confidence interval 
+as a plausible value of $\mu$ (the unknown population mean) 
+and the entire interval is larger than `r mu0`. 
+This matches with our hypothesis test results of rejecting the null hypothesis 
+in favor of the alternative ($\mu > 23$).
+
+**Interpretation**: 
+We are 95% confident that the true mean age of first marriage 
+for all US women from 2006 to 2010 
+is between `r ci[["lower_ci"]] %>% round(2)` and `r ci[["upper_ci"]] %>% round(2)`.
+
+
+### Theory-based methods
+
+#### Check conditions {-}
+
+Remember that in order to use the shortcut (formula-based, theoretical) approach, 
+we need to check that some conditions are met.
+
+1. _Independent observations_:  The observations are collected independently.
+
+    The cases are selected independently through random sampling 
+    so this condition is met.
+
+2. _Approximately normal_:  The distribution of the response variable 
+   should be normal or the sample size should be at least 30.
+
+    The histogram for the sample above does show some skewness.
+   
+The Q-Q plot below also shows some skewness.
+
+<!-- How to read a qq plot? -->
+
+```{r qqplotmean, fig.cap="Q-Q plot for age."}
+gg$ggplot(data = age_at_marriage, mapping = gg$aes(sample = age)) +
+  gg$stat_qq()
+```
+
+The sample size here is quite large though ($n = 5534$) 
+so both conditions are met.
+
+
+```{block qq-plot, type="btw", purl=F}
+\vspace{-0.15in}
+
+**_Good to know_**
+
+\vspace{-0.1in}
+```
+
+**How to read a Q-Q plot?**
+
+Q-Q stands for quantile-quantile. 
+When we apply a Q-Q plot to a sample of data, for example, 
+it can tell us whether the data follow a normal distribution or not. 
+If the data do follow a normal distribution, 
+we should observe a straight line formed by points extending to both 
+upper right corner and bottom left corner. 
+
+Like a histogram, a Q-Q plot is a visual check, not a rigorous proof, 
+so it is somewhat subjective.
+A straight line with some small deviation 
+can still be accepted as normally distributed.
+
+```{block, type="btw", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+
+#### Test statistic {-}
+
+The test statistic is a random variable based on the sample data. 
+Here, we want to look at a way to estimate the population mean $\mu$. 
+A good guess is the sample mean $\bar{x}$. 
+Recall that this sample mean is actually a random variable 
+that will vary as different samples are (theoretically, would be) collected. 
+We are looking to see how likely is it for us to have observed a sample mean 
+of $\bar{x}_{obs} = `r x_bar %>% round(2)`$ or larger 
+assuming that the population mean is `r mu0` 
+(i.e., assuming the null hypothesis is true). 
+If the conditions are met and assuming $H_0$ is true, 
+we can "standardize" this original test statistic of $\bar{x}$ 
+into a $t$-statistic that follows a $t$-distribution 
+with degrees of freedom equal to $df = n - 1$:
+
+$$ t =\dfrac{ \bar{x} - \mu_0}{ s / \sqrt{n} } \sim t (df = n - 1) $$
+
+where $s$ represents the standard deviation of the sample and $n$ is the sample size.
+
+##### Observed test statistic {-}
+
+While one could compute this observed test statistic by "hand", 
+the focus here is on the set-up of the problem 
+and in understanding which formula for the test statistic applies. 
+We can use the `t_test()` function to perform this analysis for us. 
+
+```{r t.test1a, attr.output=".numberLines"}
+t_test_results <- 
+  t.test(x = age_at_marriage$age, alternative = "greater", mu = 23)
+t_test_results
+```
+
+We see here that the $t_{obs}$ value is `r t_test_results$statistic %>% round(2)`.
+
+#### Compute $p$-value {-}
+
+The $p$-value---the probability of observing an $t_{obs}$ value 
+of `r t_test_results$statistic %>% round(2)` or more in our null distribution 
+of a $t$ with `r t_test_results$parameter` degrees of freedom---
+is smaller than `0.001`.
+
+#### State conclusion {-}
+
+We, therefore, have sufficient evidence to reject the null hypothesis, 
+$t(`r length(age_at_marriage)`) = `r t_test_results$statistic %>% round(2)`$, 
+$p < 0.001$.
+Our initial guess that our observed sample mean 
+was statistically greater than the hypothesized mean 
+has supporting evidence here. 
+Based on this sample, we have evidence that the mean age of first marriage 
+for all US women from 2006 to 2010 is greater than 23 years, 
+($M = `r t_test_results$estimate %>% round(2)`$).
+
+#### Confidence interval {-}
+
+Note on line 7-8 of the output from the previous `t.test()`, 
+the 95% confidence interval has `Inf` as its upperbound. 
+This is because the $t$-test we conducted was one-sided.
+As mentioned earlier, a confidence interval is typically two-sided.
+Simimlar to the two-sided confidence interval we constructed using bootstrapping, 
+let's request a theory-based two-sided confidence interval using `t.test()`.
+
+
+```{r t.test1}
+t.test(
+  x = age_at_marriage$age,
+  alternative = "two.sided",
+  mu = 23
+)$conf
+```
+
+
+### Comparing results
+
+Observing the bootstrap distribution in Section \@ref(age-sim-method), 
+it makes sense that the results are so similar for theory-based 
+and simulation-based methods in terms of the $p$-value 
+and the confidence interval, 
+because these distributions look very similar to normal distributions. 
+Give that the conditions for the theory-based method were met 
+(the large sample size was the driver here),
+we could make an educated guess that using either method
+will lead to similar results.
+
+
+
+## One proportion
+
+### Problem statement
+
+The CEO of a large electric utility claims that 80 percent of his 1,000,000 customers are satisfied with the service they receive. To test this claim, the local newspaper surveyed 100 customers, using simple random sampling. 73 were satisfied and the remaining were unsatisfied.  Based on these findings from the sample, can we reject the CEO's hypothesis that 80% of the customers are satisfied? [Tweaked a bit from http://stattrek.com/hypothesis-test/proportion.aspx?Tutorial=AP]
+
+
+### Competing hypotheses
+
+#### In words {-}
+
+- Null hypothesis: 
+  The proportion of all customers of the large electric utility 
+  satisfied with service they receive is equal 0.80.
+
+- Alternative hypothesis: 
+  The proportion of all customers of the large electric utility 
+  satisfied with service they receive is different from 0.80.
+
+#### In symbols (with annotations) {-}
+
+- $H_0: \pi = p_{0}$, 
+  where $\pi$ represents the proportion of all customers 
+  of the large electric utility satisfied with service 
+  they receive and $p_0$ is 0.8.
+
+- $H_a: \pi \ne 0.8$
+
+#### Set $\alpha$ {-}
+
+It's important to set the significance level before starting the testing using the data. 
+Let's set the significance level at 5% here.
+
+
+### Exploring the sample data
+
+```{r read_data2}
+# Let's create the data frame based on the problem statement
+elec <- c(rep("satisfied", 73), rep("unsatisfied", 27)) %>%
+  # use `tibble::enframe()` to convert vectors to data frames
+  tibble::enframe() %>%
+  dp$rename(satisfy = value)
+```
+
+The bar graph below also shows the distribution of `satisfy`.
+
+```{r bar, fig.cap="Percentage of un/satisfied customers in a sample of 100."}
+gg$ggplot(data = elec, gg$aes(x = satisfy)) +
+  gg$geom_bar()
+```
+
+The observed statistic is computed as
+
+```{r}
+p_hat <- elec %>%
+  infer::specify(response = satisfy, success = "satisfied") %>%
+  infer::calculate(stat = "prop")
+p_hat
+```
+
+#### Guess about statistical significance {-}
+
+We are looking to see if the sample proportion of `r dp$pull(p_hat)` 
+is statistically different from $p_0 = 0.8$ based on this sample. 
+They seem to be quite close, and our sample size is not huge here ($n = 100$). 
+Let's guess that we do not have evidence to reject the null hypothesis.
+
+
+### Simulation-based methods
+
+#### Simulation for hypothesis test {-}
+
+To find out whether `r dp$pull(p_hat)` is statistically different from 0.8, 
+we need to account for the sample size. 
+We also need to determine a process that replicates 
+how the original sample of size 100 was selected. 
+We can use the idea of an unfair coin to *simulate* this process. 
+We will simulate flipping an unfair coin 
+(with probability of success 0.8 matching the null hypothesis) 100 times. 
+Then we will keep track of how many heads come up in those 100 flips. 
+Our simulated statistic matches with 
+how we calculated the original statistic $\hat{p}$: 
+the number of heads (satisfied) out of our total sample of 100. 
+We then repeat this process many times (say 1,000) 
+to create the null distribution looking at the simulated proportions of successes:
+
+```{r echo=FALSE}
+if (!file.exists(here::here("rds", "null_distn_one_prop.rds"))) {
+  set.seed(2018)
+  null_distn_one_prop <- elec %>%
+    infer::specify(response = satisfy, success = "satisfied") %>%
+    infer::hypothesize(null = "point", p = 0.8) %>%
+    infer::generate(reps = 1000) %>%
+    infer::calculate(stat = "prop")
+  saveRDS(object = null_distn_one_prop, here::here("rds", "null_distn_one_prop.rds"))
+} else {
+  null_distn_one_prop <- readRDS(here::here("rds", "null_distn_one_prop.rds"))
+}
+```
+
+```{r sim2, eval=FALSE}
+set.seed(2018)
+null_distn_one_prop <- elec %>%
+  infer::specify(response = satisfy, success = "satisfied") %>%
+  infer::hypothesize(null = "point", p = 0.8) %>%
+  infer::generate(reps = 1000) %>%
+  infer::calculate(stat = "prop")
+```
+
+```{r satis-null-dist, fig.cap="Null distribution for percentage of satisfied customers."}
+infer::visualize(null_distn_one_prop )
+```
+
+We can next use this distribution to observe our $p$-value. 
+Recall this is a two-tailed test 
+so we will be looking for values that are 0.8 - 0.73 = 0.07 
+away from 0.8 in BOTH directions for our $p$-value:
+
+(ref:satis-null-dist-p) Null distribution for percentage of satisfied customers; red vertical line = observed test statistic; two-tailed
+
+```{r stais-null-dist-p, fig.cap="(ref:satis-null-dist-p"}
+infer::visualize(null_distn_one_prop) +
+  infer::shade_p_value(obs_stat = p_hat, direction = "both")
+```
+
+##### Calculate $p$-value {-}
+
+```{r}
+pvalue <- null_distn_one_prop %>%
+  infer::get_pvalue(obs_stat = p_hat, direction = "both")
+pvalue
+```
+
+So our $p$-value is `r pvalue` and we fail to reject the null hypothesis at the 5% level.
+
+#### Bootstrapping for confidence interval {-}
+
+We can also create a confidence interval for the unknown population parameter $\pi$ using our sample data.  To do so, we use *bootstrapping*, which involves 
+
+1. sampling with replacement from our original sample of 100 survey respondents and repeating this process 1,000 times, 
+2. calculating the proportion of successes for each of the 1,000 bootstrap samples created in Step 1.,
+3. combining all of these bootstrap statistics calculated in Step 2 into a `boot_distn` object,
+4. identifying the 2.5th and 97.5th percentiles of this distribution (corresponding to the 5% significance level chosen) to find a 95% confidence interval for $\pi$, and
+5. interpret this confidence interval in the context of the problem.
+
+```{r echo=FALSE}
+if (!file.exists(here::here("rds", "boot_distn_one_prop.rds"))) {
+  boot_distn_one_prop <- elec %>%
+    infer::specify(response = satisfy, success = "satisfied") %>%
+    infer::generate(reps = 1000) %>%
+    infer::calculate(stat = "prop")
+  saveRDS(object = boot_distn_one_prop, here::here("rds", "boot_distn_one_prop.rds"))
+} else {
+  boot_distn_one_prop <- readRDS(here::here("rds", "boot_distn_one_prop.rds"))
+}
+```
+
+```{r boot2, eval=FALSE}
+boot_distn_one_prop <- elec %>%
+  infer::specify(response = satisfy, success = "satisfied") %>%
+  infer::generate(reps = 1000) %>%
+  infer::calculate(stat = "prop")
+```
+
+<!-- Just as we use the `mean` function for calculating the mean  -->
+<!-- over a numerical variable,  -->
+<!-- we can also use it to compute the proportion of successes  -->
+<!-- for a categorical variable where we specify  -->
+<!-- what we are calling a "success" after the `==`.  -->
+<!-- Think about the formula for calculating a mean  -->
+<!-- and how R handles logical statements such as `satisfy == "satisfied"`  -->
+<!-- for why this must be true. -->
+
+```{r}
+ci <- infer::get_ci(boot_distn_one_prop)
+ci
+```
+
+```{r satis-ci, fig.cap="A 95% confidence interval for percentage of satisfied customers."}
+infer::visualize(boot_distn_one_prop) + 
+  infer::shade_ci(endpoints = ci)
+```
+
+We see that 0.80 is contained in this confidence interval as a plausible value 
+of $\pi$ (the unknown population proportion). 
+This matches with our hypothesis test results 
+of failing to reject the null hypothesis.
+
+**Interpretation**: 
+We are 95% confident that the true proportion of customers 
+who are satisfied with the service they receive 
+is between `r ci[["lower_ci"]]` and `r ci[["upper_ci"]]`.
+
+
+### Theory-based methods
+
+#### Check conditions {-}
+
+Remember that in order to use the shortcut (formula-based, theoretical) approach, 
+we need to check that some conditions are met.
+
+1. _Independent observations_:  The observations are collected independently.
+
+    The cases are selected independently through random sampling so this condition is met.
+
+2. _Approximately normal_:  The number of expected successes and expected failures is at least 10.
+
+    This condition is met since 73 and 27 are both greater than 10.
+
+#### Test statistic {-}
+
+The test statistic is a random variable based on the sample data. 
+Here, we want to look at a way to estimate the population proportion $\pi$. 
+A good guess is the sample proportion $\hat{p}$. 
+Recall that this sample proportion is actually a random variable 
+that will vary as different samples are (theoretically, would be) collected. 
+We are looking to see how likely is it for us 
+to have observed a sample proportion of $\hat{p}_{obs} = `r p_hat`$ 
+or larger assuming that the population proportion is 0.80 
+(assuming the null hypothesis is true). 
+If the conditions are met and assuming $H_0$ is true, 
+we can standardize this original test statistic of $\hat{P}$ 
+into a $Z$ statistic that follows a $N(0, 1)$ distribution.
+
+$$ Z =\dfrac{ \hat{p} - p_0}{\sqrt{\dfrac{p_0(1 - p_0)}{n} }} \sim N(0, 1) $$
+
+##### Observed test statistic {-}
+
+While one could compute this observed test statistic by "hand" by plugging the observed values into the formula, the focus here is on the set-up of the problem and in understanding which formula for the test statistic applies. The calculation has been done in R below for completeness though:
+
+```{r}
+p_hat <- 0.73
+p0 <- 0.8
+n <- 100
+z_obs <- (p_hat - p0) / sqrt((p0 * (1 - p0)) / n)
+z_obs
+```
+
+We see here that the $z_{obs}$ value is around `r z_obs %>% round(2)`. 
+Our observed sample proportion of `r p_hat` is `r -z_obs %>% round(2)` 
+standard errors *below* the hypothesized parameter value of `r p0`.
+
+#### Visualize and compute $p$-value {-}
+
+```{r pvaloneprop, fig.cap="Theory-based null distribution for percentage of satisfied customers."}
+null_distribution_satis <- elec %>%
+  infer::specify(response = satisfy, success = "satisfied") %>%
+  infer::hypothesize(null = "point", p = 0.8) %>%
+  # For theory-based null distribution, stat is "z" instead of "prop"
+  infer::calculate(stat = "z")
+# visualize the theoretical null distribution
+infer::visualize(null_distribution_satis, method = "theoretical") + 
+  infer::shade_p_value(obs_stat = z_obs, direction = "both")
+```
+
+```{r}
+2 * pnorm(z_obs)
+```
+
+
+The $p$-value---the probability of observing an $z_{obs}$ value of 
+`r z_obs %>% round(2)` or more extreme (in both directions) 
+in our null distribution---is around `r round(2 * pnorm(z_obs) * 100)`%. 
+
+Note that we could also do this test directly using the `prop.test` function.
+
+```{r prop.test1}
+prop.test(
+  x = table(elec$satisfy),
+  n = length(elec$satisfy),
+  alternative = "two.sided",
+  p = 0.8,
+  correct = FALSE
+)
+```
+
+`prop.test` does a $\chi^2$ test here but this matches up exactly 
+with what we would expect:  $x^2_{obs} = 3.06 = (-1.75)^2 = (z_{obs})^2$ 
+and the $p$-values are the same because we are focusing on a two-tailed test.
+
+Note that the 95 percent confidence interval 
+given above matches well with the one calculated using bootstrapping.
+
+#### State conclusion {-}
+
+We, therefore, do not have sufficient evidence to reject the null hypothesis, 
+$p = `r 2*pnorm(z_obs) %>% round(2)`. 
+<!-- Our initial guess that our observed sample proportion  -->
+<!-- was not statistically greater than the hypothesized proportion  -->
+<!-- has not been invalidated.  -->
+Based on this sample, we do not have evidence 
+that the proportion of all customers of the large electric utility 
+satisfied with service they receive is different from 0.80, 
+at the $\alpha = 5%$ level.
+
+<!--  -->
+<!-- ### Comparing results -->
+<!--  -->
+<!-- Observing the bootstrap distribution and the null distribution that were created,  -->
+<!-- it makes sense that the results are so similar for traditional and non-traditional methods in terms of the $p$-value and the confidence interval since these distributions look very similar to normal distributions.  The conditions also being met leads us to better guess that using any of the methods whether they are traditional (formula-based) or non-traditional (computational-based) will lead to similar results. -->
+<!--  -->
+
+
+
+

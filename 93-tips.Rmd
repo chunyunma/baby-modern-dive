@@ -18,7 +18,7 @@ regarding R & RStudio.
 Each question is accompanied by an answer. 
 The list will be updated regularly. 
 
-```{r load-package, echo=F, message=F, warning=F}
+```{r attach-package, echo=F, message=F, warning=F}
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
 import::from(magrittr, '%>%')
@@ -87,7 +87,7 @@ knitr::include_graphics(here::here(
   But when I try it in R-studio with the available data set, it doesn't work, 
   but it works when I use `glimpse` function with `$` sign (see the screenshot). 
 
-```{r library-load, echo=F, fig.cap="To load or not to load?"}
+```{r library-attach, echo=F, fig.cap="To attach or not to attach?"}
 knitr::include_graphics(here::here(
                                    "docs", 
                                    "images", 
@@ -439,7 +439,7 @@ You can safely ignore this error message and proceed with `y`.
   to discover what packages you are using and versions of those packages. 
   Very smart, eh? 
   However, `renv`'s smartness comes at a cost of being less flexible. 
-  It anticipates users to install packages and load them with `library()` 
+  It anticipates users to install packages and attach them with `library()` 
   and alike. 
   However, as I mentioned in Section \@ref(package-use), 
   I am not using `library()` and explicitly reference all functions 

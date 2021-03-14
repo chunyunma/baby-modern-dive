@@ -642,7 +642,7 @@ Repeat the earlier installation steps, but for the `dplyr`, `nycflights13`, and 
 
 What I am about to explain is arguably one of the most controversial topics 
 in the R community. 
-I personally summarize it as "to load or not to load". 
+I personally summarize it as "to attach or not to attach". 
 I spent many hours mulling over which aproach to take for this class. 
 In the end, I decided to take the second, slightly harder one. 
 I believe that you will benefit from this seemingly harder approach 
@@ -702,15 +702,15 @@ install.packages("import")
 Now try the `gg <- import::from(...)` command and it should run successfully. 
 
 For those of you who have used `R` before, 
-you may be thinking: what about using `library()` to load a package? 
+you may be thinking: what about using `library()` to attach a package? 
 This is why I said "controversial" at the beginning. 
 Please allow me to elaborate. 
 
 There are two types of `R` users. 
-Those that load packages using `library()`, 
-and those that do not load packages. 
+Those that attach packages using `library()`, 
+and those that do not attach packages. 
 Based on my estimate, 99% of `R` users fall into first category. 
-Until three months ago, I was also a "loader." 
+Until three months ago, I was also a "attacher" 
 Now I am one of the 1%. 
 And if everything goes well, you will join me in the 1% group 
 by the end of this chapter. 
@@ -1228,7 +1228,7 @@ and you should see something like this printed out:
 
 > [1] "R version 4.0.3 (2020-10-10)"
 
-As of 2021 January, the latest R version is `4.0.3`. 
+As of 2021 February, the latest R version is `4.0.4`. 
 If you have an older version installed on your computer, 
 go to <https://cloud.r-project.org> and 
 follow the steps described in \@ref(installing) to install the latest version of R. 

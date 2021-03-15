@@ -1,7 +1,7 @@
 # Inference Examples {#inference-examples}
 
 This appendix is designed to provide you 
-with examples of the xx basic hypothesis tests 
+with examples of basic hypothesis tests 
 and their corresponding confidence intervals. 
 Traditional theory-based methods 
 as well as computational-based methods are presented.
@@ -32,8 +32,7 @@ xf <- loadNamespace('xfun')
 cran_packages <- c(
                   "dplyr", 
                   "ggplot2", 
-                  "infer", 
-                  "moderndive"
+                  "infer"
 )
 
 if (length(cran_packages) != 0) xf$pkg_load2(cran_packages)
@@ -51,7 +50,6 @@ cran_internal <- c(
                     "ggplot2", 
                     "infer", 
                     "kableExtra", 
-                    "moderndive", 
                     "patchwork", 
                     "tibble",
                     "tidyr"
@@ -177,7 +175,7 @@ x_bar <- mean(age_at_marriage$age)
 
 #### Guess about statistical significance {-}
 
-We are looking to see if the observed sample mean of `r age_summ$mean %>% round(2)` 
+We are testing whether the observed sample mean of `r age_summ$mean %>% round(2)` 
 is statistically greater than $\mu_0 = 23$. 
 They seem to be quite close, but we have a large sample size here. 
 I am going to guess that the large sample size 
@@ -188,11 +186,11 @@ will lead us to reject this practically trivial difference.
 
 #### Bootstrapping for hypothesis test {-}
 
-In order to look to see if the observed sample mean of `r age_summ$mean %>% round(2)` 
+To find out whether the observed sample mean of `r age_summ$mean %>% round(2)` 
 is statistically greater than $\mu_0 = 23$, 
 we need to account for the sample size. 
 We also need to determine a process that replicates 
-how the original sample of size `r nrow(age_at_marriage)` was selected.  
+how the original sample ($n = `r nrow(age_at_marriage)`$) was selected.  
 
 We can use the idea of *bootstrapping* 
 to simulate the population from which the sample came 
@@ -284,6 +282,8 @@ pvalue <- null_distn_one_mean %>%
 pvalue
 ```
 
+####  {-#warning-zero-p}
+
 When you run the chunk above, 
 you will likely have received a warning which reads: 
 
@@ -356,7 +356,7 @@ in the current example,
 a confidence interval is typically closed on both sides, 
 i.e., a two-sided one, as shown above.
 
-We see that `r mu0` is not contained in this confidence interval 
+We see that $\mu_0 = `r mu0`$ is not contained in this confidence interval 
 as a plausible value of $\mu$ (the unknown population mean) 
 and the entire interval is larger than `r mu0`. 
 This matches with our hypothesis test results of rejecting the null hypothesis 
@@ -383,11 +383,11 @@ we need to check that some conditions are met.
 2. _Approximately normal_:  The distribution of the response variable 
    should be normal or the sample size should be at least 30.
 
-    The histogram for the sample above does show some skewness.
+    The histogram for the sample above does show some skewness 
+    (Figure \@ref(fig:hist1b)).
    
 The Q-Q plot below also shows some skewness.
 
-<!-- How to read a qq plot? -->
 
 ```{r qqplotmean, fig.cap="Q-Q plot for age."}
 gg$ggplot(data = age_at_marriage, mapping = gg$aes(sample = age)) +
@@ -428,15 +428,14 @@ can still be accepted as normally distributed.
 
 #### Test statistic {-}
 
-The test statistic is a random variable based on the sample data. 
-Here, we want to look at a way to estimate the population mean $\mu$. 
-A good guess is the sample mean $\bar{x}$. 
+Our target unknown parameter is the population mean $\mu$.
+A good guess of it is the sample mean $\bar{x}$. 
 Recall that this sample mean is actually a random variable 
 that will vary as different samples are (theoretically, would be) collected. 
-We are looking to see how likely is it for us to have observed a sample mean 
+We are testing how likely it is for us to have observed a sample mean 
 of $\bar{x}_{obs} = `r x_bar %>% round(2)`$ or larger 
 assuming that the population mean is `r mu0` 
-(i.e., assuming the null hypothesis is true). 
+(i.e., under the null hypothesis). 
 If the conditions are met and assuming $H_0$ is true, 
 we can "standardize" this original test statistic of $\bar{x}$ 
 into a $t$-statistic that follows a $t$-distribution 
@@ -512,6 +511,380 @@ we could make an educated guess that using either method
 will lead to similar results.
 
 
+## Two means (paired samples)
+
+### Problem statement {-}
+
+Trace metals in drinking water affect the flavor 
+and an unusually high concentration can pose a health hazard. 
+Ten pairs of data were taken measuring zinc concentration 
+in bottom water and surface water at 10 randomly selected locations 
+on a stretch of river. 
+Do the data suggest that the true average concentration in the surface water 
+is smaller than that of bottom water? (Note that units are not given.) 
+[Tweaked a bit from https://onlinecourses.science.psu.edu/stat500/node/51]
+
+
+### Competing hypotheses
+
+#### In words {-}
+
+- Null hypothesis: 
+  The mean concentration in the bottom water
+  is the same as that of the surface water at different paired locations.
+
+- Alternative hypothesis: 
+  The mean concentration in the surface water 
+  is smaller than that of the bottom water at different paired locations.
+
+#### In symbols (with annotations) {-}
+
+- $H_0: \mu_{diff} = 0$, where $\mu_{diff}$ represents the mean difference 
+  in concentration for surface water minus bottom water.
+
+- $H_a: \mu_{diff} < 0$
+
+#### Set $\alpha$ {-}
+
+It's important to set the significance level 
+before starting the testing using the data. 
+Let's set the significance level at 5% here.
+
+
+### Exploring the sample data
+
+```{r eval=FALSE}
+zinc_tidy <- readr::read_csv("https://moderndive.com/data/zinc_tidy.csv")
+head(zinc_tidy)
+```
+
+```{r read_data5, echo=FALSE, message=FALSE, warning=FALSE}
+zinc_tidy <- readr::read_csv(here::here("data", "zinc_tidy.csv"))
+head(zinc_tidy)
+```
+
+Let's compute the differences in `surface - bottom` for each of the 10 locations
+and save it in a new column `pair_diff`.
+
+```{r}
+zinc_diff <- zinc_tidy %>%
+  dp$group_by(loc_id) %>%
+  dp$summarize(pair_diff = diff(concentration)) %>%
+  dp$ungroup()
+zinc_diff
+```
+
+```{block paired-t, type="btw", purl=FALSE}
+\vspace{-0.15in}
+
+**_Good to know_**
+
+\vspace{-0.1in}
+```
+
+**Paired data**
+
+Even though the current research question appears to involve two groups of data: 
+zinc concentration in the surface water, 
+and zinc concentration in the bottom water,
+it is the difference between **each pair** that we are interested in, 
+that is, the 10 numbers in the newly derived data frame `zinc_diff`. 
+More precisely, we are asking whether the true difference of zinc concentration 
+in the population, represented by a sample of 10 in `zinc_diff`, 
+is zero or not.
+This can be further reframed as: is the average of those 10 values in `zinc_diff` 
+meaningfully (statistically) different from zero?
+Recall that in the [previous example](#one-sample-t), 
+we asked the question whether the average age of wommen at their first marriage 
+was different from 23.
+These two questions in essence are of the same type,
+barring differences in specific names and values.
+Therefore we can apply the same method we had seen in the previous example 
+to the current one.
+
+Testing the difference between paired data is a common type of research question. 
+These paired data can arise from research scenarios such as:
+
+- A group of 20 patients received a therapy. Each patient was measured twice 
+  on their symptoms, before and after the therapy, 
+  to assess the effectiveness of the therapy.
+  The paired data consist of measurements taken at two different times 
+  for each patient --- pre- and post-therapy.
+
+- A company doing market research 
+  hired a group of 10 wine connoisseurs (a.k.a, oenophiles) to taste two types of wine. 
+  Each wine taster gave two ratings, one for each type of wine. 
+  The paired data consist of ratings for two types of wine from each wine taster.
+  The researchers could calculate the differences beteeween each pair of ratings 
+  and test whether the two types of wine are truely different.
+
+All of these scenarios share one common feature: 
+there are always two samples in which observations in one sample 
+can be **paired** with observations in othe other sample. 
+For this reason, the theory-based method applied to those data 
+is commonly known as a **paired $t$-test**. 
+
+```{block, type="btw", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+
+<!-- [TODO] Need to break down this piece of code -->
+
+Next we calculate the mean difference as our observed statistic:
+
+```{r summarize4}
+d_hat <- zinc_diff %>%
+  infer::specify(response = pair_diff) %>%
+  infer::calculate(stat = "mean")
+d_hat
+```
+
+The histogram below also shows the distribution of `pair_diff`.
+
+```{r hist1a, fig.cap="Distribution of zinc concentration difference at a sample of 10 locations."}
+gg$ggplot(zinc_diff, gg$aes(x = pair_diff)) +
+  gg$geom_histogram(binwidth = 0.04, color = "white") + 
+  gg$labs(x = "Zinc concentration in the surface water minus bottom water")
+```
+
+#### Guess about statistical significance {-}
+
+We are testing whether $\hat{x}_{diff}$, 
+or the sample paired mean difference of `r d_hat`,
+is statistically less than 0. 
+They seem to be quite close, and we have a small number of pairs ($n = 10$). 
+Let's guess that we will fail to reject the null hypothesis. 
+
+
+### Simulation-based methods
+
+```{r stats3, include=FALSE}
+#### Collecting summary info {-}
+# Next we will assign some key values to variable names in R:
+# obs_diff <- zinc_summ %>% select(mean)
+# n_pairs <- zinc_summ %>% select(sample_size)
+```
+
+#### Bootstrapping for hypothesis test {-}
+
+To find out whether the observed sample mean difference 
+$\bar{x}_{diff} = `r d_hat`$ is statistically less than 0, 
+we need to account for the number of pairs. 
+Treating the differences as our data of interest, 
+we can build bootstrap samples similar to how we did in the 
+[one sample mean](#one-sample-t) example.
+We hypothesize that the mean difference is zero. 
+
+
+```{r echo=FALSE}
+if (!file.exists(here::here("rds", "null_distn_paired_means.rds"))) {
+  set.seed(2018)
+  null_distn_paired_means <- zinc_diff %>%
+    infer::specify(response = pair_diff) %>%
+    infer::hypothesize(null = "point", mu = 0) %>%
+    infer::generate(reps = 1000) %>%
+    infer::calculate(stat = "mean")
+  saveRDS(object = null_distn_paired_means, here::here("rds", "null_distn_paired_means.rds"))
+} else {
+  null_distn_paired_means <- readRDS(here::here("rds", "null_distn_paired_means.rds"))
+}
+```
+
+```{r sim5, eval=FALSE}
+set.seed(2018)
+null_distn_paired_means <- zinc_diff %>%
+  infer::specify(response = pair_diff) %>%
+  infer::hypothesize(null = "point", mu = 0) %>%
+  infer::generate(reps = 1000) %>%
+  infer::calculate(stat = "mean")
+```
+
+```{r zinc-bootstrap, fig.cap="Bootstrap distribution for zinc concentraion differences."}
+infer::visualize(null_distn_paired_means) + 
+  gg$labs(x = "Paired mean difference of zinc concentration")
+```
+
+We can next use this distribution to observe our $p$-value. 
+Recall this is a left-tailed test ($H_a: \mu_{diff} < 0$), 
+so we will be looking for values that are less than or equal to `r d_hat` 
+for our $p$-value.
+
+```{r zinc-bootstrap-p, fig.cap="Bootstrap distribution for zinc concentration differences; vertical red line = observed mean difference of 10 pairs of sample"}
+infer::visualize(null_distn_paired_means) + 
+  infer::shade_p_value(obs_stat = d_hat, direction = "less")
+```
+
+##### Calculate $p$-value {-}
+
+```{r}
+pvalue <- null_distn_paired_means %>%
+  infer::get_pvalue(obs_stat = d_hat, direction = "less")
+pvalue
+```
+
+Similar to the [previous example](#warning-zero-p),
+you will have received a warning about $p$-value of 0. 
+Instead of reporting that $p$ is equal to zero, 
+we can report $p < 0.01$, 
+and that we reject the null hypothesis at the 5% level. 
+You can also see this from the histogram above 
+that we are far into the left tail of the null distribution.
+
+#### Bootstrapping for confidence interval {-}
+
+We can also create a confidence interval 
+for the unknown population parameter $\mu_{diff}$ 
+using our sample data (the calculated differences) with *bootstrapping*. 
+This is similar to the bootstrapping done in a one sample mean case, 
+except now our data is differences instead of raw numerical data.
+Note that this code is identical to the pipeline 
+shown in the hypothesis test above except the `hypothesize()` function is not called.
+
+```{r echo=FALSE}
+if (!file.exists("rds/boot_distn_paired_means.rds")) {
+  boot_distn_paired_means <- zinc_diff %>%
+    infer::specify(response = pair_diff) %>%
+    infer::generate(reps = 1000, type = "bootstrap") %>%
+    infer::calculate(stat = "mean")
+  saveRDS(object = boot_distn_paired_means, here::here("rds", "boot_distn_paired_means.rds"))
+} else {
+  boot_distn_paired_means <- readRDS(here::here("rds", "boot_distn_paired_means.rds"))
+}
+```
+
+```{r boot5, eval=FALSE}
+boot_distn_paired_means <- zinc_diff %>%
+  infer::specify(response = pair_diff) %>%
+  infer::generate(reps = 1000, type = "bootstrap") %>%
+  infer::calculate(stat = "mean")
+```
+
+```{r}
+ci <- boot_distn_paired_means %>%
+  infer::get_ci()
+ci
+```
+
+```{r zinc-bootstrap-ci, fig.cap="A bootstrap 95% confidence interval for the zinc concentration difference between surface and bottom water."}
+infer::visualize(boot_distn_paired_means) + 
+  infer::shade_ci(endpoints = ci)
+```
+
+We see that 0 is not contained in this confidence interval 
+as a plausible value of $\mu_{diff}$ (the unknown population parameter). 
+This matches with our hypothesis test results of rejecting the null hypothesis. 
+Given that zero is not a plausible value of the population parameter 
+and that the entire confidence interval falls below zero, 
+we have evidence that surface zinc concentration levels are lower, 
+on average, than bottom level zinc concentrations.
+
+**Interpretation**:  We are 95% confident that the true mean zinc concentration 
+on the surface is between `r round(-ci[["lower_ci"]], 2)` units 
+to `r round(-ci[["upper_ci"]], 2)` units lower than on the bottom.
+
+
+### Theory-based methods
+
+#### Check conditions {-}
+
+Remember that in order to use the shortcut (formula-based, theoretical) approach, 
+we need to check that some conditions are met.
+
+1. _Independent observations_:  The observations among pairs are independent.
+
+   The locations are selected independently 
+   through random sampling so this condition is met.
+
+2. _Approximately normal_:  The distribution of population of differences 
+   is normal or the number of pairs is at least 30.
+
+    The histogram above does show some skew so we have reason 
+    to doubt the population being normal based on this sample. 
+    We also only have 10 pairs which is fewer than the 30 needed. 
+    A theory-based test may not be valid here.
+    
+#### Test statistic {-#one-sample-t-stat}
+
+As mentioned earlier, 
+the data of interest consist of differences between pairs, 
+and can be conceived as a single sample. 
+The goal is to estimate the population mean difference $\mu_{diff}$, 
+so the test statistic is the sample mean, $\bar{x}_{diff}$.
+We are testing how likely it is for us to have observed 
+a sample mean of $\bar{x}_{diff, obs} = 0.0804$ or larger 
+assuming that the population mean difference is 0 
+(i.e., under the null hypothesis). 
+If the conditions are met and assuming $H_0$ is true, 
+we can "standardize" this original test statistic of $\bar{X}_{diff}$ 
+into a $t$-statistic that follows a $t$-distribution 
+with degrees of freedom equal to $df = n - 1$, 
+where $n$ is the number of pairs:
+
+
+$$ t =\dfrac{ \bar{x}_{diff} - 0}{ s_{diff} / \sqrt{n} } \sim t (df = n - 1) $$
+
+where $s$ represents the standard deviation of the sample differences 
+and $n$ is the number of pairs.
+
+##### Observed test statistic {-}
+
+While one could compute this observed test statistic by "hand", 
+the focus here is on the set-up of the problem 
+and in understanding which formula for the test statistic applies. 
+We can use the `t_test` function on the differences 
+to perform this analysis for us. 
+
+```{r t-test-paired}
+t_test_results <- 
+  t.test(x = zinc_diff$pair_diff, alternative = "less", mu = 0)
+t_test_results
+```
+
+We see here that the $t_{obs}$ value is `r t_test_results$statistic %>% round(2)`.
+
+#### Compute $p$-value {-}
+
+The $p$-value---the probability of observing a $t_{obs}$ value of 
+`r t_test_results$statistic %>% round(2)` or less in our null distribution 
+of a $t$ with 9 degrees of freedom---is smaller than 0.01. 
+This can also be calculated in R directly:
+
+```{r pvalpair}
+pt(-4.8638, df = nrow(zinc_diff) - 1, lower.tail = TRUE)
+```
+
+#### State conclusion {-}
+
+We, therefore, have sufficient evidence to reject the null hypothesis, 
+$t(`r nrow(zinc_diff) - 1`) = `r t_test_results$statistic %>% round(2)`$, 
+$p < 0.001$. 
+Our initial guess that our observed sample mean difference 
+was not statistically less than the hypothesized mean of 0 
+has been invalidated here. 
+Based on this sample, we have evidence that, on average, 
+the mean concentration in the bottom water 
+is greater than that of the surface water.
+
+
+### Comparing results
+
+The results are similar 
+for theory- and simulate-based methods 
+in terms of the $p$-value and the confidence interval.
+The conditions for the theory-based method were not met 
+because the number of pairs was smaller than 30, 
+but the sample data were not highly skewed. 
+Using either the theory-based 
+or simulated-based method led to similar results here.
+
+## Two means (independent samples)
+
+See Chapter \@ref(t-test)
+
+
+<!-- ## More than two means (Analysis of Variance, aka ANOVA) -->
 
 ## One proportion
 
@@ -575,7 +948,7 @@ p_hat
 
 #### Guess about statistical significance {-}
 
-We are looking to see if the sample proportion of `r dp$pull(p_hat)` 
+We are testing whether the sample proportion of `r dp$pull(p_hat)` 
 is statistically different from $p_0 = 0.8$ based on this sample. 
 They seem to be quite close, and our sample size is not huge here ($n = 100$). 
 Let's guess that we do not have evidence to reject the null hypothesis.
@@ -633,7 +1006,7 @@ away from 0.8 in BOTH directions for our $p$-value:
 
 (ref:satis-null-dist-p) Null distribution for percentage of satisfied customers; red vertical line = observed test statistic; two-tailed
 
-```{r stais-null-dist-p, fig.cap="(ref:satis-null-dist-p"}
+```{r stais-null-dist-p, fig.cap="(ref:satis-null-dist-p)"}
 infer::visualize(null_distn_one_prop) +
   infer::shade_p_value(obs_stat = p_hat, direction = "both")
 ```
@@ -724,20 +1097,16 @@ we need to check that some conditions are met.
 
 #### Test statistic {-}
 
-The test statistic is a random variable based on the sample data. 
-Here, we want to look at a way to estimate the population proportion $\pi$. 
-A good guess is the sample proportion $\hat{p}$. 
-Recall that this sample proportion is actually a random variable 
-that will vary as different samples are (theoretically, would be) collected. 
-We are looking to see how likely is it for us 
+Our goal is to test how likely it is for us 
 to have observed a sample proportion of $\hat{p}_{obs} = `r p_hat`$ 
-or larger assuming that the population proportion is 0.80 
+or larger assuming that the population proportion $\pi$ is 0.80 
 (assuming the null hypothesis is true). 
 If the conditions are met and assuming $H_0$ is true, 
 we can standardize this original test statistic of $\hat{P}$ 
-into a $Z$ statistic that follows a $N(0, 1)$ distribution.
+into a $z$ statistic that follows a $N(0, 1)$ distribution, 
+i.e., a standard normal distribution with $\mu = 0$ and $\sigma = 1$.
 
-$$ Z =\dfrac{ \hat{p} - p_0}{\sqrt{\dfrac{p_0(1 - p_0)}{n} }} \sim N(0, 1) $$
+$$ z =\dfrac{ \hat{p} - p_0}{\sqrt{\dfrac{p_0(1 - p_0)}{n} }} \sim N(0, 1) $$
 
 ##### Observed test statistic {-}
 
@@ -790,7 +1159,7 @@ prop.test(
 ```
 
 `prop.test` does a $\chi^2$ test here but this matches up exactly 
-with what we would expect:  $x^2_{obs} = 3.06 = (-1.75)^2 = (z_{obs})^2$ 
+with what we would expect:  $\chi^2_{obs} = 3.06 = (-1.75)^2 = (z_{obs})^2$ 
 and the $p$-values are the same because we are focusing on a two-tailed test.
 
 Note that the 95 percent confidence interval 
@@ -799,14 +1168,15 @@ given above matches well with the one calculated using bootstrapping.
 #### State conclusion {-}
 
 We, therefore, do not have sufficient evidence to reject the null hypothesis, 
-$p = `r 2*pnorm(z_obs) %>% round(2)`. 
+$\chi^2_{obs} = 3.06$, 
+$p = `r 2*pnorm(z_obs) %>% round(2)`$. 
 <!-- Our initial guess that our observed sample proportion  -->
 <!-- was not statistically greater than the hypothesized proportion  -->
 <!-- has not been invalidated.  -->
 Based on this sample, we do not have evidence 
 that the proportion of all customers of the large electric utility 
 satisfied with service they receive is different from 0.80, 
-at the $\alpha = 5%$ level.
+at the $\alpha = 0.05$ level.
 
 <!--  -->
 <!-- ### Comparing results -->
@@ -816,5 +1186,10 @@ at the $\alpha = 5%$ level.
 <!--  -->
 
 
+
+
+## Two proportions
+
+See Chapter \@ref(hypothesis-testing).
 
 

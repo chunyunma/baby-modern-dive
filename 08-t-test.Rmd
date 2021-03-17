@@ -399,10 +399,10 @@ For each of our `r n_reps` shuffles, we can calculate this test statistic by set
 
 ```{r eval=FALSE}
 null_distribution_movies <- movies_sample %>% 
-  specify(formula = rating ~ genre) %>% 
-  hypothesize(null = "independence") %>% 
-  generate(reps = 1000, type = "permute") %>% 
-  calculate(stat = "diff in means", order = c("Action", "Romance"))
+  infer::specify(formula = rating ~ genre) %>% 
+  infer::hypothesize(null = "independence") %>% 
+  infer::generate(reps = 1000, type = "permute") %>% 
+  infer::calculate(stat = "diff in means", order = c("Action", "Romance"))
 null_distribution_movies
 ```
 
@@ -1048,7 +1048,7 @@ gg$ggplot(cle_sac, gg$aes(x = metro_area, y = income)) +
 
 #### Guess about statistical significance {-}
 
-We are looking to see if a difference exists in the mean income of the two levels of the explanatory variable.  Based solely on the boxplot, we have reason to believe that no difference exists.  The distributions of income seem similar and the means fall in roughly the same place.
+We are testing whether a difference exists in the mean income of the two levels of the explanatory variable.  Based solely on the boxplot, we have reason to believe that no difference exists.  The distributions of income seem similar and the means fall in roughly the same place.
 
 
 ### Simulation-based methods
@@ -1248,7 +1248,15 @@ The sample sizes for each group are greater than 100 though so the assumptions s
 
 #### Test statistic {-}
 
-Here, we are interested in seeing if our observed difference in sample means ($\bar{x}_{sac, obs} - \bar{x}_{cle, obs}$ = `r inc_summ$mean[2] - inc_summ$mean[1]`) is statistically different than 0.  Assuming that conditions are met and the null hypothesis is true, we can use the $t$ distribution to standardize the difference in sample means ($\bar{X}_{sac} - \bar{X}_{cle}$) using the approximate standard error of $\bar{X}_{sac} - \bar{X}_{cle}$ (invoking $S_{sac}$ and $S_{cle}$ as estimates of unknown $\sigma_{sac}$ and $\sigma_{cle}$).
+Here, we are testing whether the observed difference in sample means 
+($\bar{x}_{sac, obs} - \bar{x}_{cle, obs}$ = `r round(inc_summ$mean[2] - inc_summ$mean[1], 2)`) 
+is statistically different than 0. 
+Assuming that conditions are met and the null hypothesis is true, 
+we can use the $t$-distribution to standardize the difference in sample means 
+($\bar{x}_{sac} - \bar{x}_{cle}$) using the approximate standard error 
+of $\bar{x}_{sac} - \bar{x}_{cle}$ 
+(invoking $s_{sac}$ and $s_{cle}$ as estimates of unknown 
+$\sigma_{sac}$ and $\sigma_{cle}$).
 
 $$
 t = \frac{ (\bar{x}_{sac} - \bar{x}_{cle}) - (\mu_{sac} - \mu_{cle})}{ \text{SE}_{\bar{x}_{sac} - \bar{x}_{cle}} } 

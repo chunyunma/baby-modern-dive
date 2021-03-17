@@ -796,7 +796,7 @@ In other words, we reject $H_0$ in favor of $H_A$.
 
 We are almost done with the hypothesis test. We have tentatively drawn the conclusion based on the $p$ value. One question remains: how low does the $p$ value have to be before we start rejecting the hypothesis? In the previous example, $p$ = `r p_val`. But who is to say that it is small enough?  In practice, it is commonly recommended to set the **significance level** of the test beforehand.  It is denoted by the Greek letter $\alpha$ (pronounced "alpha"). This value acts as a cutoff on the $p$-value, where if the $p$-value falls below $\alpha$, we would "reject the null hypothesis $H_0$."
 
-```{r echo=F}
+```{r echo=F, fig.cap="significance level (alpha value, light + bright pink region) vs. \n p value (bright pink region) "}
 diff_crit <- dp$nth(null_distribution$stat, n = 50, order_by = dp$desc(null_distribution$stat))
 
 # https://rdrr.io/cran/dplyr/man/nth.html
@@ -805,8 +805,8 @@ infer::visualize(null_distribution, bins = 10) +
   infer::shade_p_value(obs_stat = diff_crit, direction = "right", size = 0) + 
   infer::shade_p_value(obs_stat = observed_test_statistic, direction = "right", 
                        fill = c("hotpink2"), size = 1) + 
-  gg$labs(x = expression(paste("Difference in sample proportions ", hat(p)["m"] - hat(p)["f"])), 
-          title = "significance level (alpha value, light + bright pink region) vs. \n p value (bright pink region) ")
+  gg$labs(x = expression(paste("Difference in sample proportions ", hat(p)["m"] - hat(p)["f"]))
+          )
 ```
 
 
@@ -948,7 +948,7 @@ in gender-based discrimination rates.
 We set this null hypothesis $H_0$ in our `infer` workflow 
 using the `null` argument of the `hypothesize()` function to either:
 
-- `"point"` for hypotheses involving a single sample 
+- `"point"` for hypotheses involving a single sample
   (e.g., Appendix \@ref(one-sample-t)) or
 - `"independence"` for hypotheses involving two samples.
 

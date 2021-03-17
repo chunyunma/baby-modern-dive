@@ -1,30 +1,27 @@
-(ref:moderndivepart) Data Modeling with `moderndive`
-
-```{r echo=FALSE, results="asis", purl=FALSE}
-cat("# (PART) Data Modeling with moderndive {-} ")
-```
-
 # Simple linear Regression with a continuous predictor {#simple-regression}
-<!-- # Basic Regression {#regression} -->
 
-```{r include=FALSE, purl=FALSE}
+```{r setup_infer, include=FALSE, purl=FALSE}
 # Used to define Learning Check numbers:
-chap <- 5
+chap <- 11
 lc <- 0
 
-# Set output digit precision
-options(scipen = 99, digits = 3)
 
-# Set random number generator see value for replicable pseudorandomness.
+# Set output digit precision
+options(scipen = 99) # , digits = 3)
+
+# Set random number generator see value for replicable pseudorandomness
 set.seed(76)
 ```
 
-Now that we are equipped with data visualization skills 
-from Chapter \@ref(viz), data wrangling skills from Chapter \@ref(wrangling), 
-and an understanding of how to import data 
-and the concept of a "tidy" data format from Chapter \@ref(tidy), 
-let's proceed with data modeling. 
-The fundamental premise of data modeling 
+<p class="bg-danger">
+This chapter is still in draft mode!
+Be prepared to read it again once it has been finalized.
+</p>
+
+Now that we have learned the fundamentals of inferential statistics, 
+let's proceed with one of the most common data modelling techniques: 
+linear regression.
+The premise of data modeling 
 is to make explicit the relationship between:
 
 * an *outcome variable* $y$, also called a *dependent variable* 
@@ -115,7 +112,7 @@ In Chapter \@ref(inference-for-regression)
 on inference for regression, 
 we'll revisit our regression models and analyze the results 
 using the tools for *statistical inference* you'll develop 
-in Chapters \@ref(sampling), \@ref(confidence-intervals), 
+in Chapters \@ref(clt), \@ref(confidence-intervals), 
 and \@ref(hypothesis-testing) on sampling, bootstrapping 
 and confidence intervals, and hypothesis testing and $p$-values, respectively.
 
@@ -127,8 +124,7 @@ such as the *correlation coefficient*,
 that "correlation isn't necessarily causation," 
 and what it means for a line to be "best-fitting."
 
-
-### Needed packages {-#reg-packages}
+### Needed packages {-#regression-packages}
 
 Let's get ready all the packages we will need for this chapter. 
 
@@ -137,9 +133,9 @@ Let's get ready all the packages we will need for this chapter.
 if (!requireNamespace('xfun')) install.packages('xfun')
 xf <- loadNamespace('xfun')
 
-cran_primary <- c(
+cran_packages <- c(
                   "dplyr", 
-                  "gapminder", 
+                  "gapminder",
                   "ggplot2", 
                   "moderndive", 
                   "skimr"
@@ -155,15 +151,10 @@ import::from(patchwork, .all=TRUE)
 ```
 
 ```{r import-pkg, echo=F, message=FALSE, warning=FALSE}
-cran_secondary <- c(
-                    "broom", 
-                    "janitor", 
+cran_internal <- c(
                     "kableExtra", 
-                    "mvtnorm", 
                     "patchwork", 
                     "readr", 
-                    "scales", 
-                    "stringr", 
                     "tibble"
 )
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
@@ -233,30 +224,30 @@ df_gapminder2007 <- gapminder::gapminder %>%
   dp$mutate(income = log10(gdp_per_cap)*10000)
 ```
 
-A crucial step before doing any kind of analysis or modeling 
-is performing an *exploratory data analysis*, 
-\index{data analysis!exploratory} or EDA for short. 
-EDA gives you a sense of the distributions of the individual variables 
-in your data, whether any potential relationships exist between variables, 
-whether there are outliers and/or missing values, 
-and (most importantly) how to build your model. 
-Here are three common steps in an EDA:
-
-1. Most crucially, looking at the raw data values.
-1. Computing summary statistics, 
-   such as means, medians, and interquartile ranges.
-1. Creating data visualizations.
-
-Let's perform the first common step in an exploratory data analysis: 
-looking at the raw data values. 
-Because this step seems so trivial, 
-unfortunately many data analysts ignore it. 
-However, getting an early sense of what your raw data looks like 
-can often prevent many larger issues down the road. 
-
-You can do this by using RStudio's spreadsheet viewer 
-or by using the `glimpse()` function 
-as introduced in Subsection \@ref(exploredataframes) on exploring data frames:
+<!-- A crucial step before doing any kind of analysis or modeling  -->
+<!-- is performing an *exploratory data analysis*,  -->
+<!-- \index{data analysis!exploratory} or EDA for short.  -->
+<!-- EDA gives you a sense of the distributions of the individual variables  -->
+<!-- in your data, whether any potential relationships exist between variables,  -->
+<!-- whether there are outliers and/or missing values,  -->
+<!-- and (most importantly) how to build your model.  -->
+<!-- Here are three common steps in an EDA: -->
+<!--  -->
+<!-- 1. Most crucially, looking at the raw data values. -->
+<!-- 1. Computing summary statistics,  -->
+<!--    such as means, medians, and interquartile ranges. -->
+<!-- 1. Creating data visualizations. -->
+<!--  -->
+<!-- Let's perform the first common step in an exploratory data analysis:  -->
+<!-- looking at the raw data values.  -->
+<!-- Because this step seems so trivial,  -->
+<!-- unfortunately many data analysts ignore it.  -->
+<!-- However, getting an early sense of what your raw data looks like  -->
+<!-- can often prevent many larger issues down the road.  -->
+<!--  -->
+<!-- You can do this by using RStudio's spreadsheet viewer  -->
+<!-- or by using the `glimpse()` function  -->
+<!-- as introduced in Subsection \@ref(exploredataframes) on exploring data frames: -->
 
 ```{r}
 tibble::glimpse(df_gapminder2007)
@@ -295,11 +286,21 @@ we selected in `df_gapminder2007`:
 <!-- Expand [TODO] -->
 ```{block types-of-data, type="btw", purl=FALSE}
 \vspace{-0.15in}
-**_Types of data_**
+**_Good to know_**
+
+
+\vspace{-0.1in}
+```
+
+**Types of data**
 
 nominal, ordinal, interval, ratio
 
-\vspace{-0.1in}
+[TODO] expand
+
+```{block, type="btw", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
 ```
 
 An alternative way to look at the raw data values 
@@ -365,17 +366,6 @@ Let's take our `df_gapminder2007` data frame,
 df_gapminder2007 %>% 
   dp$select(life_exp, income) %>% 
   skimr::skim_without_charts()
-```
-
-
-```{block summary-statistics, type="btw", purl=FALSE}
-\vspace{-0.15in}
-**_Mean and Median_**
-
-What is mean?
-What is median?
-
-\vspace{-0.1in}
 ```
 
 For the numerical variables  `life_exp` and `income` it returns:
@@ -474,10 +464,12 @@ between income and life expectancy.
 
 ```{block ?, type="btw", purl=FALSE}
 \vspace{-0.15in}
-**_logrithmic_**
+**_Good to know_**
 
 \vspace{-0.1in}
 ```
+
+**Logrithmic**
 
 Run the following code chunk 
 and compare the result to Figure \@ref(fig:numxplot1):
@@ -623,11 +615,12 @@ play the "Guess the Correlation" 1980's style video game
 mentioned in Subsection \@ref(additional-resources-basic-regression).
 
 
-### Recap
+<!-- ### Recap -->
+
 <!-- [TODO] expand -->
-- A typical EDA (exploratory data analysis) includes: 
-  eyeball raw data, summary statistics, visualize
-- EDA is not the same as data snooping
+<!-- - A typical EDA (exploratory data analysis) includes:  -->
+<!--   eyeball raw data, summary statistics, visualize -->
+<!-- - EDA is not the same as data snooping -->
 
 
 <!-- ## Simple linear Regression with a continuous predictor {#model1table} -->
@@ -1751,3 +1744,4 @@ knitr::include_graphics(here::here(
 ### What's to come?
 
 In this chapter, you've studied the term _basic regression_, where you fit models that only have one explanatory variable. In Chapter \@ref(multiple-regression), we'll study *multiple regression*, where our regression models can now have more than one explanatory variable! In particular, we'll consider two scenarios: regression models with one numerical and one categorical explanatory variable and regression models with two numerical explanatory variables. This will allow you to construct more sophisticated and more powerful models, all in the hopes of better explaining your outcome variable $y$.
+

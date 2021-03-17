@@ -4,6 +4,12 @@
   background: #D7C0D0 5px center/3em no-repeat;
 }
 
+.bg-danger {
+	padding: 2px 2px 2px 2px;
+	color: white;
+	background-color: #d9534f
+}
+
 .learncheck {
   padding: 1em 1em 1em 1em;
   margin-bottom: 10px;

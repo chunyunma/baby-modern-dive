@@ -711,15 +711,15 @@
     },
     "rmarkdown": {
       "Package": "rmarkdown",
-      "Version": "2.7.3",
+      "Version": "2.7.4",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "rmarkdown",
       "RemoteUsername": "rstudio",
       "RemoteRef": "HEAD",
-      "RemoteSha": "61db7a9f5b18d77609877e3a3a039758b17d554a",
-      "Hash": "223190e53726f6dffa377c3a7001db7d"
+      "RemoteSha": "145046175c721af185aa6ba3ecc9262f12dc7369",
+      "Hash": "2bf7df15ea4245d51802b8e52efe828e"
     },
     "rprojroot": {
       "Package": "rprojroot",
@@ -905,10 +905,10 @@
     },
     "xfun": {
       "Package": "xfun",
-      "Version": "0.21",
+      "Version": "0.22",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "f3ddcca198959a42e8cb6b06c30d4f1e"
+      "Hash": "eab2f8ba53809c321813e72ecbbd19ba"
     },
     "xml2": {
       "Package": "xml2",

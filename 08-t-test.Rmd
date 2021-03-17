@@ -1222,13 +1222,14 @@ to `r round(ci[["upper_ci"]], 0)` dollars higher than for Cleveland.
 
 ### Theory-based method
 
-##### Check conditions {-}
+##### Check assumptions {-}
 
-Remember that in order to use the short-cut (formula-based, theoretical) approach, we need to check that some conditions are met.
+Remember that in order to use the short-cut (formula-based, theoretical) approach, 
+we need to check that some assumptions are met.
 
 1. _Independent observations_:  The observations are independent in both groups.
 
-    This `metro_area` variable is met since the cases are randomly selected from each city.
+    This condition is met because the cases are randomly selected from each city.
 
 2. _Approximately normal_:  The distribution of the response for each group should be normal or the sample sizes should be at least 30.
 
@@ -1238,8 +1239,10 @@ gg$ggplot(cle_sac, gg$aes(x = income)) +
   gg$facet_wrap(~metro_area)
 ```
 
-We have some reason to doubt the normality assumption here since both the histograms show deviation from a normal model fitting the data well for each group. 
-The sample sizes for each group are greater than 100 though so the assumptions should still apply.
+We have some reason to doubt the normality assumption here 
+because both histograms deviate from a standard normal curve. 
+The sample sizes for each group are greater than 100 though 
+so the assumptions should still apply.
 
 3. _Independent samples_: The samples should be collected without any natural pairing.
 

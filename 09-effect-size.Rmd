@@ -12,5 +12,978 @@ options(scipen = 99) # , digits = 3)
 set.seed(76)
 ```
 
-Coming soon.
+So far in this course, 
+we have been focusing on what to do AFTER data have been collected: 
+visualize, tidy, infer (generalize). 
+In this chapter, let's shift our focus and consider what to do 
+BEFORE data are even collected. 
+Although most introductory statistics books dedicate most of their space 
+to what happens AFTER data collection, 
+it does not mean that what happens before data collection is any less important. 
+Quite the opposite. 
+Data collected without careful planning could result in many undesirable consequences 
+including: 
 
++ being forced to use suboptimal analytical tools,
++ wasting time and resources, 
++ invalid conclusions, 
++ regret.
+
+
+One of the reasons why textbooks do not open with how to plan data collection 
+is because the planning phase requires one to consider, for example, 
+effect size and power --- concepts that build up on more basic ones 
+such as standard error (Chapter \@ref(clt)) 
+confidence intervals (Chapter \@ref(confidence-intervals)), 
+Type I and Type II errors (Chapter \@ref(hypothesis-testing)).
+Now that you have mastered those basic concepts, 
+it is time to learn how to plan data collection;
+in particular, how many participants you would need to recruit.
+
+```{block plan-study, type="btw", purl=FALSE}
+\vspace{-0.15in}
+
+**_Good to know_**
+
+\vspace{-0.1in}
+```
+
+**Planning a study**
+
+The proverb "failing to plan is planning to fail" certainly applies to research 
+as well as everyday life.
+Planning a study typically starts with formulating a reseasrch question.
+The question might be inspired by studying a body of literature, 
+conversing with a colleague, 
+attending a seminar, 
+...
+or a combination of any of them. 
+Once a research question is born, 
+in theory, it will dictate which analytical tool to use. 
+In practice, however, we tend to pursue only questions 
+that seem feasible given the tools we are already familiar with --- 
+yet another chicken and egg problem. 
+Or as the famous saying goes, 
+
+>
+  If your only tool is a hammer then every problem looks like a nail.
+
+The bottom line is, we should make a genuine effort to pose the most 
+relevant question, rather than forcing the question to fit into the 
+methodology framework we are comfortable with. 
+
+Once we have decided on the research question and what analytical tools to apply, 
+the next step would be deciding how many participants to recruit 
+given the anticipated findings.
+This is the focus of the current chapter.
+
+```{block, type="btw", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+
+### Needed packages {-#effect-size-packages}
+
+Let's get ready all the packages we will need for this chapter. 
+
+```{r load-package, eval=F}
+# Install xfun so that I can use xfun::pkg_load2
+if (!requireNamespace('xfun')) install.packages('xfun')
+xf <- loadNamespace('xfun')
+
+cran_packages <- c(
+                  "dplyr", 
+                  "esc", # a new package we will introduce in this chapter
+                  "ggplot2", 
+                  "infer", 
+                  "skimr",
+                  "tibble",
+                  "tidyr"
+)
+
+if (length(cran_packages) != 0) xf$pkg_load2(cran_packages)
+
+gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
+
+import::from(magrittr, '%>%')
+import::from(patchwork, .all=TRUE)
+```
+
+```{r import-pkg, echo=F, message=FALSE, warning=FALSE}
+cran_internal <- c(
+                    "dplyr", 
+                    "esc",
+                    "ggplot2", 
+                    "infer", 
+                    "kableExtra", 
+                    "patchwork", 
+                    "readr", 
+                    "skimr",
+                    "tibble", 
+                    "tidyr"
+)
+
+gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
+
+import::from(magrittr, '%>%')
+import::from(patchwork, .all=TRUE)
+```
+
+
+## Pip and Max {#small-and-large}
+
+Let's revisit the [second example](#income-example) you have seen 
+in Chapter \@ref(t-test). 
+Recall that a new graudate was deciding where to re-locate 
+and was basing his decision on income prospects of the destinations.
+Let's call this person Pip.
+Using US Census data, Pip compared the average income between Cleveland, Ohio, 
+and Sacramento, California.
+
+```{r eval=FALSE}
+# retrieve the sample Pip drew
+pip_cle_sac <- read.delim("https://moderndive.com/data/cleSac.txt") %>%
+  dp$rename(
+    income = Total_personal_income
+  ) %>% 
+	dp$mutate(
+    metro_area = as.factor(Metropolitan_area_Detailed)
+		) %>% 
+  dp$select(income, metro_area) %>% 
+  na.omit()
+tibble::glimpse(pip_cle_sac)
+```
+
+```{r echo=FALSE}
+if(!file.exists(here::here("rds", "cle_sac.rds"))) {
+  pip_cle_sac <- read.delim(here::here("data", "cleSac.txt")) %>%
+    dp$rename(
+      income = Total_personal_income
+    ) %>% 
+    dp$mutate(
+      metro_area = as.factor(Metropolitan_area_Detailed)
+      ) %>% 
+    dp$select(income, metro_area) %>% 
+    na.omit()
+  saveRDS(pip_cle_sac, here::here("rds", "cle_sac.rds"))
+} else {
+  pip_cle_sac <- readRDS(here::here("rds", "cle_sac.rds"))
+}
+
+tibble::glimpse(pip_cle_sac)
+```
+
+
+Let's say that another person, Max, used the same strategy to help decide
+where to re-locate after graduation.
+It just so happens that Max is also choosing between Cleveland, Ohio, 
+and Sacramento, California. 
+Unlike Pip, however, Max obtained a larger sample
+from the same pool, the US Census data.
+
+```{r eval=F}
+# retrieve the sample Max drew
+max_cle_sac <- dget("https://raw.githubusercontent.com/chunyunma/baby-modern-dive/master/data/max_cle_sac.txt")
+tibble::glimpse(max_cle_sac)
+```
+
+```{r read_data_large, echo=FALSE}
+if(!file.exists(here::here("rds", "bootstrap_income.rds"))){
+  max_cle_sac <- pip_cle_sac %>% 
+    infer::specify(formula = income ~ metro_area) %>% 
+    infer::generate(reps = 5, type = "bootstrap") %>% 
+    dp$ungroup() %>% 
+    dp$select(-replicate)
+  saveRDS(max_cle_sac,
+            here::here("rds", "bootstrap_income.rds"))
+} else {
+  max_cle_sac <- readRDS(here::here("rds", "bootstrap_income.rds"))
+}
+
+if(!file.exists(here::here("data", "max_cle_sac.txt"))) {
+  dput(max_cle_sac, here::here("data", "max_cle_sac.txt"))
+}
+
+tibble::glimpse(max_cle_sac)
+```
+
+
+
+### Exploring both samples
+
+In Chapter \@ref(t-test), we have already conducted exploratory analysis on Pip's data. 
+Nevertheless, let's run summary statistics and boxplots 
+on both Pip's and Max's data for comparison.
+
+```{r}
+# Create a template function for descriptives
+my_skim <- skimr::skim_with(base = skimr::sfl(n = length, missing = skimr::n_missing), 
+                     numeric = skimr::sfl(
+                                          mean, 
+                                          sd, 
+                                          iqr = IQR,
+                                          min, 
+                                          p25 = ~ quantile(., 1/4), 
+                                          median, 
+                                          p75 = ~ quantile(., 3/4), 
+                                          max
+                                          ), 
+                            append = FALSE
+) #sfl stands for "skimr function list"
+```
+
+```{r}
+# summary statistics for Pip's sample
+pip_cle_sac %>% 
+  dp$group_by(metro_area) %>% 
+  my_skim(income) %>% 
+  skimr::yank("numeric") %>% 
+  knitr::kable(
+               caption = "Summary statistics for Pip's sample"
+               )
+```
+
+```{r}
+# summary statistics for Max's sample
+max_cle_sac %>% 
+  dp$group_by(metro_area) %>% 
+  my_skim(income) %>% 
+  skimr::yank("numeric") %>% 
+  knitr::kable(
+               caption = "Summary statistics for Max's sample"
+               )
+```
+
+
+The boxplot below also shows the mean for each group highlighted by the red dots.
+
+```{r boxplots-income}
+pip_boxplot_income <- pip_cle_sac %>% gg$ggplot(gg$aes(x = metro_area, y = income)) +
+  gg$geom_boxplot() +
+  gg$stat_summary(fun = "mean", geom = "point", color = "red") + 
+  gg$labs(subtitle = "Pip's sample; n = 387")
+
+max_boxplot_income <- max_cle_sac %>% gg$ggplot(gg$aes(x = metro_area, y = income)) +
+  gg$geom_boxplot() +
+  gg$stat_summary(fun = "mean", geom = "point", color = "red") + 
+  gg$labs(subtitle = "Max's sample; n = 1935")
+
+pip_boxplot_income + max_boxplot_income
+```
+
+
+Except for the obvious sample size difference, 
+both Pip's and Max's data exhibit similar pattern. 
+The average income for both Cleveland and Sacramento are comparable cross 
+Pip's and Max's sample;
+so are the ranges. 
+
+#### Guess about statistical significance {-}
+
+From Section \@ref(independent-samples-t-2),
+we already know that Pip's data failed to reject the null hypothesis, 
+that his data did not provide enough evidence to support the notion that 
+the true mean income differed between Cleveland and Sacramento.
+Therefore, average income was not a useful criterion for Pip 
+to choose between the two cities.
+Given the similar distributions of data in both Pip's and Max's sample, 
+as shown in Figure \@ref(fig:boxplots-income),
+we have no reason to believe that Max's data would lead to a different conclusion. 
+In other words, we suspect that Max will also need to drop income 
+as a criterion in his pro-and-con list.
+
+
+Recall from Chapter \@ref(t-test) that both theory-based and simulated-based methods 
+led to highly similar results for Pip's data.
+For brevity, let's apply theory-based methods, i.e., two sample $t$-tests 
+to both Pip's and Max's data in this chapter.
+
+### Competing hypotheses
+
+#### In words {-}
+
+- Null hypothesis: The mean income is the **same** for both cities.
+
+- Alternative hypothesis: The mean income is **different** for the two cities.
+
+
+#### In symbols (with annotations) {-}
+
+- $H_0: \mu_{sac} = \mu_{cle}$ or $H_0: \mu_{sac} - \mu_{cle} = 0$, 
+  where $\mu$ represents the average income.
+
+- $H_A: \mu_{sac} - \mu_{cle} \ne 0$
+
+#### Set $\alpha$ {-}
+
+It's important to set the significance level 
+before starting the testing using the data. 
+Let's set the significance level at 5% here.
+
+```{r}
+ALPHA <- 0.05
+```
+
+
+### Check conditions {#income-example-assumptions}
+
+From Section \@ref(income-example-assumptions),
+we have confirmed that Pip's data met the conditions for theory-based methods. 
+Let's check Max's data now. 
+
+1. _Independent observations_: 
+   The observations are independent in both groups.
+
+    This condition is met because the cases are randomly selected from each city.
+
+2. _Approximately normal_: 
+   The distribution of the response for each group should be normal 
+   or the sample sizes should be at least 30.
+
+    ```{r hist-max, fig.cap="Distributions of income in two cities for Max's sample."}
+    gg$ggplot(max_cle_sac, gg$aes(x = income)) +
+      gg$geom_histogram(color = "white", binwidth = 20000) +
+      gg$facet_wrap(~metro_area)
+    ```
+
+    We have some reason to doubt the normality assumption here 
+    because both histograms deviate from a standard normal curve. 
+    The sample sizes for each group are well over 100 though 
+    so the assumptions should still apply.
+
+3. _Independent samples_: The samples should be collected without any natural pairing.
+
+    There is no mention of there being a relationship 
+    between those selected in Cleveland and in Sacramento.
+
+
+### Two-sample $t$-test
+
+#### Test statistic {-}
+
+We have seen the theory-based test statistic for Pip's data,
+which is a $t$-statistic by standardizing the difference in sample means 
+($\bar{x}_{sac} - \bar{x}_{cle}$):
+
+$$
+t = \frac{ (\bar{x}_{sac} - \bar{x}_{cle}) - (\mu_{sac} - \mu_{cle})}{ \text{SE}_{\bar{x}_{sac} - \bar{x}_{cle}} } 
+= \dfrac{ (\bar{x}_{sac} - \bar{x}_{cle}) - 0}{ \sqrt{\dfrac{{s_{sac}}^2}{n_{sac}} + \dfrac{{s_{cle}}^2}{n_{cle}}}  } \sim t (df = n_{sac} + n_{cle} - 2)
+$$
+
+where $n_{sac} = 175$ for Sacramento and $n_{cle} = 212$ for Cleveland.
+
+An almost identical test statistic applies to Max's data: 
+
+$$
+t = \frac{ (\bar{x}_{sac} - \bar{x}_{cle}) - (\mu_{sac} - \mu_{cle})}{ \text{SE}_{\bar{x}_{sac} - \bar{x}_{cle}} } 
+= \dfrac{ (\bar{x}_{sac} - \bar{x}_{cle}) - 0}{ \sqrt{\dfrac{{s_{sac}}^2}{n_{sac}} + \dfrac{{s_{cle}}^2}{n_{cle}}}  } \sim t (df = n_{sac} + n_{cle} - 2)
+$$
+
+where $n_{sac} = 890$ for Sacramento and $n_{cle} = 1045$ for Cleveland.
+
+
+#### Observed $t$-scores and $p$-values {-}
+
+```{r}
+# $t$-test for Pip's sample
+pip_t_test <-
+  t.test(income ~ metro_area, data = pip_cle_sac, alternative = "two.sided")
+pip_t_test
+
+# $t$-test for Max's sample
+max_t_test <- 
+  t.test(income ~ metro_area, data = max_cle_sac, alternative = "two.sided")
+max_t_test
+```
+
+
+```{r summarize, echo=F}
+pip_summ <- pip_cle_sac %>% 
+  dp$group_by(metro_area) %>%
+  dp$summarize(sample_size = dp$n(),
+    mean = mean(income),
+    sd = sd(income))
+
+max_summ <- max_cle_sac %>% 
+  dp$group_by(metro_area) %>%
+  dp$summarize(sample_size = dp$n(),
+    mean = mean(income),
+    sd = sd(income))
+
+pip_xbar_cle <- pip_summ$mean[1] %>% round(0)
+pip_xbar_sac <- pip_summ$mean[2] %>% round(0)
+pip_sd_cle <- pip_summ$sd[1] %>% round(0)
+pip_sd_sac <- pip_summ$sd[2] %>% round(0)
+pip_obs_diff <- pip_xbar_sac - pip_xbar_cle
+pip_n_cle <- pip_summ$sample_size[1]
+pip_n_sac <- pip_summ$sample_size[2]
+
+max_xbar_cle <- max_summ$mean[1] %>% round(0)
+max_xbar_sac <- max_summ$mean[2] %>% round(0)
+max_sd_cle <- max_summ$sd[1] %>% round(0)
+max_sd_sac <- max_summ$sd[2] %>% round(0)
+max_obs_diff <- max_xbar_sac - max_xbar_cle
+max_n_cle <- max_summ$sample_size[1]
+max_n_sac <- max_summ$sample_size[2]
+```
+
+```{r pip-max-comp, echo=F, message=F, warning=F}
+pip_max_t <- tibble::tibble(
+                            `Sample` = c("Pip's", "Max's"), 
+                            # `Sample size` = c(nrow(pip_cle_sac), 
+                            #                   nrow(max_cle_sac)
+                            #                   ),
+                            `$x_{sac} - x_{cle}$` = 
+                              c(pip_obs_diff, max_obs_diff), 
+                            `$p$-value` = 
+                              c(round(pip_t_test$p.value, 2), 
+                                round(max_t_test$p.value, 2)
+                                ), 
+                            `Conclusion` = 
+                              c("Fail to reject $H_0$", 
+                                "Reject $H_0$"
+                            )
+                            )
+pip_max_t %>% 
+  knitr::kable(
+    caption = "$t$-test results from Pip's sample vs. Max's sample", 
+    booktabs = TRUE,
+    escape = FALSE,
+    linesep = ""
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 16
+  )
+```
+
+
+
+
+Even though the absolute difference 
+between the mean income of Cleveland and Sacramento 
+in Pip's sample 
+($\bar{x}_{sac} - \bar{x}_{cle} = `r pip_xbar_sac - pip_xbar_cle`$) 
+is similar to that in Max's sample 
+($\bar{x}_{sac} - \bar{x}_{cle} = `r max_xbar_sac - max_xbar_cle`$), 
+the conclusion they would draw are drastically different. 
+Based on Pip's sample, 
+we do not have sufficient evidence to reject the null hypothesis, 
+$t$(`r pip_n_sac+pip_n_cle - 2`) = `r pip_t_test$statistic %>% round(2)`, 
+$p$ = `r pip_t_test$p.value %>% round (2)`. 
+Pip would need to consider other criteria that can distinguish 
+the two cities more unequivocally.
+In contrast, Max's data would lead to rejection of the null hypothesis, 
+$t$(`r max_n_sac+max_n_cle - 2`) = `r max_t_test$statistic %>% round(2)`, 
+$p$ = `r max_t_test$p.value %>% round (2)`. 
+For Max, Sacramento would seem a clearly favourable destination 
+as far as income prospect goes.
+
+How can we reconcile such drastic difference from two seemingly indistinguishable 
+samples?
+If we call $\bar{x}_{sac} - \bar{x}_{cle}$ a measure of the income difference's magnitude, 
+then what does $p$ measure? 
+A $p$ value certainly does not measure the same construct 
+as does $\bar{x}_{sac} - \bar{x}_{cle}$.
+Otherwise, the slightly more pronounced income difference in Pip's sample 
+($\bar{x}_{sac} - \bar{x}_{cle} = `r pip_obs_diff`$, 
+compared to 
+$\bar{x}_{sac} - \bar{x}_{cle} = `r max_obs_diff`$ for Max's sample)
+should have had a slightly higher chance of rejecting the null hypothesis, 
+opposite to what happened in reality.
+
+A $p$ value measures the *rarity* of the observed statistic 
+under the null hypothesis.
+Recall in Section \@ref(shuffle-thousand),
+to test whether female candidates faced disadvantages due to gender discrimination,
+we used shuffling/permutation to simulate 1,000 samples 
+under the null hypothesis. 
+From these 1,000 simulated samples, 
+we were able to construct a null distribution (Figure \@ref(fig:shuffle-1000-distribution)). 
+Then comparing the observed statistic --- 29.2% --- to the null distribution, 
+we asked ourselves: how likely it is to observe a promotion difference between 
+male and female candidates
+as extreme as or more extreme than 29.2% under the null hypothesis? 
+Of the 1,000 simulated samples, 6 of them returned a result 
+as big as or larger than 29.2%. 
+Six out of one-thousand, 6/1000, or less than 1%, is considerably 
+smaller than our predefined threshold $\alpha = 0.05$, 
+which led us to reject the null hypothesis.
+We designate $p$ the *rarity*, or the proportion of observing a test statistic 
+just as extreme or more extreme than the observed test statistic 
+under the null hypothesis.
+
+```{block more-significant, type="btw", purl=FALSE}
+\vspace{-0.15in}
+
+**_Good to know_**
+
+\vspace{-0.1in}
+```
+
+When people are presented with two different $p$ values, 
+they natually tend to compare the sizes of them,
+and claim
+<span class="bg-danger">"one result is more significant than the other."</span>
+Being significant is a binary status; a result is either significant or not. 
+There is no such thing as 
+<span class="bg-danger">"more significant or less significant"</span>.
+
+If you must compare the sizes of two $p$ values --- an understanble impulse
+but completely unnecessary,
+be prepared to embrace all the parenthetical remarks. 
+For example, 
+
+>
+  The result observed by Max is more *rare* (sample size $n = 1935$) 
+  than that observed by Pip (sample size $n = 387$), 
+  given the null hypothesis that there is no income difference 
+  between Cleveland and Sacramento ($\alpha = 0.05$).
+
+
+```{block, type="btw", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+Once you have understood what a $p$-value can and cannot tell us 
+--- a $p$-value can tell us 
+how rare an observed result is given the null hypothesis, 
+but not the magnitude of the effect ---
+it becomes obvious why Max's and Pip's samples led to different conclusions 
+despite their similarity.
+Max has a much larger sample size ($n = 1935$, five-times as many to be exact) 
+than Pip ($n = 387$).
+Therefore, a difference of `r max_obs_diff %>% scales::dollar()` from Max's sample 
+would be relatively more rare 
+compared to the remaining $1900+$ numbers under the null hypothesis, 
+hence a smaller $p$-value, small enough to reject $H_0$.
+
+## Effect size
+
+Although $\bar{x}_{sac} - \bar{x}_{cle}$ 
+provides an intuitive measure of the income difference's magnitude, 
+it is hard to compare such measures across studies, 
+especially when income is meausured in different units in each study: 
+`r knitr::asis_output("\u0024")` (US dollar), 
+`r knitr::asis_output("\u20AC")` (Euro), 
+`r knitr::asis_output("\u00A5")` (Yen), ...
+A **standardized effect size** provides a unit-free measurement 
+of an effect's magnitude which can be compared across studies.
+*Effect* is used here as the generic term 
+for any quantity that is the target of an analysis: 
+a mean, a difference between means, a correlation coefficient, 
+a regression coefficient, etc.
+<!-- By definition, an effect size is independent  -->
+<!-- of the size of the sample(s) being used. -->
+There are as many as [50 to 100](https://en.wikipedia.org/wiki/Effect_size#Types) 
+types of standardized effect size. 
+We will introduce a few of them in this course, one at a time.
+
+A commonly used effect size for two-sample $t$-tests is Cohen's $d$
+<!-- called Hedges' $g$,  -->
+<!-- which is a slightly less biased version of the more famous Cohen's $d$  -->
+[@cohenstatistical1988].
+To understand how effet sizes work,
+let's take a look at its formula.
+<!-- It is more straightforward than the formula for Hedges's $g$,  -->
+<!-- but both are based on the same idea.  -->
+Applying Cohen's $d$ to the current example, 
+we have 
+
+$$
+  \text{estimated Cohen's } d = \dfrac{\bar{x}_{sac} - \bar{x}_{cle}}{s_{pooled}}
+  (\#eq:cohens-d)
+$$
+
+where 
+
+$$
+  s_{pooled} = 
+  \sqrt{\dfrac{(n_{sac} - 1)s_{sac}^2 + (n_{cle} - 1)s_{cle}^2}{n_{sac} + n_{cle} - 2}}
+$$
+
+Let's zoom in on Equation \@ref(eq:cohens-d).
+In the numerator, we have the absolute magnitude of income difference. 
+$s_{pooled}$ in the denominator is called the pooled standard deviation, 
+which can be conceived as the common variation by pooling information 
+from Sacramento's income sample and Cleveland's income sample.
+You can think of of the denominator as a scaler for the numerator, 
+so as to make it comparable across studies, 
+irrespective of the unit used in a specific study.
+
+Cohen suggested some rule of thumb for evaluating the size of $d$ 
+<!-- (they apply to Hedges' $g$ as well)  -->
+[@cohenstatistical1988]:
+
+- $d$ = 0.2, small
+
+- $d$ = 0.5, medium
+
+- $d$ = 0.8, large
+
+This rule of thumb has been amended by other researchers to include the following 
+[@sawilowskynew2009]: 
+
+- $d$ = 1.2, very large
+
+- $d$ = 2.0, huge
+
+
+### Caculate effect size using `esc` package
+
+Let's calculate the effect size for both Pip's and Max's sample. 
+Instead of doing it manually, 
+we can use function `esc_t()` from the `esc` package.
+
+Most parameters in the `est_c()` function are fairly self-explanatory, 
+except the `es.type = "g"` on line 8.
+Setting `es.type` to `"g"` means that we get Hedges' $g$ instead of Cohen's $d$. 
+Both Hedges' $g$ and Cohen's $d$ are standardized effect sizes
+appropriate for two-sample $t$-test.
+The only difference is that Hedges' $g$ is slightly less biased, 
+and thus preferable, 
+when the two said samples have different sample sizes. 
+Both Pip's sample and Max's sample have uneven number of observations 
+in two cities. 
+For example, in Pip's sample, $n_{cle} = `r pip_n_cle`$, 
+$n_{sac} = `r pip_n_sac`$.
+Therefore, we opted for Hedges' $g$ by setting `es.type` to `"g"`, instead of 
+`"d"`.
+Note that the rule of thumb we introduced earlier based on Cohen's $d$ 
+still applies to Hedges' $g$.
+
+
+To calculate Hedges' $g$ for Pip's sample:
+
+```{r eval = FALSE, attr.source=".numberLines"}
+pip_cleveland <- pip_cle_sac %>% dp$filter(metro_area = "Cleveland_ OH")
+pip_sacramento <- pip_cle_sac %>% dp$filter(metro_area = "Sacrament_ CA")
+
+esc::esc_t(t = pip_t_test$statistic, 
+                         totaln = nrow(pip_cle_sac), 
+                         grp1n = nrow(pip_cleveland), 
+                         grp2n = nrow(pip_sacramento), 
+                         es.type = "g")$es %>% 
+  round(3) %>% 
+  abs()
+```
+
+```{r echo = FALSE}
+pip_es <- esc::esc_t(t = pip_t_test$statistic, 
+                         totaln = nrow(pip_cle_sac), 
+                         grp1n = pip_n_cle, 
+                         grp2n = pip_n_sac, 
+                         es.type = "g")$es %>% 
+  round(3) %>% 
+  abs()
+pip_es
+```
+
+Hedges' $g$ for Max's sample:
+
+
+```{r eval = FALSE}
+max_cleveland <- max_cle_sac %>% dp$filter(metro_area = "Cleveland_ OH")
+max_sacramento <- max_cle_sac %>% dp$filter(metro_area = "Sacrament_ CA")
+
+esc::esc_t(t = max_t_test$statistic, 
+                         totaln = nrow(max_cle_sac), 
+                         grp1n = nrow(max_cleveland), 
+                         grp2n = nrow(max_sacramento), 
+                         es.type = "g")$es %>% 
+  round(3) %>% 
+  abs()
+```
+
+```{r echo = FALSE}
+max_es <- esc::esc_t(t = max_t_test$statistic, 
+                         totaln = nrow(max_cle_sac), 
+                         grp1n = max_n_cle, 
+                         grp2n = max_n_sac, 
+                         es.type = "g")$es %>% 
+  round(3) %>% 
+  abs()
+max_es
+```
+
+```{r pip-max-comp-2, echo=F, message=F, warning=F}
+pip_max_t <- tibble::tibble(
+                            `Sample` = c("Pip's", "Max's"), 
+                            # `Sample size` = c(nrow(pip_cle_sac), 
+                            #                   nrow(max_cle_sac)
+                            #                   ),
+                            `$x_{sac} - x_{cle}$` = 
+                              c(pip_obs_diff, max_obs_diff), 
+                            `Hedges g` = 
+                              c(pip_es, max_es),
+                            `$p$-value` = 
+                              c(round(pip_t_test$p.value, 2), 
+                                round(max_t_test$p.value, 2)
+                                ), 
+                            `Conclusion` = 
+                              c("Fail to reject $H_0$", 
+                                "Reject $H_0$"
+                            )
+                            )
+pip_max_t %>% 
+  knitr::kable(
+    caption = "Results of $t$-test and Effect Sizes from Pip's Sample vs. Max's Sample", 
+    booktabs = TRUE,
+    escape = FALSE,
+    linesep = ""
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 16
+  )
+```
+
+Contrary to the drastically different $p$-values in two samples, 
+the effect sizes in two sample are quite comparable 
+(`r pip_es` and `r max_es`). 
+Despite the tiny $p$ value in Max's sample 
+(~~$p$ = `r max_t_test$p.value %>% round(3)` is very significant~~, 
+as one may be tempted to conclude but should not), 
+the effect size remains unchaged and, using Cohen's rule of thumb,
+is considered to be small.
+This result demonstrates the importance of reporting 
+both statistical significance and effect size, 
+as they complement each other.
+
+## Planning a study {#choose-sample-size}
+
+Now that we have compared Pip's and Max's sample 
+through the lens of effect size, 
+let's look at an important application of effect size: 
+helping researchers plan the sample size of a study. 
+
+
+<!-- We have seen in the previous example that a small effect can still be statistically significant, as long as the sample is large enough. In another word, if we want to detect a small effect, i.e., get a statistically significant result, we need to collect a large sample. Planning the sample size of a study is another important application of effect size, in addition to comparing results.  -->
+
+To find out how large a study's sample should be, 
+the researcher must have the following four ingredients ready 
+[@huckstatistical2016]: 
+
+1. The type of statistical test the researcher plans to use 
+  to analyze the to-be-collected data, 
+  including the decision of one-tailed vs. two-tailed if applicable
+
+1. The significance level ($\alpha$ value)
+
+1. The desired level of statistical power ($1 - \beta$)
+
+1. The *a priori* effect size
+
+
+**Type of statistical test**. The required sample size is tied to 
+the type of statistical test you plan to use. 
+There is not a universal magic number that you can use as the sample size. 
+As a general rule of thumb, a repeated measure design requires 
+fewer participants than a between-subject design. 
+Each test has its pros and cons. 
+You should let the research question drive which test to use.
+
+**Significance level**, a.k.a, $\alpha$ level. 
+Recall from Section \@ref(choosing-alpha),
+we mentioned that $\alpha$ represents the probability of falsely rejecting 
+a null hypothesis when it is in fact true (Type I error). 
+To minimize the probability of making such an error, 
+we often set $\alpha$ to a very small value such as 0.05 or 0.01. 
+For most social science, researchers follow domain-specific conventions 
+in setting this parameter. 
+For example, within psychology, 0.05 is the most common choice. 
+However, being common is not equal to being true. 
+As a general rule of thumb, 
+if a study is exploratory and has a relatively small sample size, 
+it is not unheard of to use a more liberal $\alpha$ level such as 0.1. 
+Alternatively, if a study has an impressive sample size 
+and involve more than a handful of statistical tests, 
+then every additional test contributes to an increasing chance of 
+Type I error. 
+As a remedy, reseachers use a more stringent $\alpha$ level, say 0.01,
+for each individual test.
+
+
+**Statistical power**. 
+Recall from Section \@ref(choosing-alpha),
+we described statistical **power** as the probability of *correctly* rejecting 
+a null hypothesis, represented by $1 - \beta$, 
+where $\beta$ is the probability of making an error 
+opposite to $\alpha$ (Type 
+II error). In most behavioural research, $\beta$ is often set to 0.10 - 0.20, 
+which results in a power between 0.8 and 0.9 [@cohenstatistical1988, p. 56].
+
+$$
+  \text{Power} = P(\text{Rejct} H_0 \mid H_0 \text{False})
+$$
+
+**Effect Size**. Selecting an appropriate *a priori* effect size 
+is the most difficult aspect of sample size planning. 
+A good rule of thumb: use a minimally meaningful effect size 
+or the smallest effect size of interest, 
+an effect size that you would hate to miss.
+It is okay if the effect size ends up being larger in the actual study.
+Using such theoretically driven effect sizes, 
+one can calculate an upper bound of sample size needed, 
+given the desirable power ($1 - \beta$) and significance ($\alpha$) levle.
+
+```{block choose-es, type="btw", purl=FALSE}
+\vspace{-0.15in}
+
+**_Good to know_**
+
+\vspace{-0.1in}
+```
+
+**How to choose an appropriate effect size**
+
+A common practice among social science researchers is to 
+conduct a pilot study before the main one.
+These pilot studies often use a small sample size. 
+Like a dress rehearsal, 
+a pilot study can be very useful for catching 
+any kinks that may exist in the study plan. 
+By definition, a pilot study is often highly similar to the main one.
+Therefore, researchers sometimes rely on results from a pilot study 
+to estimate the effect size, 
+which then becomes the input in calculating the sample size for the main study.
+
+@alberswhen2018 recommended against this practice. 
+According to the authors' simulation study, 
+an effect size estimated from a pilot study is often biased 
+due to its small sample size. 
+The biased effect size will in turn lead to an under-estimated sample size,
+hence an underpowered main study. 
+Instead, @alberswhen2018 recommended that we use a minimally meaningful effect size, 
+a.k.a. the smallest effect size of interest. 
+Using this theoretically driven effect size, 
+one can calculate an upper bound of sample size needed, 
+given the desirable power ($1 - \beta$) and $\alpha$ level.
+Optionally, one can use *sequential analysis*, 
+wherein a few analyses can be planned *in advance* during data collection. 
+For example, if a conservative estimate of the sample size is 400, 
+then the researcher could decide, in advance, to analyze the data 
+when n has reached 100, 200, 300, and 400. 
+At any point, if the intended results have been achieved, 
+data collection could terminate.
+
+This [post](https://stats.stackexchange.com/questions/343926/power-calculations-using-pilot-effect-sizes) 
+drew a similar conclusion, with a more nuanced discussion.
+
+```{block, type="btw", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+In the context of the income difference between Sacarmento and Cleveland, 
+how much difference would you consider meaningful 
+for income prospect to be a criterion in choosing between jobs?
+Although it is relatively easy to settle on a figure in the unit of \$, 
+say, five grand or ten grand, 
+keep in mind that it is the *standardized* effect size 
+that we need in order to find out the required sample size.
+We could either convert the dollar value to a standardized effect size 
+using Equation \@ref(eq:cohens-d), 
+or choose a minimally meaningful effect size directly, say $d = 0.3$.
+
+Let's say a difference of ten-thousand dollars is the miminal difference 
+you would consider for choosing one city over the other. 
+To standardize `r scales::dollar(10000)` using Equation \@ref(eq:cohens-d), 
+we also need to have access to $s_{pooled}$, the pooled standard deviation. 
+However, the current premise is that we are still in the planning phase 
+and have not collected any data yet. 
+Without a sample, we would not be able to estimate $s_{pooled}$. 
+Without $s_{pooled}$, we are back to square one with choosing 
+a minimally meaningful effect size.
+
+This is a common predicament many researchers face 
+when planning their study. 
+And that's why a theoretically-driven effect size is preferable. 
+Let's assume that, as a new graduate, 
+we are sensitive to even a small-ish difference in income prospect, 
+and choose $d = 0.3$.
+
+Table \@ref(tab:sample-size-income-example) lists all four ingredients 
+of sample size planning for the current example: 
+
+```{r sample-size-income-example, echo=F}
+four_ingredients <- tibble::tibble(
+                                   `Ingredients` = c("Type of statistical test", 
+                                                     "Significance level", 
+                                                     "Power", 
+                                                     "Effect size"
+                                                     ), 
+                                   `Values` = c("Two-sample $t$-test, two-sided", 
+                                                "$\\alpha = 0.05$", 
+                                                "$1 - \\beta = 0.8$", 
+                                                "$d = 0.3$"
+                                                ), 
+                                   `Comments` = c("", 
+                                                  "Following convention", 
+                                                  "Following convention", 
+                                                  "See rationale in the text above"
+                                                  )
+)
+
+four_ingredients %>% 
+  knitr::kable(
+    caption = "Four ingredients required for sample size planning", 
+    booktabs = TRUE,
+    escape = FALSE,
+    linesep = ""
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 16
+  )
+```
+
+
+Next, we can use function `power.t.test()`, a base R function,
+to find out the minimal sample size required 
+to achieve the said power and effect size specificed 
+in Table \@ref(tab:sample-size-income-example).
+
+```{r}
+power.t.test(n = NULL, d = 0.3, sig.level = 0.05, power = 0.8, 
+             type = "two.sample", alternative = "two.sided")
+```
+
+```{r echo=F}
+samplesize <- power.t.test(n = NULL, d = 0.3, sig.level = 0.05, power = 0.8, 
+             type = "two.sample", alternative = "two.sided")
+```
+
+To reach a power of 80%, 
+we would need around `r samplesize$n %>% round()` observations from each city 
+to detect a small effect size of 0.3.
+
+Note that Pip's sample has already met the threshold of sample size: 
+($n_{sac} = `r pip_n_sac`$, $n_{cle} = `r pip_n_cle`$). 
+If the income difference between Sacramento and Cleveland, once standardized 
+and stripped off its unit,
+were truly more prominent than $d = 0.3$ in the population, 
+the $t$-test would have detected it. 
+The fact that Pip's sample failed to reject the null hypothesis 
+($p$ = `r pip_t_test$p.value %>% round(2)`)
+suggests that the income levels in two cities 
+were less distinguishable than what we would deem meaningfully different.
+
+What about Max's sample? 
+Had he conducted a similar analysis before collecting data, 
+he would have used a more appropriate sample size 
+and reached the same conclusion as Pip did. 
+
+
+## Conclusion
+
+In this chapter, we introduced a family of standardized effect sizes
+including Cohen's $d$ and Hedges' $g$.
+We demonstrated its usefulness in complementing $p$ values 
+and informing readers about an effect's magnitude. 
+In addition, we have also shown you how to plan the sample size of a study 
+by setting the *a priori* effect size.
+
+In the subsequent chapters, we will introduce a couple additional 
+type of effect sizes, each one appropriate for a specific research design.

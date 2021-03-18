@@ -96,7 +96,7 @@ from 2006 to 2010 is greater than 23 years?
 - $H_0: \mu = \mu_{0}$, where $\mu$ represents the mean age of first marriage 
   for all US women from 2006 to 2010 and $\mu_0$ is 23.
 
-- $H_a: \mu > 23$
+- $H_A: \mu > 23$
 
 #### Set $\alpha$ {-}
 
@@ -351,7 +351,7 @@ infer::visualize(boot_distn_one_mean) +
   infer::shade_ci(endpoints = ci)
 ```
 
-Note that although the [alternative hypothesis $H_a$ is one-sided](#age-hypothesis)
+Note that although the [alternative hypothesis $H_A$ is one-sided](#age-hypothesis)
 in the current example,
 a confidence interval is typically closed on both sides, 
 i.e., a two-sided one, as shown above.
@@ -542,7 +542,7 @@ is smaller than that of bottom water? (Note that units are not given.)
 - $H_0: \mu_{diff} = 0$, where $\mu_{diff}$ represents the mean difference 
   in concentration for surface water minus bottom water.
 
-- $H_a: \mu_{diff} < 0$
+- $H_A: \mu_{diff} < 0$
 
 #### Set $\alpha$ {-}
 
@@ -707,7 +707,7 @@ infer::visualize(null_distn_paired_means) +
 ```
 
 We can next use this distribution to observe our $p$-value. 
-Recall this is a left-tailed test ($H_a: \mu_{diff} < 0$), 
+Recall this is a left-tailed test ($H_A: \mu_{diff} < 0$), 
 so we will be looking for values that are less than or equal to `r d_hat` 
 for our $p$-value.
 
@@ -912,7 +912,7 @@ The CEO of a large electric utility claims that 80 percent of his 1,000,000 cust
   of the large electric utility satisfied with service 
   they receive and $p_0$ is 0.8.
 
-- $H_a: \pi \ne 0.8$
+- $H_A: \pi \ne 0.8$
 
 #### Set $\alpha$ {-}
 

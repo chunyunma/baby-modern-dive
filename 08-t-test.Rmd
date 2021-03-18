@@ -682,7 +682,7 @@ where $df = n_a + n_r -2 = `r n_action` + `r n_romance` -2 = `r n_action + n_rom
 In Section \@ref(z-statistic), 
 we directly calculated the observed $z$-score using `infer` verbs. 
 We also mentioned an alternative approach: 
-subtitute each variable in Equation \@ref(t-mean-diff-2) with 
+subtitute each variable in Equation \@ref(eq:t-mean-diff-2) with 
 actual values based on the sample. 
 Let's take this approach this time 
 and compute the values necessary for the observed $t$-score.

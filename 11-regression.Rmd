@@ -13,8 +13,7 @@ options(scipen = 99) # , digits = 3)
 set.seed(76)
 ```
 
-<p class="bg-danger">
-This chapter is still in draft mode!
+<p class="bg-danger">This chapter is still in draft mode! 
 Be prepared to read it again once it has been finalized.
 </p>
 
@@ -141,7 +140,7 @@ cran_packages <- c(
                   "skimr"
 )
 
-if (length(cran_primary) != 0) xf$pkg_load2(cran_primary)
+if (length(cran_packages) != 0) xf$pkg_load2(cran_packages)
 
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
@@ -1014,7 +1013,7 @@ When we say "fit", we mean  "find the best fitting line to this data."
   that contains the variables `y` and `x`. 
   In our case, `data_frame_name` is the `df_gapminder2007` data frame.
 
-Second, we take the saved model in `score_model` 
+Second, we take the saved model in `health_model` 
 and apply the `get_regression_table()` function from the `moderndive` package 
 to it to obtain the regression table in Table \@ref(tab:regtable). 
 This function is an example of what's known in computer programming 
@@ -1161,7 +1160,7 @@ we present the results of only four countries
 for brevity's sake.
 
 ```{r eval=FALSE}
-regression_points <- moderndive::get_regression_points(score_model)
+regression_points <- moderndive::get_regression_points(health_model)
 regression_points
 ```
 
@@ -1513,11 +1512,11 @@ to compute the sum of squared residuals exactly:
 ```{r eval=F}
 # Fit regression model:
 health_model <- lm(life_exp ~ income, data = df_gapminder2007)
-score_model <- lm(score ~ bty_avg, 
+health_model <- lm(score ~ bty_avg, 
                   data = evals_ch5)
 
 # Get regression points:
-regression_points <- moderndive::get_regression_points(score_model)
+regression_points <- moderndive::get_regression_points(health_model)
 regression_points
 # Compute sum of squared residuals
 regression_points %>%
@@ -1630,7 +1629,7 @@ Here is how we used the `tidy()` and `clean_names()` functions
 to produce Table \@ref(tab:regtable-broom):
 
 ```{r eval=FALSE}
-score_model %>%
+health_model %>%
   broom::tidy(conf.int = TRUE) %>%
   dp$mutate_if(is.numeric, round, digits = 3) %>%
   janitor::clean_names() %>%

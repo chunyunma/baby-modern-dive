@@ -237,7 +237,7 @@ To summarize, for this assignment, your deliverable will consist of:
 
 * Reading
 
-  TBD
+  Chapter \@ref(effect-size)
 
 * Project synopsis
 

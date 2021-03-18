@@ -25,6 +25,7 @@ xf <- loadNamespace('xfun') # use function from base R before import is installe
 
 cran_packages = c(
                   # Packages required by students: 
+                  "esc",
                   "fivethirtyeight", 
                   "gapminder", 
                   "ggplot2", 

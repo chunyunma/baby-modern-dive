@@ -17,7 +17,7 @@ rq <- 0
 options(scipen = 99, digits = 3)
 
 # Set random number generator for replicable pseudorandomness
-set.seed(76)
+set.seed(789)
 ```
 
 In this chapter, 
@@ -161,7 +161,6 @@ measuring the weight of each, and plotting their weights.]{color="rosybrown"}
 # generate a population of 10000 bananas, right-skewed
 n_pop <- 100000
 if (!file.exists(here::here("rds", "banana_pop.rds"))) {
-  set.seed(6)
   banana_pop <- tibble::tibble(
                                weight = floor(
                                               sn::rsn(
@@ -185,9 +184,9 @@ if (!file.exists(here::here("data", "banana_pop.txt"))) {
 if (!file.exists(here::here("rds", "banana_sample.rds"))) {
   banana_sample <- banana_pop %>%
     dplyr::slice_sample(n = 50)
-  saveRDS(banana_sample, here::here("data", "banana_sample.rds"))
+  saveRDS(banana_sample, here::here("rds", "banana_sample.rds"))
 } else {
-  banana_sample <- readRDS(here::here("data", "banana_sample.rds"))
+  banana_sample <- readRDS(here::here("rds", "banana_sample.rds"))
 }
 if (!file.exists(here::here("data", "banana_sample.txt"))) {
   dput(banana_sample, here::here("data", "banana_sample.txt"))
@@ -255,7 +254,6 @@ Cy completed weighing and plotting 1,000 banana samples. ]{color="rosybrown"}
 
 ```{r echo = FALSE}
 if (!file.exists(here::here("rds", "banana_samples.rds"))) {
-  set.seed(6)
   banana_samples <- banana_pop %>% 
     infer::rep_sample_n(size = 50, reps = 1000, replace = FALSE)
   saveRDS(banana_samples, here::here("rds", "banana_samples.rds"))

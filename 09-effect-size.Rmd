@@ -479,7 +479,7 @@ In contrast, Max's data would lead to rejection of the null hypothesis,
 $t$(`r max_n_sac+max_n_cle - 2`) = `r max_t_test$statistic %>% round(2)`, 
 $p$ = `r max_t_test$p.value %>% round (2)`. 
 For Max, Sacramento would seem a clearly favourable destination 
-as far as income prospect goes.
+as far as income prospect is concerned.
 
 How can we reconcile such drastic difference from two seemingly indistinguishable 
 samples?
@@ -567,9 +567,7 @@ Although $\bar{x}_{sac} - \bar{x}_{cle}$
 provides an intuitive measure of the income difference's magnitude, 
 it is hard to compare such measures across studies, 
 especially when income is meausured in different units in each study: 
-`r knitr::asis_output("\u0024")` (US dollar), 
-`r knitr::asis_output("\u20AC")` (Euro), 
-`r knitr::asis_output("\u00A5")` (Yen), ...
+&#x0024; (US dollar), &#x20AC; (Euro), &#x00A5; (Yen) ...
 A **standardized effect size** provides a unit-free measurement 
 of an effect's magnitude which can be compared across studies.
 *Effect* is used here as the generic term 
@@ -820,7 +818,8 @@ $$
 $$
 
 **Effect Size**. Selecting an appropriate *a priori* effect size 
-is the most difficult aspect of sample size planning. 
+is [the most difficult aspect](https://www.theanalysisfactor.com/sample-size-most-difficult-step/) 
+of sample size planning. 
 A good rule of thumb: use a minimally meaningful effect size 
 or the smallest effect size of interest, 
 an effect size that you would hate to miss.
@@ -987,3 +986,12 @@ by setting the *a priori* effect size.
 
 In the subsequent chapters, we will introduce a couple additional 
 type of effect sizes, each one appropriate for a specific research design.
+
+### Additional resources
+
+[This visualization](https://rpsychologist.com/d3/NHST/) 
+may help you better understand the relationship 
+among $\alpha$, power, effect size, and sample size.  
+
+
+

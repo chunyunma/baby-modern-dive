@@ -2106,16 +2106,16 @@ Thus a Type I error corresponds to incorrectly putting a truly innocent person i
 
 ```{r hypo-test-errors, echo=F, message=FALSE, warning=FALSE}
 tibble::tibble(
-  Decision = c("Fail to reject $H_0$", "Reject $H_0$"), 
-  `$H_0$ true` = c("Correct", "Type I error"),
-  `$H_A$ true` = c("Type II error", "Correct")
+  Decision = c("$$\\text{Fail to reject } H_0$$", "$$\\text{Reject } H_0$$"), 
+  `$$H_0 \\text{ true}$$` = c("Correct", "Type I error"),
+  `$$H_A \\text{ true}$$` = c("Type II error", "Correct")
 ) %>% 
   gt::gt(rowname_col = "Decision") %>% 
  # tab_header(title = "Type I and Type II errors hypothesis tests") %>%
   gt::tab_row_group(group = "Verdict") %>% 
   gt::tab_spanner(
     label = "Truth",
-    columns = gt::vars(`$H_0$ true`, `$H_A$ true`)
+    columns = gt::vars(`$$H_0 \\text{ true}$$`, `$$H_A \\text{ true}$$`)
   ) %>% 
   gt::cols_align(align = "center") %>% 
   gt::tab_options(table.width = gt::pct(90))

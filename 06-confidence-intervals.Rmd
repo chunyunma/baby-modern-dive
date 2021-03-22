@@ -10,7 +10,7 @@ lc <- 0
 options(scipen = 99) #, digits = 3)
 options(pillar.sigfig = 6)
 
-# Set random number generator see value for replicable pseudorandomness
+# Set random number generator seed value for replicable pseudorandomness
 set.seed(6)
 ```
 
@@ -46,7 +46,6 @@ import::from(patchwork, .all=TRUE)
 # generate a population of 10000 bananas, right-skewed
 n_pop <- 100000
 if (!file.exists(here::here("rds", "banana_pop.rds"))) {
-  set.seed(6)
   banana_pop <- tibble::tibble(
                                weight = floor(
                                               sn::rsn(
@@ -71,9 +70,9 @@ if (!file.exists(here::here("data", "banana_pop.txt"))) {
 if (!file.exists(here::here("rds", "banana_sample.rds"))) {
   banana_sample <- banana_pop %>%
     dplyr::slice_sample(n = 50)
-  saveRDS(banana_sample, here::here("data", "banana_sample.rds"))
+  saveRDS(banana_sample, here::here("rds", "banana_sample.rds"))
 } else {
-  banana_sample <- readRDS(here::here("data", "banana_sample.rds"))
+  banana_sample <- readRDS(here::here("rds", "banana_sample.rds"))
 }
 ```
 
@@ -100,14 +99,13 @@ saying that most sample means lie between 186 and 195 grams
 would not be unreasonable. Think of this interval as the "net."
 
 ```{r sampling-dist, echo=F, fig.cap="Sampling distribution of the mean weight"}
-if(!file.exists("rds/banana_samples.rds")){
-  set.seed(6)
+if(!file.exists(here::here("rds", "banana_samples.rds"))){
   # one-thousand samples
   banana_samples <- banana_pop %>% 
     infer::rep_sample_n(size = 50, reps = 1000, replace = FALSE)
-  saveRDS(object = banana_samples, "rds/banana_samples.rds")
+  saveRDS(object = banana_samples, here::here("rds", "banana_samples.rds"))
 } else {
-  banana_samples <- readRDS("rds/banana_samples.rds")
+  banana_samples <- readRDS(here::here("rds", "banana_samples.rds"))
 }
 
 # mean of each sample
@@ -594,7 +592,6 @@ banana_resamples
 
 ```{r echo=F}
 if(!file.exists(here::here("rds", "banana_resamples.rds"))) {
-  set.seed(76)
   banana_resamples <- banana_sample %>% 
     infer::rep_sample_n(size = 50, replace = T, reps = 1000)
   saveRDS(banana_resamples, here::here("rds", "banana_resamples.rds"))
@@ -961,8 +958,8 @@ After all, we are sampling to estimate it!
 However, it should not come as a surprise that the "population of bananas" 
 from which Cy drew her numerous samples was *simulated* by me. 
 Using a special algorithm, 
-I created `r n_pop %>% formatC(big.mark=",")` plausible numbers 
-representing the weight of `r n_pop` bananas. 
+I created `r n_pop %>% formatC(big.mark=",", format="d")` plausible numbers 
+representing the weight of `r n_pop %>% formatC(big.mark=",", format="d")` bananas. 
 The numbers are stored in the data frame `banana_pop`. 
 
 ```{r banana-pop, eval=F}
@@ -1046,7 +1043,7 @@ and construct a bootstrap confidence interval from each sample,
 which would result in 100 bootstrap confidence intervals. 
 
 ```{r hundred-ci, echo=F}
-if(!file.exists("rds/banana_percentile_95cis.rds")){
+if(!file.exists(here::here("rds", "banana_percentile_95cis.rds"))){
   set.seed(4)
 
   # Function to run infer pipeline
@@ -1072,9 +1069,9 @@ if(!file.exists("rds/banana_percentile_95cis.rds")){
                                          type = "percentile", level = 0.95))
   
   # Save output to rds object
-  saveRDS(object = banana_percentile_cis, "rds/banana_percentile_95cis.rds")
+  saveRDS(object = banana_percentile_cis, here::here("rds", "banana_percentile_95cis.rds"))
 } else {
-  banana_percentile_cis <- readRDS("rds/banana_percentile_95cis.rds")
+  banana_percentile_cis <- readRDS(here::here("rds", "banana_percentile_95cis.rds"))
 }
 ```
 
@@ -1344,7 +1341,7 @@ Note also the vertical line marking the true value of $\mu$ = `r round(m_pop, 2)
 
 
 ```{r echo=F}
-if(!file.exists("rds/banana_perc_cis_n_25_50_100.rds")){
+if(!file.exists(here::here("rds", "banana_perc_cis_n_25_50_100.rds"))){
   set.seed(7)
   
   # Function to run infer pipeline:
@@ -1403,9 +1400,9 @@ if(!file.exists("rds/banana_perc_cis_n_25_50_100.rds")){
     dp$mutate(sample_size = factor(sample_size, levels = c("n = 25", "n = 50", "n = 100")))
   
   # Save output to rds object
-  readr::write_rds(percentile_cis_by_n, "rds/banana_perc_cis_n_25_50_100.rds")
+  readr::write_rds(percentile_cis_by_n, here::here("rds", "banana_perc_cis_n_25_50_100.rds"))
 } else {
-  percentile_cis_by_n <- readr::read_rds("rds/banana_perc_cis_n_25_50_100.rds")
+  percentile_cis_by_n <- readr::read_rds(here::here("rds", "banana_perc_cis_n_25_50_100.rds"))
 }
 ```
 
@@ -1583,22 +1580,22 @@ banana_sample %>%
 ```
 
 ```{r echo=FALSE, purl=FALSE}
-if (!file.exists("rds/banana_sample_generate.rds")) {
+if (!file.exists(here::here("rds", "banana_sample_generate.rds"))) {
   banana_sample_generate <- banana_sample %>%
     infer::specify(response = weight) %>%
     infer::generate(reps = 1000, type = "bootstrap")
-  readr::write_rds(banana_sample_generate, "rds/banana_sample_generate.rds")
+  readr::write_rds(banana_sample_generate, here::here("rds", "banana_sample_generate.rds"))
 } else {
-  banana_sample_generate <- readr::read_rds("rds/banana_sample_generate.rds")
+  banana_sample_generate <- readr::read_rds(here::here("rds", "banana_sample_generate.rds"))
 }
 banana_sample_generate
 ```
 
 Observe that the resulting data frame has `r (n_sample * n_resample) %>% 
-formatC(big.mark = ",")` rows. 
+formatC(big.mark = ",", format="d")` rows. 
 This is because we performed resampling of `r n_sample` bananas 
 with replacement `r n_resample` times and `r (n_sample * n_resample) %>% 
-formatC(big.mark=",")` = `r n_sample` $\cdot$ `r n_resample`. 
+formatC(big.mark=",", format="d")` = `r n_sample` $\cdot$ `r n_resample`. 
 
 The variable `replicate` indicates which resample each row belongs to. 
 So it has the value `1` `r n_sample` times, the value `2` `r n_sample` times, 
@@ -1653,14 +1650,14 @@ bootstrap_distribution
 ```
 
 ```{r echo=FALSE, purl=FALSE}
-if (!file.exists("rds/bootstrap_distribution_banana.rds")) {
+if (!file.exists(here::here("rds", "bootstrap_distribution_banana.rds"))) {
   bootstrap_distribution <- banana_sample %>%
     infer::specify(response = weight) %>%
     infer::generate(reps = 1000) %>%
     infer::calculate(stat = "mean")
-  readr::write_rds(bootstrap_distribution, "rds/bootstrap_distribution_banana.rds")
+  readr::write_rds(bootstrap_distribution, here::here("rds", "bootstrap_distribution_banana.rds"))
 } else {
-  bootstrap_distribution <- readr::read_rds("rds/bootstrap_distribution_banana.rds")
+  bootstrap_distribution <- readr::read_rds(here::here("rds", "bootstrap_distribution_banana.rds"))
 }
 bootstrap_distribution
 ```
@@ -1848,18 +1845,9 @@ for $\mu$ can be seen in Figure \@ref(fig:se-ci-viz).
 
 (ref:se-viz) Standard-error-method 95% confidence interval.
 
-```{r eval=FALSE}
-infer::visualize(bootstrap_distribution) + 
-  infer::shade_confidence_interval(endpoints = standard_error_ci)
-```
-
 ```{r se-ci-viz, echo=FALSE, fig.show="hold", fig.cap="(ref:se-viz)", purl=FALSE, fig.height=3.4}
-# Will need to make a tweak to the {infer} package so that it doesn't always display "Null" here
-# (added to `develop` branch on 2019-10-26)
-
 infer::visualize(bootstrap_distribution) +
-  infer::shade_confidence_interval(endpoints = standard_error_ci) #+
-#    ggtitle("Simulation-Based Bootstrap Distribution")
+  infer::shade_confidence_interval(endpoints = standard_error_ci)
 ```
 
 As noted in Section \@ref(bootstrap-ci), 
@@ -1980,7 +1968,6 @@ infer::visualize(bootstrap_distribution, boundary=190, binwidth=1, colour="white
 
 ```{r echo=F}
 if(!file.exists(here::here("rds", "bootstrap_distribution_banana.rds"))){
-  set.seed(76)
   bootstrap_distribution <- banana_sample %>% 
     infer::specify(response = weight) %>% 
     infer::generate(reps = 1000, type = "bootstrap") %>% 

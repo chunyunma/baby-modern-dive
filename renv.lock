@@ -233,6 +233,13 @@
       "Repository": "CRAN",
       "Hash": "fd2844b3a43ae2d27e70ece2df1b4e2a"
     },
+    "esc": {
+      "Package": "esc",
+      "Version": "0.5.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "10bc7b220f2f613302800776a88a6522"
+    },
     "evaluate": {
       "Package": "evaluate",
       "Version": "0.14",

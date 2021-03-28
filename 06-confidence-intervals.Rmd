@@ -375,7 +375,7 @@ se <- sd_onesample / sqrt(50)
   $$
   SE \approx \frac{sd}{\sqrt{n}} = \frac{`r sd_onesample %>% round(2)`}{\sqrt{50}}
   \approx `r se %>% round(2)`
-  (#eq:se-theory)
+  (\#eq:se-theory)
   $$
 
 Thus, the 95% confidence interval for mean weight of banana is: 
@@ -389,7 +389,7 @@ Thus, the 95% confidence interval for mean weight of banana is:
   &= [`r m_onesample` - `r round(1.96 * se, 2)`, `r m_onesample` + `r round(1.96 * se, 2)`] \\
   &= [`r round(m_onesample - 1.96 * se, 2)`, `r round(m_onesample + 1.96 * se, 2)`]
   \end{aligned}
-  (#eq:ci-theory)
+  (\#eq:ci-theory)
   $$
 
 The range is formally called a **95% confidence interval**. 
@@ -829,7 +829,7 @@ of a 95% confidence interval for $\mu$:
   &= [`r round(mean_of_means - 1.96 * bootstrap_se, 2)`, 
   `r round(mean_of_means + 1.96 * bootstrap_se, 2)`]
   \end{aligned}
-  (#eq:ci-bootstrap)
+  (\#eq:ci-bootstrap)
   $$
 
 Let's now add the SE method confidence interval with dashed lines 

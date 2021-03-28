@@ -1,7 +1,7 @@
-(ref:tidyversepart) Data Science with `tidyverse`
+(ref:tidyversepart) Data exploration with `tidyverse`
 
 ```{r echo=FALSE, results="asis", purl=FALSE}
-cat("# (PART) Data Science with tidyverse {-} ")
+cat("# (PART) Data exploration with tidyverse {-} ")
 ```
 # Data Visualization {#viz}
 

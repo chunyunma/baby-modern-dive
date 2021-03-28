@@ -1136,7 +1136,7 @@ that are greater than or equal to `r income_diff %>% round(0)` or less than or e
 to `r -income_diff %>% round()` for our $p$-value.
 
 
-##### Calculate $p$-value {-}
+#### Calculate $p$-value {-}
 
 ```{r}
 pvalue <- null_distn_two_means %>%

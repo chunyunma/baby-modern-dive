@@ -26,8 +26,8 @@ set.seed(76)
 | Online Module + Cheat sheet    | 2 + 3        | Saturday, Mar 6, 1400      | \@ref(appendix-assign-6)     |
 | Project seed                   | 5            | Saturday, Mar 13, 1400     | \@ref(appendix-assign-7)     |
 | Online Module + Cheat sheet    | 2 + 3        | Saturday, Mar 20, 1400     | \@ref(appendix-assign-8)     |
-| Project synopsis               | 5            | **Saturday, Mar 27, 1400** | \@ref(appendix-assign-9)     |
-| Online Module + Cheat sheet    | 2 + 3        | Saturday, Apr 03, 1400     | \@ref(appendix-assign-10)    |
+| Project synopsis               | 5            | Saturday, Mar 27, 1400     | \@ref(appendix-assign-9)     |
+| Online Module + Cheat sheet    | 2 + 3        | **Saturday, Apr 03, 1400** | \@ref(appendix-assign-10)    |
 | Descriptives                   | 5            | Saturday, Apr 10, 1400     | \@ref(appendix-assign-11)    |
 | Final project deliverable      | 30           | Monday, Apr 26, 1400       | \@ref(appendix-assign-12)    |
 

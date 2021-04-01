@@ -1,3 +1,3 @@
-# Inference for Regression {#regression-inference}
+# Inference for Regression {#inference-for-regression}
 
 Coming soon.

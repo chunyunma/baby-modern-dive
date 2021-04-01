@@ -1,4 +1,4 @@
-# Simple linear Regression with a continuous predictor {#simple-regression}
+# Simple linear Regression {#simple-regression}
 
 ```{r setup_infer, include=FALSE, purl=FALSE}
 # Used to define Learning Check numbers:
@@ -13,12 +13,12 @@ options(scipen = 99) # , digits = 3)
 set.seed(76)
 ```
 
-<p class="bg-danger">This chapter is still in draft mode! 
-Be prepared to read it again once it has been finalized.
-</p>
+<!-- <p class="bg&#45;danger">This chapter is still in draft mode!  -->
+<!-- Be prepared to read it again once it has been finalized. -->
+<!-- </p> -->
 
-Now that we have learned the fundamentals of inferential statistics, 
-let's proceed with one of the most common data modelling techniques: 
+In this chapter, 
+let's continue with another common data modelling technique: 
 linear regression.
 The premise of data modeling 
 is to make explicit the relationship between:
@@ -33,9 +33,10 @@ Another way to state this is using mathematical terminology:
 we will model the outcome variable $y$ "as a function" 
 of the explanatory/predictor variable $x$. 
 When we say "function" here, 
-we aren't referring to functions in R like the `ggplot()` function, 
+we are not referring to functions in R such as the `ggplot()` function, 
 but rather as a mathematical function. 
-But, why do we have two different labels, explanatory and predictor, 
+
+Why do we have two different labels, explanatory and predictor, 
 for the variable $x$? 
 That's because even though the two terms are often used interchangeably, 
 roughly speaking data modeling serves one of two purposes:
@@ -68,12 +69,12 @@ to reduce lung cancer incidence in a population,
 such as targeting smokers of a specific age group 
 with advertising for smoking cessation programs. 
 If we are modeling for prediction, however, 
-we wouldn't care so much about understanding 
+we would not care so much about understanding 
 how all the individual risk factors contribute to lung cancer, 
 but rather only whether we can make good predictions 
 of which people will contract lung cancer.
 
-In this course, we'll focus on modeling for explanation 
+In this course, we will focus on modeling for explanation 
 and hence refer to $x$ as *explanatory variables*. 
 If you are interested in learning about modeling for prediction, 
 we suggest you check out books and courses on the field of 
@@ -81,7 +82,7 @@ we suggest you check out books and courses on the field of
 [*An Introduction to Statistical Learning with Applications in R (ISLR)*](http://www-bcf.usc.edu/~gareth/ISL/) 
 [@islr2017]. 
 
-In this chapter, we'll focus on one particular technique: 
+In this chapter, we will focus on one particular technique: 
 *linear regression*. \index{regression!linear} 
 Linear regression is one of the most commonly-used 
 and easy-to-understand approaches to modeling.
@@ -90,37 +91,43 @@ and explanatory variables $x$ that are either *numerical* or *categorical*.
 Furthermore, the relationship between $y$ and $x$ 
 is assumed to be linear, or in other words, a line. 
 <!-- For categorical varialbes, [TODO] -->
-<!-- However, we'll see that what constitutes a "line"  -->
+<!-- However, we will see that what constitutes a "line"  -->
 <!-- will vary depending on the nature of your explanatory variables $x$. -->
 
-In Chapter \@ref(simple-regression) on basic regression, 
-we'll only consider models with one numerical explanatory variable $x$ 
+In the current Chapter on basic regression, 
+we will only consider models with one numerical explanatory variable $x$ 
 This scenario is known as *simple linear regression*. 
 <!-- In Section \@ref(model2), the explanatory variable will be categorical. -->
 
-In Chapter \@ref(multiple-regression) on multiple regression, 
-we'll extend the ideas behind basic regression 
-and consider models with two explanatory variables $x_1$ and $x_2$.  
-In Section \@ref(model4), we'll have two numerical explanatory variables. 
-In Section \@ref(model3), we'll have one numerical 
-and one categorical explanatory variable. 
-In particular, we'll consider two such models: 
-*interaction* and *parallel slopes* models.
-
 In Chapter \@ref(inference-for-regression) 
 on inference for regression, 
-we'll revisit our regression models and analyze the results 
-using the tools for *statistical inference* you'll develop 
-in Chapters \@ref(clt), \@ref(confidence-intervals), 
-and \@ref(hypothesis-testing) on sampling, bootstrapping 
-and confidence intervals, and hypothesis testing and $p$-values, respectively.
+we will revisit the regression models we discussed in this chapter 
+and analyze the results using the tools for *statistical inference* 
+you have developed in Chapters \@ref(clt), \@ref(confidence-intervals), 
+and \@ref(hypothesis-testing) on sampling, confidence intervals, 
+and hypothesis testing, respectively.
+
+In Chapter \@ref(regression-anova) on regression 
+with one categorical explanatory variable, 
+we will connect what you have learned from Chapter \@ref(anova) --- ANOVA
+--- with the linear regression technique, 
+and show that they are more similar than you may have previously thought.
+
+<!-- In Chapter \@ref(multiple-regression) on multiple regression,  -->
+<!-- we will extend the ideas behind basic regression  -->
+<!-- and consider models with two explanatory variables $x_1$ and $x_2$.   -->
+<!-- In Section \@ref(model4), we will have two numerical explanatory variables.  -->
+<!-- In Section \@ref(model3), we will have one numerical  -->
+<!-- and one categorical explanatory variable.  -->
+<!-- In particular, we will consider two such models:  -->
+<!-- *interaction* and *parallel slopes* models. -->
 
 Let's now begin with basic regression, 
 \index{regression!basic} which refers to linear regression models 
-with a single explanatory variable $x$. 
-We'll also discuss important statistical concepts 
+with a continuous explanatory variable $x$. 
+We will also discuss important statistical concepts 
 such as the *correlation coefficient*, 
-that "correlation isn't necessarily causation," 
+that "correlation is not necessarily causation," 
 and what it means for a line to be "best-fitting."
 
 ### Needed packages {-#regression-packages}
@@ -146,7 +153,6 @@ gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
 
 import::from(magrittr, '%>%')
-import::from(patchwork, .all=TRUE)
 ```
 
 ```{r import-pkg, echo=F, message=FALSE, warning=FALSE}
@@ -178,7 +184,7 @@ Could it be that countries with higher average income
 tend to have lower average life expectancy?
 Or could it be that there is no monotonic relationship between 
 average income and average life expectancy? 
-We'll answer these questions 
+We will answer these questions 
 by modeling the relationship between income and life expectancy 
 using *simple linear regression* \index{regression!simple linear} where we have:
 
@@ -204,15 +210,14 @@ n_countries <- nrow(df_gapminder2007)
 
 
 
-## Exploratory data analysis {#model1EDA}
-<!-- ### Exploratory data analysis {#model1EDA} -->
+## Exploring the data {#model1EDA}
 
 The data on the `r n_countries` countries
-can be found in the `gapminder` data frame. 
+can be found in the `gapminder` data frame from the `gapminder` package.
 To keep things simple, let's `filter()` only the 2007 data 
 and save this data in a new data frame called `df_gapminder2007`. 
 
-```{r eval=FALSE, purl=FALSE}
+```{r eval=FALSE}
 df_gapminder2007 <- gapminder::gapminder %>%
   dp$filter(year == 2007) %>%
   dp$select(-year) %>%
@@ -279,10 +284,9 @@ we selected in `df_gapminder2007`:
 
 1. **gdp_per_cap**: Gross domestic product (GDP, in US dollars).
 
-1. **income**: log-transformed gdp_per_cap, a proxy for average income
+1. **income**: log-transformed `gdp_per_cap`, a proxy for average income
 
 
-<!-- Expand [TODO] -->
 ```{block types-of-data, type="btw", purl=FALSE}
 \vspace{-0.15in}
 **_Good to know_**
@@ -293,9 +297,45 @@ we selected in `df_gapminder2007`:
 
 **Types of data**
 
-nominal, ordinal, interval, ratio
+In Section \@ref(boxplot-factor), we have compared two common types of data --- 
+continuous and categorical. 
+Related to this dichotomy, data can also be grouped into four types, namely
+**nominal**, **ordinal**, **interval**, and **ratio**. 
+For example, **country** and **continent** in `df_gapminder2007` 
+are considered *nominal*.
+There is no intrinsic order among countries, 
+nor is it sensible to measure distances (intervals) between the names of two countries.
+*Ordinal* data, as the name suggests, refer to data that can be ordered, 
+such as low, medium, and high. 
+However, they should not be confused with *interval data*, 
+such as temperature, 
+which not only can be ordered (e.g., -2&deg;C, -1&deg;C, 0&deg;C, 1&deg;C, ...), 
+but also allows for contant intervals between any adjacent numbers 
+(e.g., 5&deg;C - 4&deg;C = 8&deg;C - 7&deg;C).
+With ordinal data, such as restaurant ratings, 
+it is not necessarily true that the difference between a one-star rated 
+and a two-star rated restaurant is equal to
+that between a two-star rated and a three-star rated. 
+Finally, *ratio data* allow for not only ranking and constant intervals, 
+but also an absolute zero point. 
+Examples of ratio data include height, age, population size, and income.
 
-[TODO] expand
+This classification was 
+[initally developed](https://en.wikipedia.org/wiki/Level_of_measurement#Stevens's_typology) 
+by Stanley Smith Stevens and published in a 1946 *Science* article. 
+It is one of the most widely adopted typologies in psychology, 
+despite criticism from scholars from within psychology and other disciplines.
+For example, it has long been debated whether behavioural and cognitive data
+collected using Likert-type scales are ordinal 
+or could be considered as interval.
+Team Likert Data Are Ordinal argues that the difference 
+between "strongly disagree" (1) and "disagree" (2)
+is not always equal to that between "disagree" (2) and "indifferent" (3), 
+similar to restaurant ratings.
+Meanwhile, Team Likert Data Could Be Used As Interval 
+contends that classifying these data as ordinal 
+would rule out many powerful statistical models including ANOVA and $t$-test, 
+all of which assume that the dependent variable is interval or ratio data.
 
 ```{block, type="btw", purl=FALSE}
 \vspace{-0.25in}
@@ -303,9 +343,9 @@ nominal, ordinal, interval, ratio
 ```
 
 An alternative way to look at the raw data values 
-is by choosing a random sample of the rows in `df_gapminder2007` 
-by piping it into the `sample_n()` \index{dplyr!sample\_n()} function 
-from the `dplyr` package. 
+is by choosing a random sample of the rows in `df_gapminder2007`.
+We can do so 
+by piping `df_gapminder2007` into the `dplyr::sample_n()` function.
 Here we set the `size` argument to be `5`, 
 indicating that we want a random sample of 5 rows. 
 We display the results in Table \@ref(tab:five-random-countries). 
@@ -328,68 +368,84 @@ df_gapminder2007 %>%
   )
 ```
 
-### Summary statistics - univariate
+### Summary statistics --- univariate
 
 Now that we've looked at the raw values in our `df_gapminder2007` data frame 
 and got a preliminary sense of the data, 
-let's move on to the next common step in an exploratory data analysis: 
-computing summary statistics. 
-Let's start by computing the mean and median 
-of our numerical outcome variable `life_exp` 
-and our numerical explanatory variable `income`. 
-We'll do this by using the `summarize()` function from `dplyr` 
-along with the `mean()` and `median()` summary functions 
+let's compute summary statistics for the two target varaibles --- 
+a country's average life expectancy `life_exp` 
+and its average `income`.
+We could use `dplyr::summarize()` 
+along with summary functions such as `mean()` and `median()` 
 we saw in Section \@ref(summarize).
+Instead, let's create a customized function using `skimr::skim_with()`.
+This function would take in a data frame, 
+"skims" it, and returns commonly used summary statistics. 
 
 ```{r}
-df_gapminder2007 %>%
-  dp$summarize(mean_life_exp = mean(life_exp), mean_income = mean(income),
-            median_life_exp = median(life_exp), median_income = median(income))
+# Create a template function for descriptives
+my_skim <- skimr::skim_with(base = skimr::sfl(n = length, missing = skimr::n_missing), 
+                     numeric = skimr::sfl(
+                                          mean, 
+                                          sd, 
+                                          iqr = IQR,
+                                          min, 
+                                          p25 = ~ quantile(., 1/4), 
+                                          median, 
+                                          p75 = ~ quantile(., 3/4), 
+                                          max
+                                          ), 
+                            append = FALSE
+) #sfl stands for "skimr function list"
 ```
 
-However, what if we want other summary statistics as well, 
-such as the standard deviation (a measure of spread), 
-the minimum and maximum values, and various percentiles? 
-
-Typing out all these summary statistic functions in `summarize()` 
-would be long and tedious. 
-Instead, let's use the convenient `skim()` function 
-from the `skimr` \index{R packages!skimr!skim()} package. 
-This function takes in a data frame, 
-"skims" it, and returns commonly used summary statistics. 
 Let's take our `df_gapminder2007` data frame, 
 `select()` only the outcome and explanatory variables 
-`life_exp` and `income`, and pipe them into the `skim()` function:
+`life_exp` and `income`, and pipe them into the `my_skim()` function:
 
-```{r gapminder-summary}
+```{r eval=F}
 df_gapminder2007 %>% 
   dp$select(life_exp, income) %>% 
-  skimr::skim_without_charts()
+  my_skim()
+```
+
+
+```{r gapminder-summary, echo=F}
+df_gapminder2007 %>% 
+  dp$select(life_exp, income) %>% 
+  my_skim() %>% 
+  skimr::yank("numeric") %>% 
+  knitr::kable(
+               caption = "Summary statistics for countries' average life expectancy and average income",
+               # control number of digits shown after the decimal point
+               digits = 0
+               )
 ```
 
 For the numerical variables  `life_exp` and `income` it returns:
 
-- `n_missing`: the number of missing values
-- `complete_rate`: the percentage of non-missing or complete values
+- `n`: the number of observations for each variable
+- `missing`: the number of missing values for each variable
 - `mean`: the average
 - `sd`: the standard deviation
-- `p0`: the 0th percentile: 
-  the value at which 0% of observations are smaller than it 
-  (a.k.a. the *minimum* value)
-- `p25`: the 25th percentile: 
-  the value at which 25% of observations are smaller than it 
-  (a.k.a. the *1st quartile*)
-- `p50`: the 50th percentile: 
+- `iqr`: the inter-quartile range, 
+  or the difference between the $3^{rd}$ and the $1^{st}$ quartile.
+- `min`: the *minimum* value, also known as the $0^{th}$ percentile, 
+  as in the value at which 0% of observations are smaller than it 
+- `p25`: the $25^{th}$ percentile, 
+  the value at which 25% of observations are smaller than it,
+  also known as the $1^{st}$ quartile.
+- `median`: also known as the $2^nd$ quartile, or the $50^{th}$ percentile, 
   the value at which 50% of observations are smaller than it 
-  (the *2nd* quartile and more commonly called the *median*)
-- `p75`: the 75th percentile: 
-  the value at which 75% of observations are smaller than it 
-  (the *3rd quartile*)
-- `p100`: the 100th percentile: 
-  the value at which 100% of observations are smaller than it 
-  (the *maximum* value)
+- `p75`: the $75^{th}$ percentile, 
+  the value at which 75% of observations are smaller than it, 
+  also known as the $3^{rd}$ quartile.
+- `max`: the *maximum* value,
+  also known as the $100^{th}$ percentile,
+  the value at which 100% of observations are smaller than it.
 
-Looking at this output, we can see how the values of both variables distribute. 
+Looking at Table \@ref(tab:gapminder-summary), 
+we can see how the values of both variables distribute. 
 For example, the mean life expectancy was 67 years, 
 whereas the mean income was $37,418. 
 
@@ -419,11 +475,10 @@ gg$ggplot(df_gapminder2007,
 
 
 The middle 50% of life expectancy was between 57 to 76 years 
-(the first p25, and third quartiles, p75), 
+(the first quartile, `p25`, and third quartiles, `p75`), 
 whereas the middle 50% of income falls within $32,106 to $42,555.
 
-<!-- #### Summary statistics - bivariate -->
-### Summary statistics - bivariate
+### Summary statistics --- bivariate
 
 Since both the `life_exp` and `income` variables are numerical, 
 we can also apply a *scatterplot* to visualize this data. 
@@ -450,18 +505,17 @@ p1_gapminder2007 +
 
 As the average income level increases, 
 life expectancy also tends to go up. 
-However, this relationship is not strictly linear. 
-Instead of tightly hugging the imaginary line that goes from bottom left 
-to upper right, 
+However, instead of tightly hugging the imaginary diagonal 
+that goes from bottom left to upper right, 
 as should be in a strictly linear relationship, 
 some of the dots deviated, such as the ones highlighted in red 
 in figure \@ref(fig:numxplot1). 
 
-Such deviation have implications for the strength of correlation coefficient 
-between income and life expectancy. 
+<!-- Such deviation have implications for the strength of *correlation coefficient*  -->
+<!-- between income and life expectancy.  -->
 
 
-```{block ?, type="btw", purl=FALSE}
+```{block logrithmic, type="btw", purl=FALSE}
 \vspace{-0.15in}
 **_Good to know_**
 
@@ -471,7 +525,7 @@ between income and life expectancy.
 **Logrithmic**
 
 Run the following code chunk 
-and compare the result to Figure \@ref(fig:numxplot1):
+and compare the results to Figure \@ref(fig:numxplot1):
 
 ```{r eval = FALSE}
 # Code not run. Try on your own.
@@ -487,6 +541,7 @@ gg$ggplot(df_gapminder2007,
   gg$scale_x_log10() + 
   gg$labs(title = "Relationship of wealth and health")
 ```
+
 
 ```{block, type="btw", purl=FALSE}
 \vspace{-0.25in}
@@ -563,7 +618,11 @@ corr_plot <- gg$ggplot(data = values, mapping = gg$aes(V1, V2)) +
 corr_plot
 ```
 
-Previously, we used `skim()` function to compute what are known as *univariate* 
+Loosely speaking, the tighter the dots are hugging the imaginary diagonal line, 
+the stronger the relationship between the two variables 
+and hence the larger the magnitude of the correlation coefficient.
+
+Previously, we used `my_skim()` function to compute what are known as *univariate* 
 \index{univariate} summary statistics: 
 functions that take a single variable 
 and return some numerical summary of that variable. 
@@ -589,9 +648,10 @@ df_gapminder2007 %>%
 ```
 
 An alternative way to compute correlation 
-is to use the `cor()` summary function within a `summarize()`:
+is to use the `cor()` summary function from base R 
+in conjunction with a `dplyr::summarize()`:
 
-```{r, eval=FALSE}
+```{r eval=FALSE}
 df_gapminder2007 %>% 
   dp$summarize(correlation = cor(income, life_exp))
 ```
@@ -622,21 +682,25 @@ mentioned in Subsection \@ref(additional-resources-basic-regression).
 <!-- - EDA is not the same as data snooping -->
 
 
-<!-- ## Simple linear Regression with a continuous predictor {#model1table} -->
 ## Model fitting {#model1table}
 
 Let's build on the scatterplot in Figure \@ref(fig:numxplot1) 
 by adding a "best-fitting" line: 
 of all possible lines we can draw on this scatterplot, 
 it is the line that "best" fits through the cloud of points. 
-We do this by adding a new `geom_smooth(method = "lm", se = FALSE)` layer 
+We will explain what criterion dictates which line fits the best 
+in Section \@ref(leastsquare). 
+For now, let's request this line 
+by adding a new `geom_smooth(method = "lm", se = FALSE)` layer 
 to the `ggplot()` code that created the scatterplot 
 in Figure \@ref(fig:numxplot1). 
 The `method = "lm"` argument sets the line to be a "`l`inear `m`odel." 
 The `se = FALSE` \index{ggplot2!geom\_smooth()} argument 
 suppresses _standard error_ uncertainty bars. 
-(We'll define the concept of _standard error_ later 
-in Subsection \@ref(sampling-definitions).)
+We have seen the concept of _standard error_ of mean
+in Section \@ref(sample-vs-sampling). 
+We will extend this concept to regression coefficients 
+in Chapter \@ref(inference-for-regression).
 
 ```{r numxplot3, fig.cap="Regression line.", message=FALSE}
 gg$ggplot(df_gapminder2007, 
@@ -658,170 +722,34 @@ with our earlier observed correlation coefficient of `cor_gapminder`
 suggesting that there is a positive relationship 
 between these two variables: as the average income of a country increases, 
 so does the life expectancy in this country. 
-We'll see later, however, that while the correlation coefficient 
-and the slope of a regression line always have the same sign 
+We will see later that, although the correlation coefficient 
+and the slope of a regression line typically have the same sign 
 (positive or negative), they typically do not have the same value.
 
 
-### Find the best fitting line
-
-Notice where the blue line was relative to the data points? 
-Why was it here? 
-Can I move it higher? Or tilt it ever so slightly to the left or right? 
-How do we decide the precise location of the line?
-
-Try this exercise:
-<http://www.shodor.org/interactivate/activities/Regression/>
-
-In the exercise, what criteria were you using 
-when you try to decide the best line? 
-Intuitively, you try to place the line as close as possible 
-to all the data points. 
-But similar to most cases in reality, 
-whenever you place the line closer to some datapoints, 
-you risk moving the line too far away from other data points. 
-You tried to balance. 
-
-Finding a line that is as close as possible to all data pionts, 
-is equivalent to finding a line that minimizes the distances 
-from all the data points to the line combined. 
-To express this idea in a quasi-formula:
-
-> **Slope/intercept of the best line | min ($\sum$ distance from $y_i$ to the best line)**
-
-Let's try to unpack this idea a bit. 
-But first, I need to introduce a few terms.
-
-#### fitted vs. observed {-}
-
-```{r echo = FALSE}
-index <- which(df_gapminder2007$country == "Japan")
-health_model <- lm(life_exp ~ income, data = df_gapminder2007)
-target_point <- health_model %>%
-  moderndive::get_regression_points() %>%
-  dp$slice(index)
-x <- target_point$income
-y <- target_point$life_exp
-y_hat <- target_point$life_exp_hat
-resid <- target_point$residual
-```
-
-```{r residual, echo=FALSE, warning=FALSE, message=F, fig.cap="Example of observed value, fitted value, and residual."}
-(best_fit_plot <- gg$ggplot(df_gapminder2007, 
-                            mapping = gg$aes(x = income, y = life_exp)) +
-  gg$geom_point(color = "grey") +
-  gg$labs(x = "Income", y = "Life Expectancy",
-       title = "Relationship of health and wealth") + 
-  gg$geom_smooth(method = "lm", se = FALSE) +
-  gg$annotate("point", x = x, y = y_hat, col = "red", shape = 15, size = 3) +
-  gg$annotate("segment", x = x, xend = x, y = y, yend = y_hat, color = "blue",
-           arrow = gg$arrow(type = "closed", length = gg$unit(0.02, "npc"))) +
-  gg$annotate("point", x = x, y = y, col = "red", size = 2))
-```
-
-
-**The observed**:
-
-```{r echo = FALSE}
-df_gapminder2007 %>% 
-  dp$select(-gdp_per_cap, -pop) %>% 
-  dp$slice(index) %>%
-  knitr::kable(
-    digits = 4,
-    caption = "Actual income and life expectancy for Japan in 2007",
-    booktabs = TRUE,
-    linesep = ""
-  )
-```
-
-**The fitted**:
-
-```{r echo = FALSE}
-regression_points <- moderndive::get_regression_points(health_model)
-regression_points %>%
-  dp$slice(index) %>%
-  knitr::kable(
-    digits = 3,
-    caption = "Model estimated life expectancy for Japan",
-    booktabs = TRUE,
-    linesep = ""
-  )
-```
-
-**Residuals**: 
-
-```{r leastsquare, fig.cap = "", message=F, echo = FALSE}
-df_gapminder2007 %>% 
-  dp$mutate(predicted = predict(health_model)) %>% 
-  # gapminder2007$residuals <- residuals(health_model)
-  gg$ggplot(mapping = gg$aes(x = income, y = life_exp)) + 
-  gg$geom_smooth(method = "lm", se = FALSE, color = "lightgrey") +  
-  # Plot regression slope
-  gg$geom_segment(mapping = gg$aes(xend = income, yend = predicted), alpha = .2) +  
-  # alpha to fade lines
-  gg$geom_point() +
-  gg$geom_point(mapping = gg$aes(y = predicted), shape = 1) + 
-  gg$scale_x_continuous(breaks=seq(20000,50000,4000)) + 
-  gg$labs(x = "Income", y = "Life Expectancy",
-       title = "Relationship of health and wealth") +
-  gg$theme_bw()
-```
-
-Now let's revisit the idea of how the best line was found.  
-Recall this quasi-formula
-
-> **Slope/intercept of the best line | min ($\sum$ distance from $y_i$ to the best line)**
-
-Equipped with the new terms we just learned, it can be written more concisely:
-
-> **Slope/intercept of the best line | min ($\sum$ (observed - fitted))**
-
-or
-
-> **Slope/intercept of the best line | min ($\sum$ residuals)**
-
-
-In practice, it is slightly different, 
-purely for mathematical reasons 
-(squares are differentiable, absolute values are not; 
-sum of squares can be minimized analytically, i.e., without a computer's aid)
-
-> **Slope/intercept of the best line | min ($\sum$ residuals$^{2}$)**
-
-Now you can see why "the best fitting regression line" 
-is also called "the least-squares regression line".
-A regression line is "best-fitting" 
-in that it minimizes the sum of squared residuals, hence "lease-squares". 
-<!-- We present these mathematical criteria in Subsection \@ref(leastsquares),  -->
-
-```{block, type="learncheck", purl=FALSE}
-\vspace{-0.15in}
-**_Learning check_**
-\vspace{-0.1in}
-```
-
-**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
-[TODO]
-<!-- ?? -->
+<!-- Find the best fitting line -->
 <!--  -->
-<!-- (a) Looking at the raw data values. -->
-<!-- (a) Computing summary statistics. -->
-<!-- (a) Creating data visualizations. -->
+<!-- Notice where the blue line was relative to the data points?  -->
+<!-- Why was it here?  -->
+<!-- Can I move it higher? Or tilt it ever so slightly to the left or right?  -->
+<!-- How do we decide the precise location of the line? -->
 <!--  -->
-<!-- What can you say about the relationship between  -->
-<!-- age and teaching scores based on this exploration? -->
-
-```{block, type="learncheck", purl=FALSE}
-\vspace{-0.25in}
-\vspace{-0.25in}
-```
+<!-- Try this exercise: -->
+<!-- <http://www.shodor.org/interactivate/activities/Regression/> -->
+<!--  -->
+<!-- In the exercise, what criteria were you using  -->
+<!-- when you try to decide the best line?  -->
+<!-- Intuitively, you try to place the line as close as possible  -->
+<!-- to all the data points.  -->
+<!-- But similar to most cases in reality,  -->
+<!-- whenever you place the line closer to some datapoints,  -->
+<!-- you risk moving the line too far away from other data points.  -->
 
 
 You may recall from secondary/high school algebra 
 that the equation of a line is $y = a + b\cdot x$. 
 (Note that the $\cdot$ symbol is equivalent 
-to the $\times$ "multiply by" mathematical symbol. 
-We'll use the $\cdot$ symbol in the rest of this book as it is more succinct.) 
+to the $\times$ "multiply by" mathematical symbol.)
 It is defined by two coefficients $a$ and $b$. 
 The intercept coefficient $a$ is the value of $y$ when $x = 0$. 
 The slope coefficient $b$ for $x$ is the increase in $y$ 
@@ -841,15 +769,14 @@ Why do we put a "hat" on top of the $y$?
 It's a form of notation commonly used in regression 
 to indicate that we have a \index{regression!fitted value} "fitted value," 
 or the value of $y$ on the regression line for a given $x$ value. 
-We'll discuss this more in the upcoming Subsection \@ref(model1points).
+We will discuss this more in the upcoming Subsection \@ref(leastsquare).
 
 We know that the regression line in Figure \@ref(fig:numxplot3) 
 has a positive slope $b_1$ corresponding 
 to our explanatory $x$ variable `income`. 
 Why? Because as countries tend to have higher average `income`, 
 so also do they tend to have higher `life_exp`, or life expectancy.
-However, what is the numerical value of the slope $b_1$? 
-What about the intercept $b_0$?  
+What is the numerical value of the slope $b_1$ and the intercept $b_0$? 
 Let's not compute these two values by hand, 
 but rather let's use a computer!
 
@@ -863,14 +790,14 @@ by outputting a *linear regression table*. This is done in two steps:
    \index{moderndive!get\_regression\_table()} function 
    from the `moderndive` package to `health_model`.
 
-```{r, eval=FALSE}
+```{r eval=FALSE}
 # Fit regression model:
 health_model <- lm(life_exp ~ income, data = df_gapminder2007)
 # Get regression table:
 moderndive::get_regression_table(health_model)
 ```
 
-```{r, echo=FALSE, purl=FALSE}
+```{r echo=FALSE, purl=FALSE}
 health_model <- lm(life_exp ~ income, data = df_gapminder2007)
 reg_line <- health_model %>%
   moderndive::get_regression_table() %>%
@@ -893,7 +820,7 @@ moderndive::get_regression_table(health_model) %>%
 
 Let's first focus on interpreting the regression table output 
 in Table \@ref(tab:regtable), 
-and then we'll later revisit the code that produced it. 
+and then we will later revisit the code that produced it. 
 In the `estimate` column of Table \@ref(tab:regtable) 
 are the intercept $b_0$ = `r reg_line[1]` 
 and the slope $b_1$ = `r reg_line[2]` for `income`. 
@@ -907,11 +834,11 @@ $$
 \end{aligned}
 $$
 
-Note how simplistic this regression line is 
-compared to `r nrow(df_gapminder2007)` of observations in the original dataset.
+<!-- Note how parsimonious this regression line is  -->
+<!-- compared to `r nrow(df_gapminder2007)` of observations in the original dataset. -->
 
-In social science, it is very important to report both the rigorous stats 
-and what they mean in plain language. 
+It is very important to report both the statistics 
+and interpret them in plain English. 
 In this example, it is not enough by just reporting the regression table 
 and the equation of the regression line. 
 As a good researcher, you are also expected to explain what these numbers mean.
@@ -925,7 +852,7 @@ Note, however, that while the intercept of the regression line
 has a mathematical interpretation, 
 it has no *practical* interpretation here, 
 since it is unlikely that a country will have an average income of 0. 
-Furthermore, looking at the scatterplot with the regression line 
+Furthermore, looking at the scatterplot
 in Figure \@ref(fig:numxplot3), 
 no country has an income level anywhere near 0.
 
@@ -943,16 +870,25 @@ Formally, the slope is interpreted as:
   For every increase of 1 unit in `income`, 
   there is an *associated* increase of, *on average*, 
   `r reg_line[2]` units of `life expectancy`.
-  Or, loosely speaking, for every increase of $1,000 in `income`, 
+  Or, for every increase of $1,000 in `income`, 
   there is an *associated* `r reg_line[2]*1000` years increase in `life expectancy`. 
 
 
 Recall from earlier that the correlation coefficient is `r cor_gapminder`. 
-They both have the same positive sign, 
-but have a different value. 
-Compare the interpretation above to correlation's interpretation 
-as "strength of linear association".
+Both correlation coefficient and the slope have the same positive sign, 
+but they have different values. 
+A correlation coefficient quantifies the strength of linear association 
+between two variables. 
+It is independent of units used in either variable.
+In fact, correlation is one of the standardized effect sizes.
+A regression slope, however, is unit-dependent. 
+Changing the unit of `income` from &#x0024; (US dollar) to &#x20AC; (Euro),
+for example, will change the magnitude of the slope.
+Although a regression slope is not ideal for comparing results across studies, 
+its unit-dependency provides a meaningful context 
+for interpreting results within a single study.
 
+Note the language used in the previous interpretation. 
 We only state that there is an *associated* increase and 
 not necessarily a *causal* increase. 
 For example, perhaps it's not that higher income levels 
@@ -971,7 +907,7 @@ Furthermore, we say that this associated increase is *on average*
 `r reg_line[2]` units of `life expectancy`, 
 because you might have two countries whose `income` levels 
 differ by 1000 dollars, 
-but their difference in life expectancies won't necessarily be exactly 
+but their difference in life expectancies will not necessarily be exactly 
 `r reg_line[2]*1000` years (try for yourself). 
 What the slope of `r reg_line[2]` is saying is that 
 across all contries, the *average* difference in life expectancy 
@@ -979,9 +915,7 @@ between two contries whose incomes differ by 1000 dollars
 is `r reg_line[2]*1000` years.
 
 
-
-
-Now that we've learned how to compute the equation for the regression line 
+Now that we have learned how to compute the equation for the regression line 
 in Figure \@ref(fig:numxplot3) using the values in the `estimate` column 
 of Table \@ref(tab:regtable), 
 and how to interpret the resulting intercept and slope, 
@@ -1055,62 +989,56 @@ from a statistical perspective.
 Let's put aside these ideas for now 
 and revisit them in Chapter 
 \@ref(inference-for-regression) on (statistical) inference for regression. 
-We'll do this after we've had a chance 
-to cover standard errors in Chapter \@ref(sampling), 
-confidence intervals in Chapter \@ref(confidence-intervals), 
-and hypothesis testing and $p$-values in Chapter \@ref(hypothesis-testing).
+<!-- We will do this after we've had a chance  -->
+<!-- to cover standard errors in Chapter \@ref(sampling),  -->
+<!-- confidence intervals in Chapter \@ref(confidence-intervals),  -->
+<!-- and hypothesis testing and $p$-values in Chapter \@ref(hypothesis-testing). -->
 
-```{block, type="learncheck", purl=FALSE}
-\vspace{-0.15in}
-**_Learning check_**
-\vspace{-0.1in}
+
+## Finding the best-fitting line {#leastsquare}
+
+Now that we have seen how to use function `moderndive::get_regression_table()` 
+to get the value of the intercept and the slope of a regression line,
+let's tie up some loose ends: 
+What criterion dictates which line is the the "best-fitting" regression line?
+First, we need to introduce a few important concepts 
+through the following example.
+
+Table \@ref(tab:japan) below is the 67th row from the `df_gapminder2007` data frame.
+
+```{r echo = FALSE}
+index <- which(df_gapminder2007$country == "Japan")
+target_point <- health_model %>%
+  moderndive::get_regression_points() %>%
+  dp$slice(index)
+x <- target_point$income
+y <- target_point$life_exp
+y_hat <- target_point$life_exp_hat
+resid <- target_point$residual
 ```
-
-**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
-??
-
-```{block, type="learncheck", purl=FALSE}
-\vspace{-0.25in}
-\vspace{-0.25in}
-```
-
-
-### Observed/fitted values and residuals {#model1points}
-
-Now that we are equipped with the knowledge 
-of how to get the value of the intercept 
-and the slope of a regression line from the `estimate` column 
-of a regression table generated by the `get_regression_table()` function, 
-let's revisit the concepts we introduced earlier: 
-observed vs. fitted values. 
-For example, let's focus on 
-the 67th row of the `r n_countries` rows in the `df_gapminder2007` data frame 
-in Table \@ref(tab:japan): 
-
 
 ```{r japan, echo = FALSE}
 df_gapminder2007 %>% 
   dp$select(-gdp_per_cap, -pop) %>% 
   dp$slice(index) %>%
   knitr::kable(
-    digits = 4,
+    digits = 0,
     caption = "Actual income and life expectancy for Japan in 2007",
     booktabs = TRUE,
     linesep = ""
   )
 ```
 
-
-What is the value $\widehat{\text{life_exp}}$ on the regression line corresponding to 
-Japan's `income` of `r x %>% round(0)`? 
+What would be the value $\widehat{\text{life_exp}}$ on the regression line
+corresponding to Japan's average `income` of `r x %>% round(0) %>% scales::dollar()`? 
 In Figure \@ref(fig:numxplot4) we zoom in 
 on the circle, the sqaure, and the arrow for the country Japan: 
 
 
 * Circle: The *observed value* $y$ = `r y` 
-  is Japan's actual life expectancy. 
+  is Japan's actual average life expectancy. 
 * Square: The *fitted value* $\widehat{y}$ is the value on the regression line 
-  for $x$ = `income` = `r x %>% round(0)`. 
+  for $x$ = `income` = `r x %>% round(0) %>% scales::dollar()`. 
   This value is computed using the intercept and slope 
   in the previous regression table: 
 
@@ -1137,27 +1065,153 @@ best_fit_plot <- gg$ggplot(df_gapminder2007,
 best_fit_plot
 ```
 
-Now say we want to compute both the fitted value 
+Figure \@ref(fig:best-fitting-line) displays 
+three more arbitrarily chosen countries in addition to Japan, 
+with each country's *observed* $y$, *fitted* $\hat{y}$, 
+and the *residual* $y - \hat{y}$ marked.
+
+```{r best-fitting-line, fig.height=5.5, echo=FALSE, fig.cap="Example of observed value, fitted value, and residual.", purl=FALSE, message=FALSE}
+# First residual
+best_fit_plot <- gg$ggplot(df_gapminder2007, 
+                            mapping = gg$aes(x = income, y = life_exp)) +
+  gg$geom_point(size = 0.8, color = "grey") +
+  gg$labs(x = "Income", y = "Life Expectancy") + 
+  gg$geom_smooth(method = "lm", se = FALSE) +
+  gg$annotate("point", x = x, y = y_hat, col = "red", shape = 15, size = 3) +
+  gg$annotate("segment", x = x, xend = x, y = y, yend = y_hat, color = "blue",
+           arrow = gg$arrow(type = "closed", length = gg$unit(0.02, "npc"))) +
+  gg$annotate("point", x = x, y = y, col = "red", size = 2)
+
+p1 <- best_fit_plot + gg$labs(title = "First country's residual")
+
+# Second residual
+index <- which(df_gapminder2007$country == "China")
+target_point <- moderndive::get_regression_points(health_model) %>%
+  dp$slice(index)
+x <- target_point$income
+y <- target_point$life_exp
+y_hat <- target_point$life_exp_hat
+resid <- target_point$residual
+
+best_fit_plot <- best_fit_plot +
+  gg$annotate("point", x = x, y = y, col = "red", size = 2) +
+  gg$annotate("point", x = x, y = y_hat, col = "red", shape = 15, size = 3) +
+  gg$annotate("segment",
+    x = x, xend = x, y = y, yend = y_hat, color = "blue",
+    arrow = gg$arrow(type = "closed", length = gg$unit(0.02, "npc"))
+  )
+p2 <- best_fit_plot + gg$labs(title = "Adding second country's residual")
+
+# Third residual
+index <- which(df_gapminder2007$country == "Ecuador")
+target_point <- moderndive::get_regression_points(health_model) %>%
+  dp$slice(index)
+x <- target_point$income
+y <- target_point$life_exp
+y_hat <- target_point$life_exp_hat
+resid <- target_point$residual
+
+best_fit_plot <- best_fit_plot +
+  gg$annotate("point", x = x, y = y, col = "red", size = 2) +
+  gg$annotate("point", x = x, y = y_hat, col = "red", shape = 15, size = 3) +
+  gg$annotate("segment",
+    x = x, xend = x, y = y, yend = y_hat,
+    color = "blue",
+    arrow = gg$arrow(type = "closed", length = gg$unit(0.02, "npc"))
+  )
+p3 <- best_fit_plot + gg$labs(title = "Adding third country's residual")
+
+index <- which(df_gapminder2007$country == "Kenya")
+target_point <- moderndive::get_regression_points(health_model) %>%
+  dp$slice(index)
+x <- target_point$income
+y <- target_point$life_exp
+y_hat <- target_point$life_exp_hat
+resid <- target_point$residual
+
+best_fit_plot <- best_fit_plot +
+  gg$annotate("point", x = x, y = y, col = "red", size = 2) +
+  gg$annotate("point", x = x, y = y_hat, col = "red", shape = 15, size = 3) +
+  gg$annotate("segment",
+    x = x, xend = x, y = y, yend = y_hat, color = "blue",
+    arrow = gg$arrow(type = "closed", length = gg$unit(0.02, "npc"))
+  )
+p4 <- best_fit_plot + gg$labs(title = "Adding fourth country's residual")
+
+p1 + p2 + p3 + p4 + patchwork::plot_layout(nrow = 2) + 
+  patchwork::plot_annotation(tag_levels = "A")
+```
+
+Panel A in Figure \@ref(fig:best-fitting-line) 
+is a replica of Figure \@ref(fig:numxplot4),
+which highlights the country Japan. 
+The three other plots refer to:
+
+```{r echo=F}
+# Second residual
+index_2 <- which(df_gapminder2007$country == "China")
+target_point_2 <- moderndive::get_regression_points(health_model) %>%
+  dp$slice(index_2)
+x_2 <- target_point_2$income %>% round(0)
+y_2 <- target_point_2$life_exp %>% round(2)
+y_hat_2 <- target_point_2$life_exp_hat %>% round(2)
+resid_2 <- target_point_2$residual %>% round(2)
+
+# Third residual
+index_3 <- which(df_gapminder2007$country == "Ecuador")
+target_point_3 <- moderndive::get_regression_points(health_model) %>%
+  dp$slice(index_3)
+x_3 <- target_point_3$income %>% round(0)
+y_3 <- target_point_3$life_exp %>% round(2)
+y_hat_3 <- target_point_3$life_exp_hat %>% round(2)
+resid_3 <- target_point_3$residual %>% round(2)
+
+# Fourth residual
+index_4 <- which(df_gapminder2007$country == "Kenya")
+target_point_4 <- moderndive::get_regression_points(health_model) %>%
+  dp$slice(index_4)
+x_4 <- target_point_4$income %>% round(0)
+y_4 <- target_point_4$life_exp %>% round(2)
+y_hat_4 <- target_point_4$life_exp_hat %>% round(2)
+resid_4 <- target_point_4$residual %>% round(2)
+```
+
+
+1. A country with an average income of $x$ = `r x_2 %>% scales::dollar()` 
+   and life expectancy of $y$ = `r y_2`. 
+   The residual in this case is $`r y_2` - `r y_hat_2` = `r resid_2`$, 
+   which we mark with a new blue arrow in Panel B.
+
+1. A country with an average income of $x$ = `r x_3 %>% scales::dollar()` 
+   and life expectancy of $y$ = `r y_3`. 
+   The residual in this case is $`r y_3` - `r y_hat_3` = `r resid_3`$, 
+   which we mark with a new blue arrow in Panel C.
+
+1. A country with an average income of $x$ = `r x_4 %>% scales::dollar()` 
+   and life expectancy of $y$ = `r y_4`. 
+   The residual in this case is $`r y_4` - `r y_hat_4` = `r resid_4`$, 
+   which we mark with a new blue arrow in Panel D.
+
+
+Now say we want to repeat this process 
+and compute both the fitted value 
 $\widehat{y} = b_0 + b_1 \cdot x$ 
 and the residual $y - \widehat{y}$ for *all* `r n_countries` countries 
 in the study. 
-Recall that each country corresponds to one of the `r n_countries` rows 
-in the `df_gapminder2007` data frame and also one of the `r n_countries` points 
-in the regression plot in Figure \@ref(fig:numxplot4).
-
-We could repeat the previous calculations we performed 
+<!-- Recall that each country corresponds to one of the `r n_countries` rows  -->
+<!-- in the `df_gapminder2007` data frame and also one of the `r n_countries` points  -->
+<!-- in the regression plot in Figure \@ref(fig:numxplot4). -->
+We could repeat the previous calculations we have performed 
 by hand `r n_countries` times, 
-but that would be tedious and time consuming. 
+but that would be tedious and error prone. 
 Instead, let's do this using a computer 
-with the `get_regression_points()` function. 
+with the `moderndive::get_regression_points()` function. 
 Just like the `get_regression_table()` function, 
 the `get_regression_points()` function is a "wrapper" function. 
 However, this function returns a different output. 
 Let's apply the `get_regression_points()` function to `health_model`, 
-which is where we saved our `lm()` model in the previous section. 
-In Table \@ref(tab:regression-points-1) 
-we present the results of only four countries 
-for brevity's sake.
+which is where we saved our `lm()` model in the previous section.
+The results are presented in Table \@ref(tab:regression-points-1).
 
 ```{r eval=FALSE}
 regression_points <- moderndive::get_regression_points(health_model)
@@ -1165,65 +1219,182 @@ regression_points
 ```
 
 ```{r regression-points-1, echo=FALSE, purl=FALSE}
-set.seed(76)
 regression_points <- moderndive::get_regression_points(health_model)
+# set.seed(76)
 regression_points %>%
-  dp$slice(c(index, index + 1, index + 2, index + 3)) %>%
+  #   dp$slice(c(index, index + 1, index + 2, index + 3)) %>%
   knitr::kable(
     digits = 3,
-    caption = "Regression points (for only four countries)",
+    caption = "Observed, fitted, and residuals for all 142 countries.",
     booktabs = TRUE,
     linesep = ""
-  )
+    ) %>% 
+  kableExtra::kable_styling(font_size = 14) %>% 
+  kableExtra::scroll_box(height="300px")
+  
 
 # This code is used for dynamic non-static in-line text output purposes
 n_regression_points <- regression_points %>% nrow()
 life_exp_69 <- regression_points$life_exp[69]
-income_69 <- regression_points$income[69] %>% format(round(2), nsmall = 2)
-life_exp_hat_69 <- regression_points$life_exp_hat[69] %>% 
-  format(round(2), nsmall = 2)
+income_69 <- regression_points$income[69]
+life_exp_hat_69 <- regression_points$life_exp_hat[69]
 residual_69 <- regression_points$residual[69]
-
 ```
 
-Let's inspect the individual columns 
-and match them with the elements of Figure \@ref(fig:numxplot4):
+Let's inspect the individual columns in Table \@ref(tab:regression-points-1)
+and match them with the elements in Figure \@ref(fig:leastsquare):
+
+```{r leastsquare, fig.cap = "Observed, fitted, and residuals of all 142 countries.", message=F, echo = FALSE}
+df_gapminder2007 %>% 
+  dp$mutate(predicted = predict(health_model)) %>% 
+  # gapminder2007$residuals <- residuals(health_model)
+  gg$ggplot(mapping = gg$aes(x = income, y = life_exp)) + 
+  gg$geom_smooth(method = "lm", se = FALSE, color = "lightgrey") +  
+  # Plot regression slope
+  gg$geom_segment(mapping = gg$aes(xend = income, yend = predicted), alpha = .2) +  
+  # alpha to fade lines
+  gg$geom_point() +
+  gg$geom_point(mapping = gg$aes(y = predicted), shape = 1) + 
+  gg$scale_x_continuous(breaks=seq(20000,50000,4000)) + 
+  gg$labs(x = "Income", y = "Life Expectancy",
+       title = "Relationship of health and wealth") +
+  gg$theme_bw()
+```
+
 
 * The `life_exp` column represents the observed outcome variable $y$. 
-  This is the y-position of the `r n_regression_points` black points.
+  This is the y-position of the `r n_regression_points` solid black dots 
+  in Figure \@ref(fig:leastsquare).
 * The `income` column represents the values of the explanatory variable $x$. 
-  This is the x-position of the `r n_regression_points` black points.
+  This is the x-position of the `r n_regression_points` solid black dots 
+  in Figure \@ref(fig:leastsquare).
 * The `life_exp_hat` column represents the fitted values $\widehat{y}$. 
-  This is the corresponding value on the regression line 
-  for the `r n_regression_points` $x$ values.
+  This is the y-position of the `r n_regression_points` hollow black circles
+  on the regression line in Figyre \@ref(fig:leastsquare).
 * The `residual` column represents the residuals $y - \widehat{y}$. 
   This is the `r n_regression_points` vertical distances 
-  between the `r n_regression_points` black points and the regression line.
+  between the `r n_regression_points` solid black dots and 
+  their corresponding hollow black circles on the regression line.
 
-Just as we did for the country Japan in the `df_gapminder2007` dataset 
-(in the first row of the table), 
-let's repeat the calculations for ??
-(in the fourth row of Table \@ref(tab:regression-points-1)):
+<!-- Just as we did for the country Japan in the `df_gapminder2007` dataset  -->
+<!-- (`ID` = 67),  -->
+<!-- let's repeat the calculations for another country with `ID` = 69 -->
+<!-- from Table \@ref(tab:regression-points-1): -->
+<!--  -->
+<!-- * `life_exp` = `r life_exp_69` is the observed life expectancy $y$  -->
+<!--   for this country. -->
+<!-- * `income` = `r income_69 %>% round(0) %>% scales::dollar()`  -->
+<!--   is the value of the explanatory variable  -->
+<!--   `income` $x$ for this country. -->
+<!-- * `life_exp_hat` = `r reg_line[1]` + `r reg_line[2]` $\cdot$ `r income_69`  -->
+<!--   = `r life_exp_hat_69 %>% round(2)` -->
+<!--   is the fitted value $\widehat{y}$ on the regression line  -->
+<!--   for this country. -->
+<!-- * `residual` = `r life_exp_69` - `r life_exp_hat_69 %>% round(2)`  -->
+<!--   = `r residual_69 %>% round(2)` -->
+<!--   is the value of the residual for this country.  -->
+<!--   In other words, the model's fitted value was off by `r residual_69`  -->
+<!--   years for this country.  -->
 
-* `life_exp` = `r life_exp_69` is the observed life expectancy $y$ 
-  for this country.
-* `income` = `r income_69` is the value of the explanatory variable 
-  `income` $x$ for this country.
-* `life_exp_hat` = `r life_exp_hat_69` = 
-  `r reg_line[1]` + `r reg_line[2]` $\cdot$ `r income_69` 
-  is the fitted value $\widehat{y}$ on the regression line 
-  for this country.
-* `residual` = `r residual_69` =  `r life_exp_69` - `r life_exp_hat_69` 
-  is the value of the residual for this country. 
-  In other words, the model's fitted value was off by `r residual_69` 
-  years for this country. 
+Finding the best-fitting regression line 
+is equivalent to finding a line that minimizes the *residuals*, 
+or the distances from all the data points to the regression line combined. 
 
-At this point, you can skip ahead to Subsection \@ref(leastsquares) 
-to learn about the processes behind 
-what makes "best-fitting" regression lines. 
-As a primer, a "best-fitting" line refers to the line 
-that minimizes the *sum of squared residuals* 
-out of all possible lines we can draw through the points. 
+In practice, we first square all the residuals and then sum the squares, 
+resulting in a quantity commonly known as the *sum of squared residuals*.
+In an ideal world where the regression line fits all the points perfectly, 
+the sum of squared residuals would be 0. 
+This is because if the regression line fits all the points perfectly, 
+then the fitted value $\widehat{y}$ equals the observed value $y$ in all cases, 
+and hence the residual $y-\widehat{y}$ = 0 in all cases, 
+and the sum of even a large number of 0's is still 0. 
+
+In reality, however, the sum of squared residuals is almost never zero, 
+even for the best-fitting regression line.
+Of all possible lines we can draw through the cloud of 
+`r n_countries` points in Figure \@ref(fig:numxplot3), 
+the best-fitting regression line minimizes 
+the sum of the squared residuals:
+
+$$
+\sum_{i=1}^{n}(y_i - \widehat{y}_i)^2
+$$
+
+Let's use our data wrangling tools from Chapter \@ref(wrangling) 
+to compute the sum of squared residuals for the best-fitting line 
+in the current example:
+
+```{r eval=F}
+# Fit regression model:
+health_model <- lm(life_exp ~ income, data = df_gapminder2007)
+health_model <- lm(score ~ bty_avg, 
+                  data = evals_ch5)
+
+# Get regression points:
+regression_points <- moderndive::get_regression_points(health_model)
+regression_points
+# Compute sum of squared residuals
+regression_points %>%
+  dp$mutate(squared_residuals = residual^2) %>%
+  dp$summarize(sum_of_squared_residuals = sum(squared_residuals))
+```
+
+```{r echo=F}
+regression_points
+# Compute sum of squared residuals
+ls <- regression_points %>%
+  dp$mutate(squared_residuals = residual^2) %>%
+  dp$summarize(sum_of_squared_residuals = sum(squared_residuals))
+ls
+```
+
+Any other straight line drawn in Figure \@ref(fig:leastsquare) 
+would yield a sum of squared residuals greater than `r ls %>% dp$pull() %>% round()`.
+This is a mathematically guaranteed fact 
+that you can prove using calculus and linear algebra. 
+That's why a best-fitting linear regression line is also called 
+a *least-squares line*. 
+
+```{block ls, type="btw", purl=FALSE}
+\vspace{-0.15in}
+
+**_Good to know_**
+
+\vspace{-0.1in}
+```
+
+**Why do we square the residuals (i.e., the arrow lengths)?** 
+
+By definition, residuals are calculated as $y - \hat{y}$. 
+Therefore, some residuals are positive ($y > \hat{y}$) 
+whereas some are negative ($y < \hat{y}$).
+To make sure that both positive and negative residuals are treated equally, 
+we can either use the absolute magnitude of residuals and add them up (Equation \@ref(eq:abs))
+or square residuals and then add them up (Equation \@ref(eq:leastsquare)).
+
+$$
+\lvert{y_1 - \hat{y}_1} \rvert + \lvert{y_2 - \hat{y}_2} \rvert + \cdots + 
+\lvert{y_n - \hat{y}_n} \rvert
+(\#eq:abs)
+$$
+
+$$
+(y_1 - \widehat{y}_1)^2 + (y_2 - \widehat{y}_2)^2 + \cdots + 
+(y_n - \widehat{y}_n)
+(\#eq:leastsquare)
+$$
+
+In the end, the second method, taking squares of residuals won. 
+Because sum of squared residuals are differentiable, 
+whereas sum of absolute values are not. 
+In other words, sum of squares can be 
+[minimized analytically](https://en.wikipedia.org/wiki/Least_squares#Solving_the_least_squares_problem), 
+without a computer.
+
+```{block, type="btw", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
 
 ```{block, type="learncheck", purl=FALSE}
 \vspace{-0.15in}
@@ -1232,9 +1403,590 @@ out of all possible lines we can draw through the points.
 ```
 
 **`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
-[TODO]
-<!-- Generate a data frame of the residuals of the model  -->
-<!-- where you used `age` as the explanatory $x$ variable. -->
+Note in Figure \@ref(fig:three-lines) there are 3 points marked with dots and:
+
+* The "best" fitting solid regression line in blue
+* An arbitrarily chosen dotted red line 
+* Another arbitrarily chosen dashed green line
+
+```{r three-lines, fig.cap="Regression line and two others.", out.width="85%", echo=FALSE, purl=FALSE, message=FALSE}
+example <- tibble::tibble(
+  x = c(0, 0.5, 1),
+  y = c(2, 1, 3)
+)
+
+gg$ggplot(example, 
+          mapping = gg$aes(x = x, y = y)) +
+  gg$geom_smooth(method = "lm", se = FALSE, fullrange = TRUE) +
+  gg$geom_hline(yintercept = 2.5, col = "red", linetype = "dotted", size = 1) +
+  gg$geom_abline(
+    intercept = 2, slope = -1, col = "forestgreen",
+    linetype = "dashed", size = 1
+  ) +
+  gg$geom_point(size = 4)
+```
+
+Compute the sum of squared residuals by hand for each line 
+and show that of these three lines, 
+the regression line in blue has the smallest value.
+
+```{block, type="learncheck", purl=FALSE}
+\vspace{-0.25in}
+\vspace{-0.25in}
+```
+
+## A case study
+
+#### Problem statement {-}
+
+Why do some professors and instructors at universities and colleges 
+receive high teaching evaluations scores from students 
+whereas others receive lower ones? 
+Are there differences in teaching evaluations 
+between instructors of different demographic groups? 
+Could there be an impact due to student biases? 
+These are all questions that are of interest to university/college administrators, 
+as teaching evaluations are among the many criteria considered 
+in determining which instructors and professors get promoted. 
+Researchers at the University of Texas in Austin, Texas (UT Austin) 
+tried to answer the following research question: 
+what factors explain differences in instructor teaching evaluation scores? 
+To this end, they collected instructor and course information on 463 course.
+
+In this exercise, we will try to explain differences 
+in instructor teaching scores as a function of one numerical variable: 
+the instructor's "beauty" score. 
+Could it be that instructors with higher "beauty" scores 
+also have higher teaching evaluations? 
+Could it be instead that instructors with higher "beauty" scores 
+tend to have lower teaching evaluations? 
+Or could it be that there is no relationship between "beauty" score 
+and teaching evaluations? 
+We'll answer these questions by modeling the relationship between teaching scores 
+and "beauty" scores using *simple linear regression* where we have:
+
+- A numerical outcome variable $y$ (the instructor's teaching score) and
+
+- A single numerical explanatory variable $x$ (the instructor's "beauty" score).
+
+### Exploring the data
+
+The data on the 463 courses at UT Austin 
+can be found in the `evals` data frame included in the `moderndive` package. 
+However, to keep things simple, 
+Let's only `select()` the subset of the variables 
+you need to consider in this example, 
+and save this data in a new data frame called `evals_simple`:
+
+```{r}
+evals_simple <- moderndive::evals %>%
+  dp$select(ID, score, bty_avg, age)
+```
+
+#### Eyeballing the data {-}
+
+```{r}
+tibble::glimpse(evals_simple)
+```
+
+Observe that `Observations: 463` indicates that 
+there are 463 rows/observations in `evals_simple`, 
+where each row corresponds to one observed course at UT Austin. 
+It is important to note that the *observational unit* 
+is an individual course and not an individual instructor. 
+Since some instructors teach more than one course in an academic year, 
+the same instructor may appear more than once in the data. 
+Hence there are fewer than 463 unique instructors 
+being represented in `evals_simple`.
+
+A full description of all the variables included in `evals` 
+can be found at [openintro.org](https://www.openintro.org/stat/data/?data=evals) 
+or by reading the associated help file (run `?moderndive::evals` in the console). 
+Below is a list of descriptions for the `r ncol(evals_simple)` variables 
+we have selected in `evals_simple`:
+
+- `ID`: An identification variable used to distinguish 
+  between the 1 through 463 courses in the dataset.
+
+- `score`: A numerical variable of the course instructor's average teaching score, 
+  where the average is computed from the evaluation scores 
+  from all students in that course. 
+  Teaching scores of 1 are lowest and 5 are highest. 
+  This is the outcome variable $y$ of interest.
+
+- `bty_avg`: A numerical variable of the course instructor's 
+  average "beauty" score, 
+  where the average is computed from a separate panel of six students. 
+  "Beauty" scores of 1 are lowest and 10 are highest. 
+  This is the explanatory variable $x$ of interest.
+
+- `age`: A numerical variable of the course instructor's age. 
+  This will be another explanatory variable $x$ 
+  that will be used in an exercise.
+
+An alternative way to look at the raw data values 
+is by choosing a random sample of the rows in `evals_simple` 
+by piping it into the `sample_n()` function from the `dplyr` package. 
+Here we set the `size` argument to be `5`, 
+indicating that we want a random sample of 5 rows. 
+We display the results below. 
+Note that due to the random nature of the sampling, 
+you will likely end up with a different subset of 5 rows.
+
+```{r eval=F}
+evals_simple %>%
+  dp$sample_n(size = 5)
+```
+
+```{r five-random-courses, echo=F}
+evals_simple %>%
+  dp$sample_n(size = 5) %>% 
+  knitr::kable(
+    caption = "A random sample of 5 out of the 463 courses.",
+    booktabs = TRUE,
+    linesep = ""
+  )
+```
+
+
+#### Summary statistics --- univariate {-}
+
+Now that we've looked at the raw values in our `evals_simple` data frame 
+and got a preliminary sense of the data, 
+let's continue with computing summary statistics for the target variables --- 
+an instructor's teaching `score` on a course 
+and the instructor's "beauty" score denoted as `bty_avg`.
+As before, we will use the customized function `my_skim()`.
+
+If you are coming back to this section since last time you have created `my_skim()`, 
+you will need to run the next chunk first.
+
+```{r eval=F}
+# Create a template function for descriptives
+my_skim <- skimr::skim_with(base = skimr::sfl(n = length, missing = skimr::n_missing), 
+                     numeric = skimr::sfl(
+                                          mean, 
+                                          sd, 
+                                          iqr = IQR,
+                                          min, 
+                                          p25 = ~ quantile(., 1/4), 
+                                          median, 
+                                          p75 = ~ quantile(., 3/4), 
+                                          max
+                                          ), 
+                            append = FALSE
+) #sfl stands for "skimr function list"
+```
+
+```{r eval=F}
+evals_simple %>% 
+  dp$select(score, bty_avg) %>% 
+  my_skim()
+```
+
+
+```{r eval-summary, echo=F}
+evals_simple %>% 
+  dp$select(score, bty_avg) %>% 
+  # use the customized function to get descriptives
+  my_skim() %>% 
+  skimr::yank("numeric") %>% 
+  knitr::kable(
+               caption = "Summary statistics for instructor's teaching score and \"beauty\" score.",
+               digits = 2
+               )
+```
+
+Looking at this output, we can see how the values of both variables distribute. 
+For example, the mean teaching score was 4.17 out of 5, 
+whereas the mean "beauty" score was 4.42 out of 10. 
+The boxplots below complement the information in Table \@ref(tab:eval-summary).
+
+
+```{r eval-boxplot1, fig.cap = "Boxplot of instructor's teaching scores"}
+gg$ggplot(evals_simple, 
+  # `x = ""` is necessary when there is only one vector to plot
+          gg$aes(x = "", y = score)) + 
+          gg$geom_boxplot() +
+  # add the mean to the boxplot
+  gg$stat_summary(fun=mean, geom="point", shape=5, size=4) + 
+  gg$geom_jitter(position = gg$position_jitter(width = 0.1, height = 0), alpha = 0.2) + 
+  # remove x axis title
+  gg$theme(axis.title.x = gg$element_blank()
+        )
+```
+
+```{r eval-boxplot2, fig.cap = "Boxplot of instructor's 'beauty' scores"}
+gg$ggplot(evals_simple, 
+  # `x = ""` is necessary when there is only one vector to plot
+          gg$aes(x = "", y = bty_avg)) + 
+          gg$geom_boxplot() +
+    # add the mean to the boxplot
+  gg$stat_summary(fun=mean, geom="point", shape=5, size=4) + 
+  gg$geom_jitter(position = gg$position_jitter(width = 0.1, height = 0), alpha = 0.2) + 
+  # remove x axis title
+  gg$theme(axis.title.x = gg$element_blank()
+        )
+```
+
+#### Summary statistics --- bivariate {-}
+
+```{r eval-scatter, fig.cap = "Relationship of teaching and beauty scores"}
+gg$ggplot(evals_simple, gg$aes(x = bty_avg, y = score)) +
+  gg$geom_point() +
+  gg$labs(x = "Beauty Score", 
+       y = "Teaching Score")
+```
+
+Observe that most "beauty" scores lie between 2 and 8, 
+while most teaching scores lie between 3 and 5. 
+Furthermore, the relationship between teaching score and "beauty" score 
+seems "weakly positive." 
+
+Computing the correlation coefficient confirms this intuition:
+
+```{r}
+evals_simple %>% 
+  dp$summarize(correlation = cor(score, bty_avg))
+```
+
+```{r echo=FALSE}
+cor_teaching <- evals_simple %>%
+  dp$summarize(correlation = cor(score, bty_avg)) %>% 
+  round(3) %>% 
+  dp$pull()
+```
+
+### Simple linear regression
+
+Recall that there are two steps involved 
+in fitting a simple linear regression model to the data:
+
+- "fit" the linear regression model using the `lm()` function 
+  and save it in `score_model`.
+
+- get the regression table by applying the `get_regression_table()` function 
+  from the `moderndive` package to `score_model`
+
+```{r eval=FALSE}
+# Fit regression model:
+score_model <- lm(score ~ bty_avg, data = evals_simple)
+# Get regression table:
+moderndive::get_regression_table(score_model, digits = 3, print = TRUE)
+```
+
+```{r echo=FALSE}
+score_model <- lm(score ~ bty_avg, data = evals_simple)
+evals_line <- score_model %>%
+  moderndive::get_regression_table() %>%
+  dp$pull(estimate)
+```
+
+```{r eval-regtable, echo=FALSE, warning = FALSE}
+moderndive::get_regression_table(score_model) %>%
+  knitr::kable(
+    digits = 3,
+    caption = "Linear regression table",
+    booktabs = TRUE,
+    linesep = ""
+  ) %>%
+  kableExtra::kable_styling(font_size = ifelse(knitr:::is_latex_output(), 10, 16),
+                latex_options = c("hold_position"))
+```
+
+When we say "fit", we mean  "find the best fitting line to this data." 
+`lm()` stands for "linear model" and is used as follows: 
+`lm(y ~ x, data = data_frame_name)` where:
+
+- `y` is the outcome variable, followed by a tilde `~`. 
+  In our case, `y` is set to `score`, which represents the teaching score
+   an instructor received for a given course.
+
+- `x` is the explanatory variable. In our case, `x` is set to 
+  an instructor's "beauty" score, or `bty_avg`.
+
+- The combination of `y ~ x` is called a *model formula*. 
+  (Note the order of `y` and `x`.) 
+  In our case, the model formula is `score ~ bty_avg`. 
+
+- `data_frame_name` is the name of the data frame 
+  that contains the variables `y` and `x`. 
+  In our case, `data_frame_name` is the `evals_simple` data frame.
+
+The `get_regression_table()` function takes a saved `lm()` linear regression model 
+as input and returns a data frame of the regression table as output. 
+If you're interested in learning more 
+about the `get_regression_table()` function's inner workings, 
+check out Section \@ref(underthehood).
+
+#### Visualize {-}
+
+Let's build on the scatterplot in Figure \@ref(fig:eval-scatter) 
+by adding a "best-fitting" line: 
+of all possible lines we can draw on this scatterplot, 
+it is the line that "best" fits through the cloud of points. 
+We do this by adding a new `geom_smooth(method = "lm", se = FALSE)` layer 
+to the `ggplot()` code that created the scatterplot 
+in Figure \@ref(fig:eval-scatter). 
+The `method = "lm"` argument sets the line to be a "`l`inear `m`odel." 
+The `se = FALSE` argument suppresses _standard error_ uncertainty bars. 
+
+```{r eval-regline, message=FALSE, warning=FALSE, fig.cap="Regression line."}
+gg$ggplot(evals_simple, gg$aes(x = bty_avg, y = score)) +
+  gg$geom_point() +
+  gg$labs(x = "Beauty Score", y = "Teaching Score",
+       title = "Relationship between teaching and beauty scores") +  
+  gg$geom_smooth(method = "lm", se = FALSE)
+```
+
+The line in the resulting Figure \@ref(fig:eval-regline) 
+is called a "regression line." 
+The regression line is a visual summary of the relationship 
+between two numerical variables, 
+in our case the outcome variable `score` and the explanatory variable `bty_avg`. 
+The positive slope of the blue line is consistent 
+with our earlier observed correlation coefficient of `r cor_teaching` 
+suggesting that there is a positive relationship between these two variables: 
+as instructors have higher "beauty" scores, 
+so also do they receive higher teaching evaluations. 
+Furthermore, a regression line is "best-fitting" in that 
+it minimizes the sum of squared residuals.
+
+
+### Interpretation
+
+In the `estimate` column of Table \@ref(tab:eval-regtable) 
+are the intercept $b_0$ = `r evals_line[1] %>% round(2)` 
+and the slope $b_1$ = `r evals_line[2] %>% round(2)` for `bty_avg`. 
+Thus the equation of the regression line follows:
+
+$$
+\begin{aligned}
+\widehat{y} &= b_0 + b_1 \cdot x\\
+\widehat{\text{score}} &= b_0 + b_{\text{bty}\_\text{avg}} \cdot\text{bty}\_\text{avg}\\
+&= `r evals_line[1] %>% round(3)` + `r evals_line[2] %>% round(3)`\cdot\text{bty}\_\text{avg}
+\end{aligned}
+$$
+
+The intercept $b_0$ = `r evals_line[1] %>% round(3)` 
+is the average teaching score $\widehat{y}$ = $\widehat{\text{score}}$ 
+for those courses where the instructor had a "beauty" score `bty_avg` of 0. 
+Or in graphical terms, 
+it's where the line intersects the $y$ axis when $x$ = 0. 
+Note, however, that while the intercept of the regression line 
+has a mathematical interpretation, it has no *practical* interpretation here, 
+given that the average of six panelists' "beauty" scores range from 1 to 10 
+and observing a `bty_avg` of 0 is impossible.
+Furthermore, looking at the scatterplot with the regression line 
+in Figure \@ref(fig:numxplot1), 
+no instructors had a "beauty" score anywhere near 0.
+
+Of greater interest is the slope $b_1$ = $b_{\text{bty_avg}}$ for `bty_avg` 
+of `r evals_line[2]`, 
+as this summarizes the relationship 
+between the teaching and "beauty" score variables. 
+Note that the sign is positive, 
+suggesting a positive relationship between these two variables, 
+meaning teachers with higher beauty scores also tend to have higher teaching scores. 
+The slope's interpretation is:
+
+> 
+  For every increase of 1 unit in `bty_avg`, 
+  there is an *associated* increase of, *on average*, 
+  `r evals_line[2] %>% round(2)` units of `score`.
+
+We only state that there is an *associated* increase 
+and not necessarily a *causal* increase. 
+For example, perhaps it's not that higher "beauty" scores 
+directly cause higher teaching scores per se. 
+Instead, the following could hold true: 
+individuals from wealthier backgrounds 
+tend to have stronger educational backgrounds 
+and hence have higher teaching scores, 
+while at the same time these wealthy individuals 
+also tend to have higher "beauty" scores. 
+In other words, just because two variables are strongly associated, 
+it doesn't necessarily mean that one causes the other. 
+This is summed up in the often quoted phrase, 
+"correlation is not necessarily causation."
+
+Furthermore, we say that this associated increase is *on average* 
+`r evals_line[2] %>% round(2)` units of teaching `score`, 
+because you might have two instructors whose `bty_avg` scores differ by 1 unit, 
+but their difference in teaching scores won't necessarily be exactly 
+`r evals_line[2] %>% round(2)`. 
+What the slope of `r evals_line[2] %>% round(2)` is saying 
+is that across all possible courses, 
+the *average* difference in teaching score 
+between two instructors whose "beauty" scores differ by one 
+is `r evals_line[2] %>% round(2)`.
+
+<!-- ### Observed/fitted values and residuals -->
+<!--  -->
+<!-- We just saw how to get the value of the intercept and the slope  -->
+<!-- of a regression line from the `estimate` column of a regression table  -->
+<!-- generated by the `get_regression_table()` function.  -->
+<!-- Now instead say we want information on individual observations.  -->
+<!-- For example, let's focus on the 21st of the 463 courses  -->
+<!-- in the `evals_simple` data frame in Table \@ref(tab:instructor-21): -->
+<!--  -->
+<!-- ```{r instructor-21, echo=FALSE} -->
+<!-- index <- which(evals_simple$bty_avg == 7.333 & evals_simple$score == 4.9) -->
+<!-- target_point <- score_model %>% -->
+<!--   moderndive::get_regression_points() %>% -->
+<!--   dp$slice(index) -->
+<!-- x <- target_point$bty_avg -->
+<!-- y <- target_point$score -->
+<!-- y_hat <- target_point$score_hat -->
+<!-- resid <- target_point$residual -->
+<!-- evals_simple %>% -->
+<!--   dp$slice(index) %>% -->
+<!--   knitr::kable( -->
+<!--     digits = 4, -->
+<!--     caption = "Data for the 21st course out of 463", -->
+<!--     booktabs = TRUE, -->
+<!--     linesep = "" -->
+<!--   ) %>% -->
+<!--   kableExtra::kable_styling(font_size = ifelse(knitr:::is_latex_output(), 10, 16), -->
+<!--                 latex_options = c("hold_position")) -->
+<!-- ``` -->
+<!--  -->
+<!-- What is the value $\widehat{y}$ on the regression line  -->
+<!-- corresponding to this instructor's `bty_avg` "beauty" score of `r x`?  -->
+<!-- In Figure \@ref(fig:eval-instructor21) we mark three values  -->
+<!-- corresponding to the instructor for this 21st course  -->
+<!-- and give their statistical names: -->
+<!--  -->
+<!-- - Circle: The *observed value* $y$ = `r y`  -->
+<!--   is this course's instructor's actual teaching score. -->
+<!--  -->
+<!-- - Square: The *fitted value* $\widehat{y}$  -->
+<!--   is the value on the regression line for $x$ = `bty_avg` = `r x`.  -->
+<!--   This value is computed using the intercept and slope  -->
+<!--   in the previous regression table:  -->
+<!--  -->
+<!-- $$ -->
+<!-- \widehat{y} = b_0 + b_1 \cdot x = `r evals_line[1]` + `r evals_line[2]` \cdot `r x` = `r y_hat` -->
+<!-- $$ -->
+<!--  -->
+<!-- - Arrow: The length of this arrow is the *residual* \index{regression!residual}  -->
+<!--   and is computed by subtracting the fitted value $\widehat{y}$  -->
+<!--   from the observed value $y$.  -->
+<!--   The residual can be thought of as a model's error or "lack of fit"  -->
+<!--   for a particular observation.  -->
+<!--   In the case of this course's instructor, it is  -->
+<!--   $y - \widehat{y}$ = `r y` - `r y_hat` = `r resid`. -->
+<!--  -->
+<!-- ```{r eval-instructor21, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Example of observed value, fitted value, and residual.", fig.height=2.8} -->
+<!-- best_fit_plot <- gg$ggplot(evals_simple, gg$aes(x = bty_avg, y = score)) + -->
+<!--   gg$geom_point(color = "grey") + -->
+<!--   gg$labs(x = "Beauty Score", y = "Teaching Score", -->
+<!--        title = "Relationship of teaching and beauty scores") + -->
+<!--   gg$geom_smooth(method = "lm", se = FALSE) + -->
+<!--   gg$annotate("point", x = x, y = y_hat, col = "red", shape = 15, size = 4) + -->
+<!--   gg$annotate("segment", x = x, xend = x, y = y, yend = y_hat, color = "blue", -->
+<!--            arrow = gg$arrow(type = "closed", length = gg$unit(0.04, "npc"))) + -->
+<!--   gg$annotate("point", x = x, y = y, col = "red", size = 4) -->
+<!-- best_fit_plot -->
+<!-- ``` -->
+<!--  -->
+<!-- Now say we want to compute both the fitted value  -->
+<!-- $\widehat{y} = b_0 + b_1 \cdot x$  -->
+<!-- and the residual $y - \widehat{y}$ for *all* 463 courses in the study.  -->
+<!-- Recall that each course corresponds to one of the 463 rows  -->
+<!-- in the `evals_simple` data frame  -->
+<!-- and also one of the 463 points in the regression plot in Figure \@ref(fig:numxplot4). -->
+<!--  -->
+<!-- We could repeat the previous calculations we performed by hand 463 times,  -->
+<!-- but that would be tedious and time consuming.  -->
+<!-- Instead, let's do this using a computer  -->
+<!-- with the `get_regression_points()` function.  -->
+<!-- This function returns a different output.  -->
+<!-- Let's apply the `get_regression_points()` function to `score_model`,  -->
+<!-- which is where we saved our `lm()` model in the previous section.  -->
+<!-- In Table \@ref(tab:eval-regression-points-1)  -->
+<!-- we present the results of only the 21st through 24th courses for brevity's sake. -->
+<!--  -->
+<!-- ```{r, eval=FALSE} -->
+<!-- regression_points <- get_regression_points(score_model) -->
+<!-- regression_points -->
+<!-- ``` -->
+<!--  -->
+<!-- ```{r eval-regression-points-1, echo=FALSE} -->
+<!-- set.seed(76) -->
+<!-- regression_points <- moderndive::get_regression_points(score_model) -->
+<!-- regression_points %>% -->
+<!--   dp$slice(c(index, index + 1, index + 2, index + 3)) %>% -->
+<!--   knitr::kable( -->
+<!--     digits = 3, -->
+<!--     caption = "Regression points (for only the 21st through 24th courses)", -->
+<!--     booktabs = TRUE, -->
+<!--     linesep = "" -->
+<!--   ) %>% -->
+<!--   kableExtra::kable_styling(font_size = ifelse(knitr:::is_latex_output(), 10, 16), -->
+<!--                 latex_options = c("hold_position")) -->
+<!-- ``` -->
+<!--  -->
+<!-- Let's inspect the individual columns  -->
+<!-- and match them with the elements of Figure \@ref(fig:eval-instructor21): -->
+<!--  -->
+<!-- - The `score` column represents the observed outcome variable $y$.  -->
+<!--   This is the y-position of the `r nrow(regression_points)` black points. -->
+<!--  -->
+<!-- - The `bty_avg` column represents the values of the explanatory variable $x$.  -->
+<!--   This is the x-position of the `r nrow(regression_points)` black points. -->
+<!--  -->
+<!-- - The `score_hat` column represents the fitted values $\widehat{y}$.  -->
+<!--   This is the corresponding value on the regression line  -->
+<!--   for the `r nrow(regression_points)` $x$ values. -->
+<!--  -->
+<!-- - The `residual` column represents the residuals $y - \widehat{y}$.  -->
+<!--   This is the `r nrow(regression_points)` vertical distances  -->
+<!--   between the `r nrow(regression_points)` black points and the regression line. -->
+<!--  -->
+<!-- Just as we did for the instructor of the 21st course  -->
+<!-- in the `evals_simple` dataset (in the first row of the table),  -->
+<!-- let's repeat the calculations for the instructor of the 24th course  -->
+<!-- (in the fourth row of Table \@ref(tab:eval-regression-points-1)): -->
+<!--  -->
+<!-- - `score` = 4.4 is the observed teaching `score` $y$ for this course's instructor. -->
+<!--  -->
+<!-- - `bty_avg` = 5.50 is the value of the explanatory variable `bty_avg` $x$  -->
+<!--   for this course's instructor. -->
+<!--  -->
+<!-- - `score_hat` = 4.25 = `r evals_line[1]` + `r evals_line[2]` $\cdot$ 5.50  -->
+<!--   is the fitted value $\widehat{y}$ on the regression line  -->
+<!--   for this course's instructor. -->
+<!--  -->
+<!-- - `residual` = 0.15 =  4.4 - 4.25 is the value of the residual  -->
+<!--   for this instructor.  -->
+<!--   In other words, the model's fitted value was off by 0.15 teaching score units  -->
+<!--   for this course's instructor. -->
+<!--  -->
+
+```{block, type="learncheck", purl=FALSE}
+\vspace{-0.15in}
+**_Learning check_**
+\vspace{-0.1in}
+```
+
+**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** 
+Conduct a new linear regression analysis 
+with the same outcome variable $y$ being `score` 
+but with `age` as the new explanatory variable $x$. 
+Remember, this involves the following steps:
+
+1. Eyeballing the raw data
+1. Creating data visualizations
+1. Computing summary statistics, both univariate and bivariate.
+What can you say about the relationship between age and teaching scores?
+1. Fitting a simple linear regression 
+  where `age` is the explanatory variable $x$ 
+  and `score` being the outcome variable $y$
+1. Interpreting results of the "best-fitting" line 
+  based on informtion in the regression table
+
+How do the regression results match up with the results from the first three steps?
 
 ```{block, type="learncheck", purl=FALSE}
 \vspace{-0.25in}
@@ -1242,17 +1994,11 @@ out of all possible lines we can draw through the points.
 ```
 
 
-
-
-
-
-
-
-
-
 ## Related topics {#reg-related-topics}
 
 ### Correlation is not necessarily causation {#correlation-is-not-causation}
+
+<!-- Balancing causation and deciding which is y and which is x -->
 
 Throughout this chapter we've been cautious 
 when interpreting regression slope coefficients. 
@@ -1329,7 +2075,7 @@ Thus any regression model of the relationship between X and Y
 should also use Z as an explanatory variable. 
 In other words, our doctor needs to take into account 
 who had been drinking the night before. 
-In the next chapter, we'll start covering multiple regression models 
+In the next chapter, we will start covering multiple regression models 
 that allow us to incorporate more than one variable in our regression models.
 
 Establishing causation is a tricky problem 
@@ -1343,255 +2089,37 @@ the relationship between the outcome variable Y and the treatment variable X.
 
 As you read news stories, 
 be careful not to fall into the trap of thinking that 
-correlation necessarily implies causation.  
+correlation necessarily implies causation. 
 Check out the [Spurious Correlations](http://www.tylervigen.com/spurious-correlations) 
 website for some rather comical examples of variables that are correlated, 
 but are definitely not causally related.
 
 
-### Best-fitting line {#leastsquares}
-
-Regression lines are also known as "best-fitting" lines. 
-But what do we mean by "best"? 
-Let's unpack the criteria that is used in regression to determine "best." 
-Recall Figure \@ref(fig:numxplot4), 
-where for a country with an income level of $x = `r x`$ 
-we mark the *observed value* $y$ with a circle, 
-the *fitted value* $\widehat{y}$ with a square, 
-and the *residual* $y - \widehat{y}$ with an arrow. 
-We re-display Figure \@ref(fig:numxplot4) in the top-left plot 
-of Figure \@ref(fig:best-fitting-line) 
-in addition to three more arbitrarily chosen countries:
-
-```{r best-fitting-line, fig.height=5.5, echo=FALSE, fig.cap="Example of observed value, fitted value, and residual.", purl=FALSE, message=FALSE}
-# First residual
-best_fit_plot <- gg$ggplot(df_gapminder2007, 
-                            mapping = gg$aes(x = income, y = life_exp)) +
-  gg$geom_point(size = 0.8, color = "grey") +
-  gg$labs(x = "Income", y = "Life Expectancy") + 
-  gg$geom_smooth(method = "lm", se = FALSE) +
-  gg$annotate("point", x = x, y = y_hat, col = "red", shape = 15, size = 3) +
-  gg$annotate("segment", x = x, xend = x, y = y, yend = y_hat, color = "blue",
-           arrow = gg$arrow(type = "closed", length = gg$unit(0.02, "npc"))) +
-  gg$annotate("point", x = x, y = y, col = "red", size = 2)
-
-p1 <- best_fit_plot + gg$labs(title = "First country's residual")
-
-# Second residual
-index <- which(df_gapminder2007$country == "China")
-target_point <- moderndive::get_regression_points(health_model) %>%
-  dp$slice(index)
-x <- target_point$income
-y <- target_point$life_exp
-y_hat <- target_point$life_exp_hat
-resid <- target_point$residual
-
-best_fit_plot <- best_fit_plot +
-  gg$annotate("point", x = x, y = y, col = "red", size = 2) +
-  gg$annotate("point", x = x, y = y_hat, col = "red", shape = 15, size = 3) +
-  gg$annotate("segment",
-    x = x, xend = x, y = y, yend = y_hat, color = "blue",
-    arrow = gg$arrow(type = "closed", length = gg$unit(0.02, "npc"))
-  )
-p2 <- best_fit_plot + gg$labs(title = "Adding second country's residual")
-
-# Third residual
-index <- which(df_gapminder2007$country == "Ecuador")
-target_point <- moderndive::get_regression_points(health_model) %>%
-  dp$slice(index)
-x <- target_point$income
-y <- target_point$life_exp
-y_hat <- target_point$life_exp_hat
-resid <- target_point$residual
-
-best_fit_plot <- best_fit_plot +
-  gg$annotate("point", x = x, y = y, col = "red", size = 2) +
-  gg$annotate("point", x = x, y = y_hat, col = "red", shape = 15, size = 3) +
-  gg$annotate("segment",
-    x = x, xend = x, y = y, yend = y_hat,
-    color = "blue",
-    arrow = gg$arrow(type = "closed", length = gg$unit(0.02, "npc"))
-  )
-p3 <- best_fit_plot + gg$labs(title = "Adding third country's residual")
-
-index <- which(df_gapminder2007$country == "Kenya")
-target_point <- moderndive::get_regression_points(health_model) %>%
-  dp$slice(index)
-x <- target_point$income
-y <- target_point$life_exp
-y_hat <- target_point$life_exp_hat
-resid <- target_point$residual
-
-best_fit_plot <- best_fit_plot +
-  gg$annotate("point", x = x, y = y, col = "red", size = 2) +
-  gg$annotate("point", x = x, y = y_hat, col = "red", shape = 15, size = 3) +
-  gg$annotate("segment",
-    x = x, xend = x, y = y, yend = y_hat, color = "blue",
-    arrow = gg$arrow(type = "closed", length = gg$unit(0.02, "npc"))
-  )
-p4 <- best_fit_plot + gg$labs(title = "Adding fourth country's residual")
-
-p1 + p2 + p3 + p4 + patchwork::plot_layout(nrow = 2)
-```
-
-The three other plots refer to:
-
-```{r echo=F}
-# Second residual
-index_2 <- which(df_gapminder2007$country == "China")
-target_point_2 <- moderndive::get_regression_points(health_model) %>%
-  dp$slice(index_2)
-x_2 <- target_point_2$income %>% round(0)
-y_2 <- target_point_2$life_exp %>% round(2)
-y_hat_2 <- target_point_2$life_exp_hat %>% round(2)
-resid_2 <- target_point_2$residual %>% round(2)
-
-# Third residual
-index_3 <- which(df_gapminder2007$country == "Ecuador")
-target_point_3 <- moderndive::get_regression_points(health_model) %>%
-  dp$slice(index_3)
-x_3 <- target_point_3$income %>% round(0)
-y_3 <- target_point_3$life_exp %>% round(2)
-y_hat_3 <- target_point_3$life_exp_hat %>% round(2)
-resid_3 <- target_point_3$residual %>% round(2)
-
-# Fourth residual
-index_4 <- which(df_gapminder2007$country == "Kenya")
-target_point_4 <- moderndive::get_regression_points(health_model) %>%
-  dp$slice(index_4)
-x_4 <- target_point_4$income %>% round(0)
-y_4 <- target_point_4$life_exp %>% round(2)
-y_hat_4 <- target_point_4$life_exp_hat %>% round(2)
-resid_4 <- target_point_4$residual %>% round(2)
-```
-
-
-1. A country with an average income of $x$ = `r x_2` 
-   and life expectancy of $y$ = `r y_2`. 
-   The residual in this case is $`r y_2` - `r y_hat_2` = `r resid_2`$, 
-   which we mark with a new blue arrow in the top-right plot.
-
-1. A country with an average income of $x$ = `r x_3` 
-   and life expectancy of $y$ = `r y_3`. 
-   The residual in this case is $`r y_3` - `r y_hat_3` = `r resid_3`$, 
-   which we mark with a new blue arrow in the bottom-left plot.
-1. A country with an average income of $x$ = `r x_4` 
-   and life expectancy of $y$ = `r y_4`. 
-   The residual in this case is $`r y_4` - `r y_hat_4` = `r resid_4`$, 
-   which we mark with a new blue arrow in the bottom-right plot.
-
-
-
-Now say we repeated this process of computing residuals for all `r n_countries` 
-countries, then we squared all the residuals, and then we summed them. 
-We call this quantity the 
-*sum of squared residuals*\index{sum of squared residuals}; 
-it is a measure of the _lack of fit_ of a model. 
-Larger values of the sum of squared residuals indicate a bigger lack of fit. 
-This corresponds to a worse fitting model.
-
-In an ideal world where the regression line fits all the points perfectly, 
-the sum of squared residuals would be 0. 
-This is because if the regression line fits all the points perfectly, 
-then the fitted value $\widehat{y}$ equals the observed value $y$ in all cases, 
-and hence the residual $y-\widehat{y}$ = 0 in all cases, 
-and the sum of even a large number of 0's is still 0. 
-
-Furthermore, of all possible lines we can draw through the cloud of 
-`r n_countries` points, the regression line minimizes this value. 
-In other words, the regression and its corresponding fitted values $\widehat{y}$ 
-minimizes the sum of the squared residuals:
-
-$$
-\sum_{i=1}^{n}(y_i - \widehat{y}_i)^2
-$$
-
-Let's use our data wrangling tools from Chapter \@ref(wrangling) 
-to compute the sum of squared residuals exactly:
-
-```{r eval=F}
-# Fit regression model:
-health_model <- lm(life_exp ~ income, data = df_gapminder2007)
-health_model <- lm(score ~ bty_avg, 
-                  data = evals_ch5)
-
-# Get regression points:
-regression_points <- moderndive::get_regression_points(health_model)
-regression_points
-# Compute sum of squared residuals
-regression_points %>%
-  dp$mutate(squared_residuals = residual^2) %>%
-  dp$summarize(sum_of_squared_residuals = sum(squared_residuals))
-```
-
-```{r echo=F}
-regression_points
-# Compute sum of squared residuals
-regression_points %>%
-  dp$mutate(squared_residuals = residual^2) %>%
-  dp$summarize(sum_of_squared_residuals = sum(squared_residuals))
-```
-
-Any other straight line drawn in the figure 
-would yield a sum of squared residuals greater than 132. 
-This is a mathematically guaranteed fact 
-that you can prove using calculus and linear algebra. 
-That's why alternative names for the linear regression line 
-are the *best-fitting line* and the *least-squares line*. 
-Why do we square the residuals (i.e., the arrow lengths)? 
-So that both positive and negative deviations of the same amount 
-are treated equally.
-
-
-```{block, type="learncheck", purl=FALSE}
-\vspace{-0.15in}
-**_Learning check_**
-\vspace{-0.1in}
-```
-
-**`r paste0("(LC", chap, ".", (lc <- lc + 1), ")")`** Note in Figure \@ref(fig:three-lines) there are 3 points marked with dots and:
-
-* The "best" fitting solid regression line in blue
-* An arbitrarily chosen dotted red line 
-* Another arbitrarily chosen dashed green line
-
-```{r three-lines, fig.cap="Regression line and two others.", out.width="85%", echo=FALSE, purl=FALSE, message=FALSE}
-example <- tibble::tibble(
-  x = c(0, 0.5, 1),
-  y = c(2, 1, 3)
-)
-
-gg$ggplot(example, 
-          mapping = gg$aes(x = x, y = y)) +
-  gg$geom_smooth(method = "lm", se = FALSE, fullrange = TRUE) +
-  gg$geom_hline(yintercept = 2.5, col = "red", linetype = "dotted", size = 1) +
-  gg$geom_abline(
-    intercept = 2, slope = -1, col = "forestgreen",
-    linetype = "dashed", size = 1
-  ) +
-  gg$geom_point(size = 4)
-```
-
-Compute the sum of squared residuals by hand for each line 
-and show that of these three lines, 
-the regression line in blue has the smallest value.
-
-```{block, type="learncheck", purl=FALSE}
-\vspace{-0.25in}
-\vspace{-0.25in}
-```
 
 
 ### `get_regression_x()` functions {#underthehood}
 
 Recall in this chapter we introduced two functions from the `moderndive` package:
 
-1. `get_regression_table()` that returns a regression table in Subsection \@ref(model1table) and
-1. `get_regression_points()` that returns point-by-point information from a regression model in Subsection \@ref(model1points).
+1. `get_regression_table()` that returns a regression table 
+   in Subsection \@ref(model1table) and
+1. `get_regression_points()` that returns point-by-point information 
+   from a regression model in Subsection \@ref(leastsquare).
 
-What is going on behind the scenes with the `get_regression_table()` and `get_regression_points()` functions? We mentioned in Subsection \@ref(model1table) that these were examples of *wrapper functions*. Such functions take other pre-existing functions and "wrap" them into single functions that hide the user from their inner workings. This way all the user needs to worry about is what the inputs look like and what the outputs look like. In this subsection, we'll "get under the hood" of these functions and see how the "engine" of these wrapper functions works.
+What is going on behind the scenes with the `get_regression_table()` 
+and `get_regression_points()` functions? 
+We mentioned in Subsection \@ref(model1table) that 
+these were examples of *wrapper functions*. 
+Such functions take other pre-existing functions 
+and "wrap" them into single functions 
+that hide from the user their inner workings. 
+This way all the user needs to worry about is 
+what the inputs look like and what the outputs look like. 
+In this subsection, we will "get under the hood" of these functions 
+and see how the "engine" of these wrapper functions works.
 
-Recall our two-step process to generate a regression table from Subsection \@ref(model1table):
+Recall our two-step process to generate a regression table 
+from Subsection \@ref(model1table):
 
 ```{r eval=FALSE}
 # Fit regression model:
@@ -1631,17 +2159,17 @@ to produce Table \@ref(tab:regtable-broom):
 ```{r eval=FALSE}
 health_model %>%
   broom::tidy(conf.int = TRUE) %>%
-  dp$mutate_if(is.numeric, round, digits = 3) %>%
+  dplyr::mutate_if(is.numeric, round, digits = 3) %>%
   janitor::clean_names() %>%
-  dp$rename(lower_ci = conf_low, upper_ci = conf_high)
+  dplyr::rename(lower_ci = conf_low, upper_ci = conf_high)
 ```
 
 ```{r regtable-broom, echo=FALSE, message=FALSE, purl=FALSE}
 health_model %>%
   broom::tidy(conf.int = TRUE) %>%
-  dp$mutate_if(is.numeric, round, digits = 3) %>%
+  dplyr::mutate_if(is.numeric, round, digits = 3) %>%
   janitor::clean_names() %>%
-  dp$rename(
+  dplyr::rename(
     lower_ci = conf_low,
     upper_ci = conf_high
   ) %>%
@@ -1680,7 +2208,7 @@ to produce the data shown in Table \@ref(tab:regpoints-augment):
 ```{r eval=FALSE}
 health_model %>%
   broom::augment() %>%
-  dp$mutate_if(is.numeric, round, digits = 3) %>%
+  dplyr::mutate_if(is.numeric, round, digits = 3) %>%
   janitor::clean_names() %>%
   dp$select(-c("std_resid", "hat", "sigma", "cooksd", "std_resid"))
 ```
@@ -1718,8 +2246,6 @@ on [GitHub](https://github.com/moderndive/moderndive/blob/master/R/regression_fu
 
 
 
-
-
 ## Conclusion {#reg-conclusion}
 
 ### Additional resources {#additional-resources-basic-regression}
@@ -1742,5 +2268,19 @@ knitr::include_graphics(here::here(
 
 ### What's to come?
 
-In this chapter, you've studied the term _basic regression_, where you fit models that only have one explanatory variable. In Chapter \@ref(multiple-regression), we'll study *multiple regression*, where our regression models can now have more than one explanatory variable! In particular, we'll consider two scenarios: regression models with one numerical and one categorical explanatory variable and regression models with two numerical explanatory variables. This will allow you to construct more sophisticated and more powerful models, all in the hopes of better explaining your outcome variable $y$.
+In this chapter, we have introduced _simple linear regression_, 
+where we fit models that have one continuous explanatory variable. 
+We also demonstrated how to interpret resutls from a regression table 
+such as Table \@ref(tab:regtable).
+However, we have only focused on the two leftmost columns: `term` and `estimate`. 
+In the next chapter, we will pick up where we left off 
+and focus on the remaining columns including `std_error` and `p_value`.
+
+<!-- In Chapter \@ref(multiple-regression), we will study *multiple regression*, 
+where our regression models can now have more than one explanatory variable! 
+In particular, we will consider two scenarios: 
+regression models with one numerical and one categorical explanatory variable 
+and regression models with two numerical explanatory variables. 
+This will allow you to construct more sophisticated and more powerful models, 
+all in the hopes of better explaining your outcome variable $y$. -->
 

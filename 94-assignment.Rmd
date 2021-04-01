@@ -299,7 +299,7 @@ Some questions you may have regarding this deliverable:
 
 * Reading
 
-  TBD
+  Chapter \@ref(anova)
 
 * Datacamp (5%)  
   1. complete the module assigned to you (2%).  
@@ -309,7 +309,7 @@ Some questions you may have regarding this deliverable:
 
 * Reading
 
-  TBD
+  Chapter \@ref(simple-regression)
 
 * Descriptives
 

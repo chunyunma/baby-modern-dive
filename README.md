@@ -55,6 +55,8 @@ from the `master` branch of this repo.
 
 + [STAT545](https://stat545.com)
 
++ [ANOVA: A Short Intro Using R](https://stat.ethz.ch/~meier/teaching/anova/)
+
 ## License
 
 The lecture notes are licensed under a 

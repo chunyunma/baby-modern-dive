@@ -823,7 +823,7 @@ of sample size planning.
 A good rule of thumb: use a minimally meaningful effect size 
 or the smallest effect size of interest, 
 an effect size that you would hate to miss.
-It is okay if the effect size ends up being larger in the actual study.
+It is okay if the observed effect size ends up being larger in the actual study.
 Using such theoretically driven effect sizes, 
 one can calculate an upper bound of sample size needed, 
 given the desirable power ($1 - \beta$) and significance ($\alpha$) levle.
@@ -836,7 +836,7 @@ given the desirable power ($1 - \beta$) and significance ($\alpha$) levle.
 \vspace{-0.1in}
 ```
 
-**How to choose an appropriate effect size**
+**How to choose an appropriate a priori effect size?**
 
 A common practice among social science researchers is to 
 conduct a pilot study before the main one.

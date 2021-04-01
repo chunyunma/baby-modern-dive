@@ -77,7 +77,7 @@ cran_packages <- c(
 
 if (length(cran_packages) != 0) xf$pkg_load2(cran_packages)
 
-# gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
 
 import::from(magrittr, '%>%')
@@ -1264,7 +1264,7 @@ Note that we have only introduced the simplest ANOVA design
 in the current chapter, 
 in which there is only one indepedent variable.
 Therefore, 
-the distinction between eta squared and partial eta squared , 
+the distinction between eta squared and partial eta squared, 
 or between omega squared and partial omega squared, is not relevant.
 
 $$
@@ -1283,8 +1283,8 @@ because it corrects for both sample bias and multi-variable bias.
 However, SPSS, 
 one of the most popular statistical software among social scientists, 
 decided a long time ago that 
-partial eta squared would be the default effect size for all ANOVA tests 
-conducted using SPSS.
+partial eta squared ($\eta_p^2$) would be the default effect size 
+for all ANOVA tests conducted using SPSS.
 
 The bottom line is, the effect size is useful/meaningful 
 so long as researchers agree on which effect size to report.
@@ -1311,7 +1311,8 @@ and recommended partial omega squared (also see
 We have sufficient evidence to reject the null hypothesis 
 and conclude that presence of context or a lack thereof 
 affected participants' comprehension of an esoteric passage 
-($F = `r F_value`$ , $p = `r p_value %>% round(4)`$, $\omega^2 = `r comp_es`$). 
+<!-- ($F = `r F_value`$, $p = `r p_value %>% round(4)`$, $\omega^2 = `r comp_es`$).  -->
+($F = `r F_value`$, $p < .001$, $\omega^2 = `r comp_es`$). 
 
 #### Next step {-}
 
@@ -1374,7 +1375,7 @@ I will list a few of them at the end of this chapter for you to explore.
 
 Before we leave this chapter behind, 
 as I promised at the beginning, 
-let's conducte the same analysis using simulation-based methods.
+let's conduct the same analysis using simulation-based methods.
 
 
 ### Simulation-based methods {#sim-method-comp}

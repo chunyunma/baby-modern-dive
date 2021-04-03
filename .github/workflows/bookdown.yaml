@@ -36,14 +36,15 @@ jobs:
           key: bookdown-${{ hashFiles('**/*Rmd') }}
           restore-keys: bookdown-
 
-      - name: install renv v0.13.2
-        run: | 
-          Rscript -e "install.packages('https://cloud.r-project.org/src/contrib/renv_0.13.2.tar.gz', repos = NULL, type = 'source')"
+      # - name: install renv v0.13.2
+      #   run: | 
+      #     Rscript -e "install.packages('https://cloud.r-project.org/src/contrib/renv_0.13.2.tar.gz', repos = NULL, type = 'source')"
 
-      - name: Install packages
+      - name: Restore packages
+        shell: Rscript {0}
         run: |
-          # R -e 'install.packages("renv")'
-          Rscript -e 'renv::restore()'
+          if (!requireNamespace("renv", quietly = TRUE)) install.packages("renv")
+          renv::restore()
 
       - name: Build site
         run: Rscript -e 'bookdown::render_book("index.Rmd", quiet = TRUE)'

@@ -314,7 +314,8 @@ Some questions you may have regarding this deliverable:
 * Descriptives
 
 This is the third deliverable of your course project. 
-I will provide a template (to be announced) for you as a starting point. 
+Below is a template for you as a starting point. 
+You only need to use it if you do not have a better option.
 Examples of components in this deliverable include: 
 
   + A description of each variable, in plain English. 
@@ -337,21 +338,9 @@ Examples of components in this deliverable include:
 
   +	For categorical variables: frequency tables  
 
-If there are a large number variables in your dataset, 
-this task may become tedious. 
-Try grouping them, 
-especially if some variables are of the same type (e.g., 5 point likert scale). 
+*`descriptives.Rmd`*
 
-Here, I have listed some typical analyses you may encounter in 
-data exploration, 
-as it is impossible to provide a one-size-fits-all template 
-of descriptives. 
-Other than answering the questions mentioned above, 
-you may want to take a look at the original paper, 
-and consider what descriptives have been reported there. 
-Not sure what counts as descriptives? 
-Look for these keywords: number of participants; mean / median age; 
-male vs. female ratio; percentages; demographics. 
+`r import_example('descriptives.Rmd')`
 
 ## Week 12 {#appendix-assign-12}
 

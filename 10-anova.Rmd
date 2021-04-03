@@ -72,6 +72,8 @@ cran_packages <- c(
                   "dplyr", 
                   "effectsize", # a new package we will introduce in this chapter
                   "infer", 
+                  "plotrix", # a new package we will introduce in this chapter
+                  "rstatix", # a new package we will introduce in this chapter
                   "skimr"
 )
 
@@ -91,7 +93,9 @@ cran_internal <- c(
                    "infer", 
                    "kableExtra", 
                    "patchwork", 
+                   "plotrix",
                    "readr", 
+                   "rstatix", 
                    "skimr", 
                    "tibble",
                    "tidyr"

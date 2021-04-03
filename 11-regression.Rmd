@@ -140,9 +140,11 @@ if (!requireNamespace('xfun')) install.packages('xfun')
 xf <- loadNamespace('xfun')
 
 cran_packages <- c(
+                  "broom", # a new package we will introduce in this chapter
                   "dplyr", 
                   "gapminder",
                   "ggplot2", 
+                  "janitor", # a new package we will introduce in this chapter 
                   "moderndive", 
                   "skimr"
 )
@@ -157,10 +159,17 @@ import::from(magrittr, '%>%')
 
 ```{r import-pkg, echo=F, message=FALSE, warning=FALSE}
 cran_internal <- c(
-                    "kableExtra", 
-                    "patchwork", 
-                    "readr", 
-                    "tibble"
+                   "broom", 
+                   "dplyr", 
+                   "gapminder",
+                   "ggplot2", 
+                   "janitor",
+                   "kableExtra", 
+                   "moderndive", 
+                   "patchwork", 
+                   "readr", 
+                   "skimr",
+                   "tibble"
 )
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
@@ -168,8 +177,6 @@ dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
 import::from(magrittr, '%>%')
 import::from(patchwork, .all=TRUE)
 ```
-
-<!-- ## One numerical explanatory variable {#model1} -->
 
 Recall one of the examples we saw in chapter \@ref(viz), 
 in which Hans Rosling discussed global economy, health, and development. 
@@ -1435,7 +1442,7 @@ the regression line in blue has the smallest value.
 \vspace{-0.25in}
 ```
 
-## A case study
+## A case study {#eval-casestudy}
 
 #### Problem statement {-}
 

@@ -35,6 +35,7 @@ cran_packages = c(
                   "knitr", 
                   "moderndive", 
                   "nycflights13", 
+                  "plotrix",
                   "rstatix",
                   "skimr", 
                   # Packages used internally: 

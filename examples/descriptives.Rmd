@@ -1,0 +1,148 @@
+---
+title: ""  # swap with your own
+author: "Your Name"
+date: "year-month-date"
+output: html_document
+---
+
+# Preamble (delete this section before submitting your work)
+
+- If there are a large number variables in your dataset, 
+  some of the analyses listed below may become tedious. 
+  Try to group them when describing the fingings, 
+  especially if some variables are of the same type (e.g., 5 point likert scale).
+
+- This guide tries to provide a one-size-fits-all solution to descriptives, 
+  which is an impossible task to begin with. 
+  I have merely listed some typical analyses 
+  you may encounter during this stage of data analysis. 
+  *Not every prompt included in this template would apply to your case.*
+  *Choose ones that you think are relevant.*
+  Other than answering the questions mentioned in this template, 
+  you may want to take a look at the original paper, 
+  and consider what descriptives have been reported there. 
+  Not sure what counts as descriptives (vs. inferential statistics)? 
+  Look for these keywords: 
+  number of participants, 
+  their mean/median age, 
+  male vs. female ratio, 
+  percentages, 
+  demographics, etc.
+
+- Please feel free to re-structure this document as you see fit. Own it!
+
+- Submit this Rmarkdown file as your deliverable
+
+# Descriptives
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+                      # set any chunk options here
+)
+```
+
+```{r packages, echo=FALSE}
+cran_internal <- c(
+                   # adjust this list based on your needs
+                   "dplyr", 
+                   "ggplot2", 
+                   "skimr",
+                   "tibble"
+)
+gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
+dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
+
+import::from(magrittr, '%>%')
+```
+
+```{r import-data}
+# import the dataset you will be working with and save it as a data frame
+# this should be the dataset post cleaning/filtering
+
+```
+
+
+
+## Eye-ball the data
+
+```{r}
+# replace xx with the actual name of your dataframe
+tibble::glimpse(xx)
+```
+
+
+<!-- - Include a description of each variable, in plain English.  -->
+<!--   For example,  -->
+<!--   *lifeExp – Average life expectancy in each country, measured in years.*  -->
+<!--   In the description, you may address: -->
+<!--  -->
+<!--     - What does this variable measure? -->
+<!--  -->
+<!--     - Is this a numerical/continous variable or a categorical varialbe/factor? -->
+<!--  -->
+<!--     - If this is a numerical variable, what is the unit of the measurement? -->
+<!--  -->
+<!--     - Is this a variable you plan to use it in the replication analyses?  -->
+<!--       This question is intended for those of you  -->
+<!--       who may be working with a dataset which has more variables than what you need. -->
+<!--       But if you still have many variables in this data drame  -->
+<!--       that are irrelevant to your analysis,  -->
+<!--       then you might want to go back to the data cleaning stage. -->
+
+
+
+## Missing data analysis
+
+```{r}
+# Insert code below
+
+
+
+```
+
+<!-- For each key variable,  -->
+<!-- investigate whether there is any missing value  -->
+<!-- (empty cell, or NA, or any other types of illegitimate values).  -->
+<!-- Report missingness on each variable: how many values are missing in each column. -->
+
+
+## Numerical variables
+
+<!-- For each numerical variable: -->
+<!--  -->
+<!-- - Calculate mean, standard deviation, minimum, maximum -->
+<!--  -->
+<!-- - Plot histogram and boxplot -->
+
+```{r}
+# Insert code below
+
+```
+
+
+<!-- Discuss any notable findings. 
+For example, is the distribution of any variable clearly not normal? -->
+
+
+
+
+## Categorical variables
+
+<!-- For each categorical variable/factor: -->
+<!--  -->
+<!-- - List levels of this variable -->
+<!--  -->
+<!-- - Provide a frequency table -->
+
+```{r}
+# Insert code below
+
+```
+
+
+
+<!-- Discuss any notable findings. 
+For example, is the frequency of observations 
+for a certain level on a variable particularly low, e.g., smaller than 5? -->
+
+

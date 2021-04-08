@@ -154,7 +154,7 @@ if (length(cran_packages) != 0) xf$pkg_load2(cran_packages)
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
 
-import::from(magrittr, '%>%')
+import::from(magrittr, "%>%")
 ```
 
 ```{r import-pkg, echo=F, message=FALSE, warning=FALSE}
@@ -174,7 +174,7 @@ cran_internal <- c(
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
 
-import::from(magrittr, '%>%')
+import::from(magrittr, "%>%")
 import::from(patchwork, .all=TRUE)
 ```
 
@@ -1476,7 +1476,7 @@ and "beauty" scores using *simple linear regression* where we have:
 
 - A single numerical explanatory variable $x$ (the instructor's "beauty" score).
 
-### Exploring the data
+### Exploring the data {#eval-explore}
 
 The data on the 463 courses at UT Austin 
 can be found in the `evals` data frame included in the `moderndive` package. 

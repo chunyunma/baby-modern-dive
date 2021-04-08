@@ -66,7 +66,7 @@ if (length(cran_primary) != 0) xf$pkg_load2(cran_primary)
 
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
-import::from(magrittr, '%>%')
+import::from(magrittr, "%>%")
 ```
 
 ```{r import-pkg, echo=F, message=FALSE, warning=FALSE}
@@ -79,7 +79,7 @@ cran_secondary <- c(
 
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
-import::from(magrittr, '%>%')
+import::from(magrittr, "%>%")
 # need `patchwork` for `<gg> + <gg>` to work, 
 # cannot explicitly import `+` separately, so importing everything
 import::from(patchwork, .all=T)

@@ -16,7 +16,7 @@ set.seed(76)
 ```
 
 ```{r import-pkg, echo=F, message=FALSE, warning=FALSE}
-import::from(magrittr, '%>%')
+import::from(magrittr, "%>%")
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
 ```

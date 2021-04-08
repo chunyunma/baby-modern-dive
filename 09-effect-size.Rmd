@@ -107,7 +107,7 @@ if (length(cran_packages) != 0) xf$pkg_load2(cran_packages)
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
 
-import::from(magrittr, '%>%')
+import::from(magrittr, "%>%")
 import::from(patchwork, .all=TRUE)
 ```
 
@@ -128,7 +128,7 @@ cran_internal <- c(
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
 
-import::from(magrittr, '%>%')
+import::from(magrittr, "%>%")
 import::from(patchwork, .all=TRUE)
 ```
 

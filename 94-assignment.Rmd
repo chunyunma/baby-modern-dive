@@ -346,7 +346,7 @@ Examples of components in this deliverable include:
 
 * Reading
 
-  TBD
+  Chapter \@ref(inference-for-regression)
 
 * Final deliverable
 

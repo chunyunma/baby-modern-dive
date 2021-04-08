@@ -68,7 +68,7 @@ cran_primary <- c(
 
 if (length(cran_primary) != 0) xf$pkg_load2(cran_primary)
 
-import::from(magrittr, '%>%')
+import::from(magrittr, "%>%")
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
 
@@ -82,7 +82,7 @@ df_weather = weather
 ```
 
 ```{r import-pkg, echo=F, message=FALSE, warning=FALSE}
-import::from(magrittr, '%>%')
+import::from(magrittr, "%>%")
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
 
@@ -814,7 +814,7 @@ and are used to resorting to `help` whenever you are unsure.
 
 ### What's to come?
 
-Congratulations! You've completed the "Data Science with `tidyverse`" portion of this book. We'll now move to the "Data modeling with moderndive" portion of this book in Chapters \@ref(regression) and \@ref(multiple-regression), where you'll leverage your data visualization and wrangling skills to model relationships between different variables in data frames. 
+Congratulations! You've completed the "Data Science with `tidyverse`" portion of this book. We'll now move to the "Data modeling with moderndive" portion of this book in Chapters \@ref(simple-regression) and \@ref(multiple-regression), where you'll leverage your data visualization and wrangling skills to model relationships between different variables in data frames. 
 
 However, we're going to leave Chapter \@ref(inference-for-regression) on "Inference for Regression" until after we've covered statistical inference in Chapters \@ref(clt), \@ref(confidence-intervals), and \@ref(hypothesis-testing). Onwards and upwards into Data Modeling as shown in Figure \@ref(fig:part2)!
 

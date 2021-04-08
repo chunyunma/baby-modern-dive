@@ -120,7 +120,7 @@ cran_primary <- c(
 
 if (length(cran_primary) != 0) xf$pkg_load2(cran_primary)
 
-import::from(magrittr, '%>%')
+import::from(magrittr, "%>%")
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
 
@@ -141,7 +141,7 @@ cran_secondary <- c(
                     "readr", 
                     "stringr"
 )
-import::from(magrittr, '%>%')
+import::from(magrittr, "%>%")
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
 

@@ -849,7 +849,7 @@ if (length(cran_secondary) != 0) xf$pkg_load2(cran_secondary)
 ```
 
 ```{r import, message=FALSE, warning=FALSE}
-import::from(magrittr, '%>%')
+import::from(magrittr, "%>%")
 import::from(nycflights13, df_flights = flights)
 ```
 

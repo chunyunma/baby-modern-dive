@@ -270,10 +270,10 @@
     },
     "diffobj": {
       "Package": "diffobj",
-      "Version": "0.3.3",
+      "Version": "0.3.4",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "55fae7ec1418d2a47bd552571673d1af"
+      "Hash": "feb5b7455eba422a2c110bb89852e6a3"
     },
     "digest": {
       "Package": "digest",
@@ -886,7 +886,7 @@
     },
     "rmarkdown": {
       "Package": "rmarkdown",
-      "Version": "2.7.4",
+      "Version": "2.7.6",
       "Source": "GitHub",
       "Remotes": "yihui/tinytex",
       "RemoteType": "github",
@@ -894,8 +894,8 @@
       "RemoteRepo": "rmarkdown",
       "RemoteUsername": "rstudio",
       "RemoteRef": "HEAD",
-      "RemoteSha": "a11240d78928a31d7e8aef3312709772715b8e91",
-      "Hash": "30d59418bbccfc51098ff470d9485f60"
+      "RemoteSha": "74ae1be5c8a9bd5a98b7984914d53d444d093026",
+      "Hash": "b83fc2c44e1e33d330e37e35a377443e"
     },
     "rprojroot": {
       "Package": "rprojroot",
@@ -1032,15 +1032,15 @@
     },
     "tinytex": {
       "Package": "tinytex",
-      "Version": "0.30.2",
+      "Version": "0.31.1",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "tinytex",
       "RemoteUsername": "yihui",
       "RemoteRef": "HEAD",
-      "RemoteSha": "5946a2a1bf3c6ecefbd1213178a4e473ff4c26dc",
-      "Hash": "bff7aa266acdb80ad362c1d8f3497a34"
+      "RemoteSha": "7e44dc2fe2573da080bf57200ba3b13e7d4fec80",
+      "Hash": "c914047a51549b3abb0e8355019aeeb3"
     },
     "tmvnsim": {
       "Package": "tmvnsim",

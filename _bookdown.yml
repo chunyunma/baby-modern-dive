@@ -15,6 +15,7 @@ rmd_files: [
   "11-regression.Rmd",
   "12-regression-inference.Rmd", 
   "13-regression-anova.Rmd",
+  "14-multiple-regression.Rmd",
   # "anscombe.Rmd", 
   "91-basics.Rmd", 
   "92-inference-examples.Rmd",

@@ -21,7 +21,7 @@ The list will be updated regularly.
 ```{r attach-package, echo=F, message=F, warning=F}
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
-import::from(magrittr, '%>%')
+import::from(magrittr, "%>%")
 import::from(patchwork, .all=T)
 ```
 
@@ -228,7 +228,7 @@ your script, they can generate the same results as you did.
 Why do we use `import::from` differently in the next three examples? 
 
 ```{r echo=F}
-import::from(magrittr, '%>%')
+import::from(magrittr, "%>%")
 import::from(nycflights13, df_flights = flights)
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 ```

@@ -1204,7 +1204,7 @@ and the theory-based results shown in the regression table in Table \@ref(tab:re
 ```
 
 
-### Theory-based inference for regression {#theory-regression}
+## Theory-based inference for regression {#theory-regression}
 
 How did `R` compute values in Table \@ref(tab:regtable-11)? 
 What did `R` do behind the scenes?

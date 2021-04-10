@@ -41,14 +41,17 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r packages, echo=FALSE}
-cran_internal <- c(
+```{r packages, include=FALSE}
+cran_packages <- c(
                    # adjust this list based on your needs
                    "dplyr", 
                    "ggplot2", 
                    "skimr",
                    "tibble"
 )
+
+if (length(cran_packages) != 0) xf$pkg_load2(cran_packages)
+
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})
 

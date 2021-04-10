@@ -42,6 +42,8 @@ knitr::opts_chunk$set(
 ```
 
 ```{r packages, include=FALSE}
+if (!requireNamespace('xfun')) install.packages('xfun')
+
 cran_packages <- c(
                    # adjust this list based on your needs
                    "dplyr", 
@@ -50,7 +52,7 @@ cran_packages <- c(
                    "tibble"
 )
 
-if (length(cran_packages) != 0) xf$pkg_load2(cran_packages)
+if (length(cran_packages) != 0) xfun::pkg_load2(cran_packages)
 
 gg <- import::from(ggplot2, .all=TRUE, .into={new.env()})
 dp <- import::from(dplyr, .all=TRUE, .into={new.env()})

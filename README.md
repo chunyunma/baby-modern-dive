@@ -1,6 +1,6 @@
 # Baby Modern Dive
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/b73c85b2-2b3e-4b95-b9a3-61addce77292/deploy-status)](https://app.netlify.com/sites/vigilant-blackwell-f18485/deploys)
+<!-- [![Netlify Status](https://api.netlify.com/api/v1/badges/b73c85b2-2b3e-4b95-b9a3-61addce77292/deploy-status)](https://app.netlify.com/sites/vigilant-blackwell-f18485/deploys) -->
 
 Welcome to the GitHub Repository page for CGSC 5101 / HCIN 5400 lecture notes
 available at [chunyunma.me](https://chunyunma.me/). 

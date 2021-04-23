@@ -49,18 +49,26 @@ jobs:
       - name: Build site
         run: Rscript -e 'bookdown::render_book("index.Rmd", quiet = TRUE)'
 
-      - name: Deploy to Netlify # stole from Hadley's r4ds repo
-        uses: nwtgck/actions-netlify@v1.1
-        with:
-          publish-dir: './_book'
-          production-branch: master
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message:
-            'Deploy from GHA: ${{ github.event.head_commit.message }} (${{ github.sha }})'
-          enable-pull-request-comment: false
-          enable-commit-comment: false
+      # - name: Deploy to Netlify # stole from Hadley's r4ds repo
+      #   uses: nwtgck/actions-netlify@v1.1
+      #   with:
+      #     publish-dir: './_book'
+      #     production-branch: master
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     deploy-message:
+      #       'Deploy from GHA: ${{ github.event.head_commit.message }} (${{ github.sha }})'
+      #     enable-pull-request-comment: false
+      #     enable-commit-comment: false
+      #   env:
+      #   # NETLIFY_AUTH_TOKEN and NETLIFY_SITE_ID added in the repo's secrets
+      #     NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      #     NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      #   timeout-minutes: 1
+
+      - name: Deploy to Netlify
         env:
-        # NETLIFY_AUTH_TOKEN and NETLIFY_SITE_ID added in the repo's secrets
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        timeout-minutes: 1
+        run: |
+          npm install netlify-cli -g
+          netlify deploy --prod --dir _book
